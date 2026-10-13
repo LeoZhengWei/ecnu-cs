@@ -1,0 +1,18 @@
+# 模型权重与检查点
+*.pt
+*.pth
+*.pth.tar
+*.ckpt
+*.onnx
+*.safetensors
+*.h5
+*.pb
+*.tflite
+*.bin
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
