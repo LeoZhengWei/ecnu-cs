@@ -4,6 +4,10 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import time
+try:
+    from .block import ResidualConvBlock
+except ImportError:
+    from block import ResidualConvBlock
 
 savepath='features'
 if not os.path.exists(savepath):
@@ -50,13 +54,15 @@ class UNet(nn.Module):
 
         self.out_conv = nn.Conv2d(64, out_channels, kernel_size=1)
 
+    # def conv_block(self, in_channels, out_channels):
+    #     return nn.Sequential(
+    #         nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
+    #         nn.ReLU(inplace=True),
+    #         nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
+    #         nn.ReLU(inplace=True),
+    #     )
     def conv_block(self, in_channels, out_channels):
-        return nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-            nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1),
-            nn.ReLU(inplace=True),
-        )
+        return ResidualConvBlock(in_channels, out_channels)
 
     def forward(self, x):
         enc1 = self.enc1(x)
@@ -84,7 +90,6 @@ if __name__ == "__main__":
     print("Output shape:", preds.shape)
 
     from PIL import Image
-
-    # aaa = Image.fromarray(np.array(enhanced_filter[0, 0].cpu().detach().numpy() * 255, dtype=np.uint8))
-    # aaa.show()
-    # aaa.save("11.jpg")
+    aaa = Image.fromarray(np.array(enhanced_filter[0, 0].cpu().detach().numpy() * 255, dtype=np.uint8))
+    aaa.show()
+    aaa.save("11.jpg")

@@ -24,7 +24,7 @@ class Trainer(object):
         self.train_loader = train_loader
         self.model = model
         self.criterion = torch.nn.functional.binary_cross_entropy
-        self.optimizer = torch.optim.Adam(lr=0.003, params=model.parameters())
+        self.optimizer = torch.optim.AdamW(lr=0.0003, weight_decay=1e-5, params=model.parameters())
         self.epochs = 200
         self.device = resolve_device()
         if self.device.type == "cuda":
@@ -53,8 +53,8 @@ class Trainer(object):
 
             print(f'epoch{epoch}-----------loss:{sum(losses) / len(losses)}')
             if epoch % 10 == 0:
-                torch.save(self.model, f'unet-{epoch}.pth.tar')
+                torch.save(self.model, f'pth/unet-{epoch}.pth')
 
-        torch.save(self.model, f'Unet-epochs{self.epochs}.pth')
+        torch.save(self.model, f'pth/Unet-epochs{self.epochs}.pth')
 
 
