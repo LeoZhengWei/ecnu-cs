@@ -1,0 +1,47 @@
+<Slide style={{ width: '1280px', height: '720px', backgroundColor: '#FFFFFF', padding: '0px', flexDirection: 'column' }}>
+    <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
+    <Box style={{ padding: '30px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>方法总览：每来一个关键帧做什么</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>06 / 12</Text>
+    </Box>
+    <Box style={{ padding: '14px 40px 0px 40px' }}>
+        <Text style={{ fontSize: 22, color: '#4A5568', lineHeight: 1.5 }}>设计哲学一句话：<b>每帧做小事，偶尔做一次大事</b>。前者保证实时，后者保证不漂。</Text>
+    </Box>
+    <Box style={{ padding: '18px 40px 0px 40px', flexDirection: 'row', gap: 12 }}>
+        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', borderRadius: 6, padding: '14px 12px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1E4FA8' }}>STEP 1</Text>
+            <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#1A2230', marginTop: 6 }}>两级匹配</Text>
+            <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.45, marginTop: 6 }}>检索候选 → 局部特征 → 精验，得到可信帧对</Text>
+        </Box>
+        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', borderRadius: 6, padding: '14px 12px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1E4FA8' }}>STEP 2</Text>
+            <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#1A2230', marginTop: 6 }}>更新协视图</Text>
+            <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.45, marginTop: 6 }}>边权 = 内点数倒数，越可靠越"近"</Text>
+        </Box>
+        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', borderRadius: 6, padding: '14px 12px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1E4FA8' }}>STEP 3</Text>
+            <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#1A2230', marginTop: 6 }}>回环检测</Text>
+            <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.45, marginTop: 6 }}>簇间跳数 &gt; 5 且有效对 &gt; 2 才触发</Text>
+        </Box>
+    </Box>
+    <Box style={{ padding: '12px 40px 0px 40px', flexDirection: 'row', gap: 12 }}>
+        <Box style={{ flex: 1, backgroundColor: '#F7F9FC', borderRadius: 6, padding: '14px 12px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1E4FA8' }}>STEP 4</Text>
+            <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#1A2230', marginTop: 6 }}>局部 BA</Text>
+            <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.45, marginTop: 6 }}>选 20 个高连通帧，GPU 上优化位姿</Text>
+        </Box>
+        <Box style={{ flex: 1, backgroundColor: '#F7F9FC', borderRadius: 6, padding: '14px 12px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1E4FA8' }}>STEP 5</Text>
+            <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#1A2230', marginTop: 6 }}>回环修正</Text>
+            <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.45, marginTop: 6 }}>焊接 BA + 主干传播，位姿与高斯一起动</Text>
+        </Box>
+        <Box style={{ flex: 1, backgroundColor: '#F7F9FC', borderRadius: 6, padding: '14px 12px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#1E4FA8' }}>STEP 6</Text>
+            <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#1A2230', marginTop: 6 }}>投放与优化</Text>
+            <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.45, marginTop: 6 }}>分块深度对齐投放，每帧固定 30 次迭代</Text>
+        </Box>
+    </Box>
+    <Box style={{ margin: '20px 40px 0px 40px', backgroundColor: '#F0F5FC', borderLeft: '5px solid #1E4FA8', padding: '14px 20px' }}>
+        <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.5 }}>另有一步容错：匹配失败的帧先"搁置"，后续相似度足够时再取出重试——这让乱序输入不必强求一次匹配成功。</Text>
+    </Box>
+</Slide>

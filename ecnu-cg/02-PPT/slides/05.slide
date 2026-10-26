@@ -1,0 +1,33 @@
+<Slide style={{ width: '1280px', height: '720px', backgroundColor: '#FFFFFF', padding: '0px', flexDirection: 'column' }}>
+    <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
+    <Box style={{ padding: '30px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>问题定义：无序采集难在哪</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>05 / 12</Text>
+    </Box>
+    <Box style={{ padding: '16px 40px 0px 40px' }}>
+        <Text style={{ fontSize: 21, color: '#4A5568', lineHeight: 1.5 }}>"有序"指视频抽帧的天然时序；"无序"指手机相册式采集——来回走、回头补拍、两段序列交替。它带来三个必须同时解决的问题：</Text>
+    </Box>
+    <Box style={{ padding: '16px 40px 0px 40px', flexDirection: 'row', gap: 18 }}>
+        <Box style={{ flex: 1, backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '16px 18px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 40, fontWeight: 'bold', color: '#1E4FA8' }}>01</Text>
+            <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1A2230', marginTop: 6 }}>找重叠帧</Text>
+            <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.55, marginTop: 10 }}>无序时无法只比相邻帧，两两全比又是 O(n²)；必须在"找得准"与"找得快"之间做级联。</Text>
+            <Text style={{ fontSize: 19, color: '#1E4FA8', fontWeight: 'bold', marginTop: 12 }}>对应：三级匹配</Text>
+        </Box>
+        <Box style={{ flex: 1, backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '16px 18px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 40, fontWeight: 'bold', color: '#1E4FA8' }}>02</Text>
+            <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1A2230', marginTop: 6 }}>控住优化规模</Text>
+            <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.55, marginTop: 10 }}>SLAM 式 5 帧窗口对辐射场不够；帧数一多，观测数又二次膨胀，显存与耗时同时失控。</Text>
+            <Text style={{ fontSize: 19, color: '#1E4FA8', fontWeight: 'bold', marginTop: 12 }}>对应：20 帧 + 协视性约束观测</Text>
+        </Box>
+        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', border: '1px solid #3D7BD9', borderRadius: 6, padding: '16px 18px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 40, fontWeight: 'bold', color: '#1E4FA8' }}>03</Text>
+            <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1A2230', marginTop: 6 }}>回环不重算</Text>
+            <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.55, marginTop: 10 }}>发现回环后，修正必须同时作用到所有位姿与所有高斯；若重跑全局 BA，实时性立刻归零。</Text>
+            <Text style={{ fontSize: 19, color: '#D9534F', fontWeight: 'bold', marginTop: 12 }}>对应：簇级回环 + 图传播</Text>
+        </Box>
+    </Box>
+    <Box style={{ padding: '16px 40px 0px 40px' }}>
+        <Text style={{ fontSize: 18, color: '#8B97A8' }}>三件事互相牵制：要快就得少算，要少算就得选得准，回环又要保证不漂。本文的贡献正落在这三者的平衡点上。</Text>
+    </Box>
+</Slide>

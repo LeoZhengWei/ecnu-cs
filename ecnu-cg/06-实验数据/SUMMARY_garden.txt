@@ -1,0 +1,8 @@
+scene        = garden
+downsampling = 2
+gpu          = 2 (NVIDIA GeForce RTX 4090)
+train_sec    = 104
+peak_vram_mib= 19532
+model_dir    = /datafast/zhengwei-i3dgs/results/garden_ds2
+video        = /datafast/zhengwei-i3dgs/results/garden_ds2/video/rendered_path.mp4
+finished_at  = 2026-10-26 14:33:44

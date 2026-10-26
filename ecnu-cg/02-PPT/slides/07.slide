@@ -1,0 +1,46 @@
+<Slide style={{ width: '1280px', height: '720px', backgroundColor: '#FFFFFF', padding: '0px', flexDirection: 'column' }}>
+    <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
+    <Box style={{ padding: '30px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>核心一：三级匹配把 O(n²) 压成常数级</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>07 / 12</Text>
+    </Box>
+    <Box style={{ padding: '18px 40px 0px 40px', flexDirection: 'column', gap: 0 }}>
+        <Box style={{ flexDirection: 'row', backgroundColor: '#1E4FA8', padding: '12px 16px' }}>
+            <Text style={{ width: '90px', fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>层级</Text>
+            <Text style={{ flex: 2, fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>方法</Text>
+            <Text style={{ flex: 3, fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>作用</Text>
+            <Text style={{ flex: 1.6, fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>代价</Text>
+        </Box>
+        <Box style={{ flexDirection: 'row', padding: '13px 16px', borderBottom: '1px solid #D6DCE5' }}>
+            <Text style={{ width: '90px', fontSize: 20, fontWeight: 'bold', color: '#1E4FA8' }}>1</Text>
+            <Text style={{ flex: 2, fontSize: 20, color: '#1A2230' }}>视觉位置识别（全局描述子）</Text>
+            <Text style={{ flex: 3, fontSize: 20, color: '#1A2230' }}>余弦相似度排序，取 top-20 候选</Text>
+            <Text style={{ flex: 1.6, fontSize: 20, color: '#1A2230' }}>≈1 ms / 1000 对</Text>
+        </Box>
+        <Box style={{ flexDirection: 'row', padding: '13px 16px', backgroundColor: '#F7F9FC', borderBottom: '1px solid #D6DCE5' }}>
+            <Text style={{ width: '90px', fontSize: 20, fontWeight: 'bold', color: '#1E4FA8' }}>2</Text>
+            <Text style={{ flex: 2, fontSize: 20, color: '#1A2230' }}>XFeat 轻量局部特征</Text>
+            <Text style={{ flex: 3, fontSize: 20, color: '#1A2230' }}>按内点数从 20 中保留 5 个</Text>
+            <Text style={{ flex: 1.6, fontSize: 20, color: '#1A2230' }}>≈0.5 ms / 对</Text>
+        </Box>
+        <Box style={{ flexDirection: 'row', padding: '13px 16px', borderBottom: '1px solid #D6DCE5' }}>
+            <Text style={{ width: '90px', fontSize: 20, fontWeight: 'bold', color: '#1E4FA8' }}>3</Text>
+            <Text style={{ flex: 2, fontSize: 20, color: '#1A2230' }}>LightGlue + RANSAC</Text>
+            <Text style={{ flex: 3, fontSize: 20, color: '#1A2230' }}>精确验证，内点数 &gt; 500 才接受</Text>
+            <Text style={{ flex: 1.6, fontSize: 20, color: '#1A2230' }}>≈4 ms / 对</Text>
+        </Box>
+    </Box>
+    <Box style={{ padding: '18px 40px 0px 40px', flexDirection: 'row', gap: 18 }}>
+        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', borderRadius: 6, padding: '14px 18px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1E4FA8' }}>加权协视图</Text>
+            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.5, marginTop: 8 }}>边权取内点数倒数 w = 1/#inliers：内点越多、边越"短"。于是图上的最短路 = 最可靠的位姿链。</Text>
+        </Box>
+        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', borderRadius: 6, padding: '14px 18px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1E4FA8' }}>消融：这一环最关键</Text>
+            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.5, marginTop: 8 }}>去掉位置识别只比相邻 5 帧：PSNR 26.29 → <b>24.78 dB</b>；改成优化最后 20 帧：→ <b>24.56 dB</b>。</Text>
+        </Box>
+    </Box>
+    <Box style={{ padding: '12px 40px 0px 40px' }}>
+        <Text style={{ fontSize: 17, color: '#8B97A8' }}>候选集逐级收缩：1000 对 → 20 → 5 → 1，精确匹配只作用在极小候选上，这是"无序也能快"的根本原因。</Text>
+    </Box>
+</Slide>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>面向无序输入与全局一致性的即时三维高斯泼溅重建</title>
+<style>
+  body { font-family: "SimSun", "宋体", serif; font-size: 10.5pt; line-height: 1.25; color: #000; }
+  h1 { font-family: "SimHei", "黑体", sans-serif; font-size: 16pt; text-align: center; margin: 0 0 6pt 0; line-height: 1.25; }
+  .subtitle { text-align: center; font-size: 12pt; font-family: "SimHei","黑体",sans-serif; margin: 0 0 10pt 0; }
+  .meta { text-align: center; font-size: 9pt; margin-bottom: 14pt; }
+  h2 { font-family: "SimHei","黑体",sans-serif; font-size: 12pt; margin: 14pt 0 6pt 0; line-height: 1.25; }
+  h3 { font-family: "SimHei","黑体",sans-serif; font-size: 10.5pt; margin: 10pt 0 4pt 0; line-height: 1.25; }
+  p { margin: 0 0 6pt 0; text-indent: 2em; text-align: justify; line-height: 1.25; }
+  p.noindent { text-indent: 0; }
+  .abs-title { font-family:"SimHei","黑体",sans-serif; font-size:10.5pt; font-weight:bold; }
+  table { border-collapse: collapse; width: 100%; margin: 6pt 0 8pt 0; font-size: 9pt; line-height: 1.2; }
+  th, td { border: 0.75pt solid #000; padding: 3pt 4pt; text-align: left; vertical-align: top; }
+  th { background: #f2f2f2; font-family:"SimHei","黑体",sans-serif; font-weight: bold; }
+  .caption { text-align: center; font-size: 9pt; margin: 2pt 0 8pt 0; text-indent: 0; }
+  pre { font-family: "Consolas","Courier New",monospace; font-size: 8.5pt; line-height: 1.2;
+        background: #f7f7f7; border: 0.5pt solid #ccc; padding: 6pt; margin: 6pt 0 8pt 0; white-space: pre-wrap; }
+  code { font-family: "Consolas","Courier New",monospace; font-size: 9pt; }
+  ul, ol { margin: 0 0 6pt 0; padding-left: 2.2em; line-height: 1.25; }
+  li { margin-bottom: 3pt; }
+  .ref p { text-indent: 0; font-size: 9pt; margin-bottom: 3pt; }
+  .note { font-size: 9pt; color: #333; }
+</style>
+</head>
+<body>
+
+<h1>面向无序输入与全局一致性的即时三维高斯泼溅重建</h1>
+<p class="subtitle">——SIGGRAPH 2026 论文 i3dgs 的复现与分析</p>
+<p class="meta">组员：×××　×××　　课程：图形和视觉前沿技术　　2026 年 11 月</p>
+
+<p class="noindent"><span class="abs-title">摘要：</span>三维高斯泼溅（3D Gaussian Splatting, 3DGS）已成为场景重建与实时新视角合成的代表性技术，但其训练流程高度依赖运动恢复结构（Structure from Motion, SfM）离线提供相机位姿，而 SfM 必须等待全部图像采集完毕才能开始计算，且对"无序采集"（拍摄者来回走动、反复回头补拍）较为敏感。本文分析并复现了 SIGGRAPH 2026 论文《Immediate 3D Gaussian Splat Reconstruction of Unordered Input with Global Consistency》。该工作首次为无序图像输入提供了具备全局一致性的"即时反馈"辐射场重建方案：利用视觉位置识别模型与协视图（covisibility graph）实现两级快速匹配，通过 GPU 定制的局部光束法平差（Bundle Adjustment, BA）与精细化高斯投放实现快速局部重建，提出基于簇（cluster）的回环检测与"图传播"式的免优化漂移修正，并用渐进式高斯层级支撑大场景显存受限下的持续重建。我们在两台服务器上从零搭建了复现环境（先在 NVIDIA RTX 5090 上以 PyTorch 2.7.1 + CUDA 12.8 + sm_120 打通模块链路，后迁移至 4×RTX 4090 + CUDA 12.6 完成端到端重建），累计修复十余处阻塞性工程问题，在 MipNeRF360 的 garden 场景上完成了不依赖 COLMAP 位姿先验的无序重建：PSNR 25.95 dB / SSIM 0.786 / LPIPS 0.206，位姿误差 R° 0.155 / t 1.888，185 帧输入的流式处理墙钟耗时 62.7 s，并导出了漫游视频与测试视角渲染图，最后对其工程实现、性能权衡与局限进行了分析。</p>
+
+<p class="noindent"><span class="abs-title">关键词：</span>三维高斯泼溅；无序图像采集；即时重建；协同视图；回环闭合；渐进式层级</p>
+
+<h2>1　Top Paper 概要信息</h2>
+
+<table>
+<tr><th style="width:20%">项目</th><th>内容</th></tr>
+<tr><td>论文名称</td><td>Immediate 3D Gaussian Splat Reconstruction of Unordered Input with Global Consistency</td></tr>
+<tr><td>中文译名</td><td>面向无序输入与全局一致性的即时三维高斯泼溅重建</td></tr>
+<tr><td>发表会议</td><td>ACM SIGGRAPH 2026 Conference Papers（2026 年 7 月 19–23 日，美国洛杉矶）</td></tr>
+<tr><td>DOI / arXiv</td><td>10.1145/3799902.3811167 / arXiv:2607.14481</td></tr>
+<tr><td>作者</td><td>Andreas Meuleman、Linus Franke（共同一作）、Boris Zhestiankin、Camille Montemagni、George Drettakis</td></tr>
+<tr><td>主要通讯单位</td><td>法国 Inria（Université Côte d'Azur）GRAPHDECO 研究组；合作单位 EPFL、Université de Rennes</td></tr>
+<tr><td>论文类型</td><td>图形（Graphics），兼及视觉（CV）</td></tr>
+<tr><td>开源代码</td><td>https://github.com/graphdeco-inria/i3dgs</td></tr>
+</table>
+
+<p>GRAPHDECO 是 Inria 与 Université Côte d'Azur 联合组建的图形学与三维视觉研究组，由 George Drettakis 领导。该组正是 3D Gaussian Splatting 原始论文（SIGGRAPH 2023）的作者团队，此后持续在辐射场实时渲染、SLAM 与在线重建方向产出工作（如 3DGS、Scaffold-GS、On-The-Fly NVS、Gaussian Opacity Fields 等）。本文是该团队在"把 3DGS 从离线工具变成可用采集工具"这一主线上的最新推进，其代码库也延续了 3DGS 的工程风格：C++/CUDA 光栅化器负责渲染，Python 训练管线负责调度与优化。</p>
+
+<h2>2　研究背景</h2>
+
+<h3>2.1　问题的由来</h3>
+<p>3DGS 用一组带方向的三维高斯椭球显式表达场景，配合可微的泼溅（splat）光栅化实现实时渲染，训练只需图像与对应相机位姿。然而"位姿从哪来"这一前置问题在实践中代价很高：主流做法是用 COLMAP 等 SfM 工具先离线求解相机位姿与稀疏点云。</p>
+<p>作者给出的动机非常具体：<strong>真实采集几乎总是无序的</strong>。用户举着手机绕场景行走，中途转身、回头补拍角落、再从另一侧进入，这种"连续片段 + 乱序回访"的采集方式覆盖更完整，但会让 SfM 的匹配与全局优化变得昂贵；更重要的是，SfM 必须等所有图像都到齐才能开始，用户在拍摄现场无法判断"哪里还没拍到、拍得够不够好"。对于文物数字化、建筑巡检、电商建模这类现场作业，"拍完才知道失败"的代价不可接受。</p>
+
+<h3>2.2　领域现状与两条路线的缺口</h3>
+<table>
+<tr><th style="width:22%">路线</th><th style="width:24%">代表工作</th><th style="width:22%">优点</th><th>缺陷</th></tr>
+<tr><td>离线 SfM + 3DGS</td><td>COLMAP/GLOMAP + 3DGS、Octree-GS、H3DGS</td><td>质量高、全局一致</td><td>必须等全部图像；分钟到小时级；无法现场反馈</td></tr>
+<tr><td>增量 / 类 SLAM 重建</td><td>Photo-SLAM、MonoGS、On-The-Fly NVS、DROID-Splat、LongSplat</td><td>即时反馈、可交互</td><td><strong>假设图像有序</strong>：新帧只与时间相邻帧匹配，乱序或回访即失效</td></tr>
+</table>
+<p class="caption">表 1　两条技术路线的对比</p>
+
+<p>两条路线之间存在一个明显的空缺：<strong>既有即时性、又能处理无序采集、还能保持全局一致性</strong>。作者将挑战归纳为三点：(1) 无序数据中的快速且可靠的图像匹配；(2) 局部重建要在 GPU 上足够快，同时不能让优化规模随关键帧数增长而爆炸；(3) 发现回环后，如何在不重跑全局优化的前提下，把修正量传播到所有位姿<strong>以及</strong>所有高斯。</p>
+
+<h3>2.3　扩展阅读</h3>
+<p>为理解本文位置，我们额外阅读了 3DGS 原文（Kerbl et al., SIGGRAPH 2023）、On-The-Fly NVS（Meuleman et al., 2025，本文评测协议与部分基线来源）、Photo-SLAM 与 MonoGS（即时但要求有序）、H3DGS 与 Octree-GS（大场景层级表示），以及视觉位置识别方向的 MixVPR 与 LightGlue。它们构成了本文"匹配—局部优化—全局一致—可扩展"四段式设计的直接背景。</p>
+
+<h2>3　核心工作</h2>
+
+<h3>3.1　目标</h3>
+<p>给定一串<strong>顺序未知</strong>的 RGB 图像（可来自视频抽帧，也可来自杂乱的手机相册），在线地、边接收边输出一个可实时渲染的 3DGS 场景，并在长时间、大范围采集下保持全局一致（不漂移），同时显存占用可控。</p>
+
+<h3>3.2　贡献点</h3>
+<ol>
+<li><strong>面向无序序列的两级快速匹配与协视图关键帧选取</strong>：复用视觉位置识别模型做全局检索，再用轻量局部匹配与精确匹配逐级筛选，把匹配代价从两两全比降到常数级；并给出基于加权协视图的"高连通关键帧"贪心选取算法。</li>
+<li><strong>GPU 友好的局部重建框架</strong>：自写 BA 的 GPU 核函数（稠密 Schur 补），在 N=20 个关键帧、K=10000 个路标点的规模下比现有优化器快约 5 倍；并提出<strong>分块（tile）深度对齐</strong>的高斯投放策略，替代全图统一的尺度/偏移估计。</li>
+<li><strong>基于簇的回环闭合</strong>：不依赖时间顺序，用协视图上的"跳数距离"判定两个簇是否分离，从而检测回环；用焊接窗口 BA 求解相对变换，再用 Dijkstra 主干路径 + 测地距离插值把 Sim(3) 修正量传播到全图位姿与高斯，<strong>无需再跑一次全局优化</strong>。</li>
+<li><strong>渐进式高斯层级</strong>：按高斯在屏幕上的投影尺寸自适应合并与回取，把细小图元卸载到 CPU 内存，使大场景（如 4050 帧的 CityWalk）在 24 GB 显存下也能持续重建。</li>
+</ol>
+
+<h3>3.3　方法细节</h3>
+<p><strong>(1) 系统主循环。</strong>每来一个新的关键帧 I<sub>q</sub>：两级匹配 → 更新协视图 → 回环检测 → 选取 N=20 个高连通关键帧 → 局部 BA →（若回环）焊接 BA + 主干传播 → 投放高斯 → 更新层级 → 优化高斯（每关键帧固定 30 次迭代）→ 重试此前"搁置"的帧。整个设计可以概括为"每帧做小事，偶尔做一次大事"。</p>
+
+<p><strong>(2) 两级快速匹配。</strong>候选集逐级收缩，是本文工程上最巧妙的部分，如表 2 所示。</p>
+<table>
+<tr><th style="width:8%">层级</th><th style="width:30%">方法</th><th style="width:34%">作用</th><th>代价</th></tr>
+<tr><td>1</td><td>视觉位置识别（4096 维全局描述子）</td><td>余弦相似度排序，取 top-20 候选</td><td>约 1 ms / 1000 对</td></tr>
+<tr><td>2</td><td>XFeat 轻量局部特征</td><td>按内点数从 20 中保留 5</td><td>约 0.5 ms / 对</td></tr>
+<tr><td>3</td><td>LightGlue + RANSAC</td><td>精确验证，内点数 &gt; 500 才接受</td><td>约 4 ms / 对</td></tr>
+</table>
+<p class="caption">表 2　三级匹配的候选收缩与开销</p>
+
+<p>匹配通过的关键帧对写入<strong>加权协视图</strong> G=(M, E, W)，边权取内点数的倒数 w<sub>ij</sub>=1/#inliers(i,j)。内点越多表示几何约束越强、权重越小，因此图上的"最短路"天然对应"最可靠的位姿链"。关键帧选取采用贪心策略：每一步加入与当前集合累计内点连接数最大的节点。由于每个节点平均只有约 10 条边，该过程开销极小。消融实验显示，这一环节（去掉位置识别 / 改成取最近 20 帧）对最终质量影响最大，PSNR 从 26.29 dB 掉到 24.78 dB / 24.56 dB。</p>
+
+<p><strong>(3) GPU 局部重建。</strong>与 SLAM 系统通常只用 5 帧时间窗不同，本文使用 20 个关键帧并固定 10000 个路标点（按被观测次数做多项式采样），且每个路标只允许被协视性选出的固定子集观测，从而避免观测数随关键帧数二次增长——这是把"SLAM 式局部优化"扩展到"辐射场重建"的关键改动。高斯投放上，作者不再对整幅图估计一组深度尺度与偏移，而是把图像切块分别估计再插值上采样，使高斯落点更贴合真实表面（消融：PSNR 26.29 → 25.41 dB）。</p>
+
+<p><strong>(4) 基于簇的回环。</strong>当一次匹配中出现两组"各自内部很密、彼此很疏"的关键帧集合时，用图上的跳数距离 d<sub>G</sub>(C<sub>1</sub>,C<sub>2</sub>) &gt; 5 且有效匹配对 &gt; 2 判定为回环。随后从两个簇各扩 N/2 帧构成焊接窗口做局部 BA，得到锚点帧的刚体变换，再由路标深度变化估计尺度，组成 Sim(3) 修正；最后沿 Dijkstra 求出的"主干路径"按测地距离比例插值分配修正（旋转用 6D 表示插值、尺度用对数插值），并对每个记录了自己"出生关键帧"的高斯套用同一变换。这样回环修正的代价与场景规模近似线性，而不必再做一次全局 BA。</p>
+
+<p><strong>(5) 渐进式层级。</strong>当高斯在当前视角下的屏幕尺寸小于 0.5 px 且这类高斯占比超过 20% 时触发合并：KNN 找 4 个最近高斯按 KL 散度合并，并向层级插入父节点，叶节点参数卸载到 CPU 内存。渲染或导航时若某合并节点的贡献超过 1 px，则异步回取其子节点（双缓冲避免卡顿）。论文报告：不使用层级时，CityWalk 在 24 GB 卡上处理到第 795/4050 帧（不足 20%）即 OOM；使用层级后峰值训练高斯维持在 370 万以下、显存 &lt; 12.8 GB，大场景层级达 8 层。</p>
+
+<h2>4　实验分析</h2>
+
+<h3>4.1　论文报告的主要结果</h3>
+<p>论文在 MipNeRF360、TUM、StaticHikes、Tanks and Temples、Deep Blending 以及自采的大规模场景（SmallCity、Wayve、CityWalk）上评测，指标为 PSNR/SSIM/LPIPS 与位姿误差，结果见表 3。</p>
+
+<table>
+<tr><th style="width:26%">数据集（有序）</th><th style="width:26%">本方法 PSNR / 总时间</th><th style="width:26%">离线参考（GLOMAP + 3DGS 7k 迭代）</th><th>说明</th></tr>
+<tr><td>TUM</td><td>24.77 dB / 1:22</td><td>25.29 dB / 3:33</td><td>比 LongSplat 快约 75 倍</td></tr>
+<tr><td>MipNeRF360</td><td>26.29 dB / 1:17</td><td>27.52 dB / 8:50</td><td>快 6.9 倍，质量差 1.23 dB</td></tr>
+<tr><td>StaticHikes</td><td>22.12 dB / 2:14</td><td>20.23 dB / 1:02:34</td><td>质量反超离线方案</td></tr>
+</table>
+<p class="caption">表 3　有序场景下的质量与耗时对照</p>
+
+<p>无序场景下，MipNeRF360 为 25.60 dB / 1 分 28 秒，相比离线方案约快 6 倍而质量仅略低。大规模场景 CityWalk（4050 帧）上以 29 分 38 秒达到 22.03 dB，显著优于 Octree-GS（17.33 dB / 3 小时 11 分）与 H3DGS（11.78 dB / 22 小时）。位姿精度方面，MipNeRF360 上平移 APE 为 8.5，明显优于 Photo-SLAM、MonoGS、CF-3DGS（161–315 量级）。此外，把输入顺序随机打乱后 PSNR 仅从 26.29 降到 25.73 dB，说明方法对"无序"的鲁棒性是实质性的，而非仅在有序数据上勉强工作。</p>
+
+<h3>4.2　我们的复现</h3>
+<p>我们在两台服务器上完成了复现。第一阶段在配备 NVIDIA RTX 5090（32 GB）与 RTX 4090（24 GB）的共享服务器（Ubuntu 22.04 / CUDA 12.8）上搭建环境、逐级打通各个模块；该机器长期被其他任务占满显存（可用的单卡空闲显存低至 1.6–2.5 GB），无法支撑一次完整重建。因此第二阶段把整套代码、预训练权重与数据迁移至另一台配备 4 张 RTX 4090（每张 24 GB）、CUDA 12.6 的服务器，在其上完成端到端重建、质量评估与漫游视频导出。迁移后的复现目标仍为 MipNeRF360 的 garden 场景（185 张无序图像），输入不提供任何 COLMAP 位姿先验。</p>
+
+<p>实际推进分为四步：</p>
+<table>
+<tr><th style="width:22%">阶段</th><th style="width:14%">状态</th><th>证据与说明</th></tr>
+<tr><td>① 环境搭建</td><td>已完成</td><td>conda 环境 i3dgs（Python 3.12）+ PyTorch 2.7.1；在新机器上以 CUDA 12.6 / <code>sm_89</code> 重新编译 diff_gaussian_rasterization、simple_knn、fused_ssim；cupy-cuda12x 可用；4 张 4090 均被 torch 正确识别</td></tr>
+<tr><td>② 数据与模型链</td><td>已完成</td><td>MipNeRF360 下载并解压（garden 185 张、counter 240 张、bonsai 292 张）；MegaLoc、XFeat、LightGlue、Depth-Anything-3 权重全部本地化并可离线加载</td></tr>
+<tr><td>③ 端到端重建</td><td>已完成</td><td>garden 场景整段视频流一次跑通：185 帧输入、156 个关键帧、36.2 万个高斯，总耗时 62.7 s（含初始化 21.6 s 与优化 265.6 s 的累计工作量，端到端墙钟 62.7 s），峰值显存 19.5 GB（2 倍降采样下）</td></tr>
+<tr><td>④ 质量评估与可视化</td><td>已完成</td><td>按每 8 帧留 1 帧作为测试集，末轮 PSNR 25.95 dB / SSIM 0.786 / LPIPS 0.206；位姿误差 R° 0.155 / t 1.888；已导出 149 帧漫游视频与 24 张测试视角渲染图</td></tr>
+</table>
+<p class="caption">表 4　复现进度</p>
+
+<p>需要说明的是，这四步并非"照 README 敲命令"即可完成，而是实际修复了十余处阻塞性问题（详见 5.2 节），这构成了本次复现的主要工作量。</p>
+
+<h3>4.3　复现结果</h3>
+<p>garden 场景在 2 倍降采样（648×420）下的重建结果见表 5。作为参照，论文在 A100 上以完整分辨率报告 MipNeRF360 有序场景为 26.29 dB；本次在 RTX 4090 上以半分辨率、并把每 8 帧留 1 帧作为测试集（测试帧不参与高斯优化但参与位姿估计）的设定下取得 25.95 dB，差距主要来自分辨率与测试协议，而非方法本身。</p>
+
+<table>
+<tr><th style="width:30%">指标</th><th style="width:26%">本机复现（RTX 4090）</th><th>说明</th></tr>
+<tr><td>PSNR / SSIM / LPIPS</td><td>25.95 dB / 0.786 / 0.206</td><td>每 8 帧留 1 帧作测试集，末轮结果</td></tr>
+<tr><td>位姿精度（相对 COLMAP）</td><td>R° 0.155 / t 1.888</td><td>旋转误差（度）与平移误差均在亚像素量级</td></tr>
+<tr><td>关键帧数 / 高斯数</td><td>156 / 362 044</td><td>185 帧输入中被选为关键帧的数量</td></tr>
+<tr><td>流式处理速度</td><td>2.95 帧/秒（62.7 s / 185 帧）</td><td>含建图、优化与层级压缩的端到端吞吐</td></tr>
+<tr><td>峰值显存</td><td>19.5 GB</td><td>2 倍降采样；4 倍降采样时显著更低</td></tr>
+<tr><td>渲染速度</td><td>约 480 帧/秒</td><td>层级模型加载后的单视角渲染</td></tr>
+</table>
+<p class="caption">表 5　garden 场景复现结果</p>
+
+<p>耗时分解也印证了论文的设计：单帧总耗时中，位置识别（VPR）27.8 ms、局部光束法平差（BAL）40.5 ms，而渲染仅 480 帧/秒意味着交互开销可忽略。真正的大头是一次回环检测及其后的全局修正（约 121.6 ms/帧摊销），这部分在绕圈返回起点时才会触发——正是"全局一致性"必须付出的代价，也是该方法区别于纯里程计式方案的核心。</p>
+
+<table class="plain"><tr>
+<td style="width:33%"><img src="img/DSC07956.JPG" style="width:100%"/></td>
+<td style="width:33%"><img src="img/DSC07980.JPG" style="width:100%"/></td>
+<td style="width:33%"><img src="img/DSC08020.JPG" style="width:100%"/></td>
+</tr></table>
+<p class="caption">图 1　garden 场景测试视角的重建结果（半分辨率，仅由无序图像流在线重建，未使用 COLMAP 位姿初始化）</p>
+
+
+<h2>5　代码分析</h2>
+
+<h3>5.1　获取与组成</h3>
+<p>代码位于 https://github.com/graphdeco-inria/i3dgs ，采用"Python 训练管线 + CUDA 光栅化扩展"的经典 3DGS 工程结构：</p>
+
+<pre>i3dgs/
+├── train.py              # 主入口：数据流、匹配、BA、高斯优化的调度
+├── args.py               # 全部超参数（N、K、学习率、各阈值等）
+├── dataloaders/          # 图像流读取（无序、可打乱）
+├── poses/                # 位姿初始化、匹配、局部 BA
+├── scene/                # 高斯模型、相机模型、VPR 封装
+├── gaussianviewer.py     # 自带交互式查看器（graphdecoviewer，支持 server/client 远程模式）
+├── scripts/              # 数据集下载、轨迹渲染、评测脚本
+└── submodules/
+    ├── diff-gaussian-rasterization   # 可微泼溅光栅化（CUDA，需编译）
+    ├── simple-knn                    # 高斯邻域查询（CUDA，需编译）
+    ├── xfeat                         # 轻量局部特征匹配
+    └── Depth-Anything-V2             # 单目深度先验</pre>
+
+<p>其中 <code>diff-gaussian-rasterization</code> 与 <code>simple-knn</code> 必须用 nvcc 现场编译；<code>depth-anything-3</code> 以 pip 依赖形式引入，用于初始化焦距、位姿与路标点。</p>
+
+<h3>5.2　环境配置与运行中的十二处阻塞及解决</h3>
+<p>课程要求说清楚代码的配置与运行情况，这里如实记录我们遇到的问题，这本身也是复现工作的一部分。</p>
+<ol>
+<li><strong>计算架构不匹配。</strong>原始 3DGS 生态普遍基于 CUDA 11.x 与较老 PyTorch，而 RTX 5090 属 Blackwell 架构（sm_120），必须使用 CUDA 12.8 及以上才能编译出可执行的二进制。所幸 i3dgs 官方即以 PyTorch 2.7.1 + CUDA 12.8 测试，我们直接采用该组合，并把 <code>TORCH_CUDA_ARCH_LIST</code> 固定为 <code>12.0</code>，避免编译出无法在 5090 上执行的代码。</li>
+<li><strong>嵌套子模块缺失。</strong>首次编译光栅化器时报 <code>glm/glm.hpp: No such file or directory</code>。原因是 <code>git clone --recursive</code> 只展开第一层子模块，<code>third_party/glm</code> 需要二次初始化。执行 <code>git submodule update --init --recursive</code> 后解决。</li>
+<li><strong>GitHub 直连不稳定。</strong><code>depth-anything-3</code> 以 <code>git+https://github.com/...</code> 形式声明依赖，服务器到 github.com 的连接间歇性超时，导致 pip 整体失败；同类问题还出现在 LightGlue 权重（<code>raw.githubusercontent</code>）与 <code>torch.hub</code> 拉取 MegaLoc/XFeat 两个仓库时。解决办法是改用 <code>codeload.github.com</code> 下载指定 commit 的 tarball 本地安装，并预先把两个 hub 仓库解压到 <code>~/.cache/torch/hub/</code>、把权重放进 <code>checkpoints/</code>，使 torch.hub 命中缓存后不再联网。</li>
+<li><strong>HuggingFace 不可达。</strong>MegaLoc 与 Depth-Anything-3 的权重需从 HuggingFace 拉取，而该域名在本网络不可达。设置 <code>HF_ENDPOINT=https://hf-mirror.com</code> 走镜像后正常。</li>
+<li><strong>MegaLoc 半精度加载冲突。</strong>MegaLoc 默认以半精度加载，而其聚合模块内部用 float 参数做 einsum，触发 <code>expected scalar type Float but found Half</code>。改为全精度加载并清理旧的 TorchScript 缓存后，位置识别模块可正常前向。</li>
+<li><strong>VPR 前向硬写半精度。</strong>修好上一条后，位置识别仍在卷积处报 <code>Input type (c10::Half) and bias type (float) should be the same</code>。原因在 <code>scene/vpr_model.py</code> 的 <code>forward()</code> 里写死了 <code>img.half()</code>，与改为全精度的骨干网不匹配。改为读取骨干网实际 dtype 再转换（<code>_dt = next(self.model.parameters()).dtype</code>）后彻底解决。</li>
+<li><strong>工作目录被写死在代码里。</strong>训练脚本以相对路径读取 <code>poses/ransac.cu</code>、<code>submodules/Depth-Anything-V2</code>，在仓库根目录执行 <code>python i3dgs/train.py</code> 会报 <code>FileNotFoundError: poses/ransac.cu</code>。必须先 <code>cd i3dgs</code> 再运行，数据与输出路径相应改为 <code>../data</code>、<code>../results</code>。</li>
+<li><strong>Depth-Anything-3 的运行期依赖链缺失。</strong>DA3 以 <code>--no-deps</code> 方式安装，因此其 <code>api</code> 模块的传递依赖全部缺失，实测按顺序依次报 <code>omegaconf</code>、<code>moviepy</code>、<code>einops</code>、<code>matplotlib</code>、<code>pycolmap</code>、<code>evo</code>。其中 <code>moviepy</code> 必须锁 <code>1.0.3</code>：DA3 的 <code>export</code> 模块 <code>import moviepy.editor</code>，而 2.x 已删除该模块。</li>
+<li><strong>权重下载会静默挂死。</strong>DA3 权重默认从 HuggingFace 拉取，在直连被阻断时进程不会报错，而是停在 TCP <code>SYN-SENT</code>：显存已占 16 GB、GPU 利用率 0%、日志无输出，很难与"正在编译"区分。解决办法是预先把 <code>depth-anything/DA3-BASE</code>（517 MB）下载到 <code>checkpoints/DA3-BASE</code>，运行时显式传入 <code>--da3_model_dir</code> 并设 <code>HF_HUB_OFFLINE=1</code>；DA3 的构造函数会优先尝试 <code>local_files_only=True</code>，命中本地后完全不联网。同理，Depth-Anything-V2 的子模块目录在 GitHub 不通时是空的，改用 <code>codeload</code> 下 tarball 解压，并把 <code>depth_anything_v2_vits.pth</code>（95 MB）预放到代码写死的 <code>i3dgs/models/</code> 下。</li>
+<li><strong>换机器后编译目标必须同步改。</strong>迁移到 4×RTX 4090 的机器后，架构由 sm_120 变为 sm_89（Ada），CUDA 由 12.8 变为 12.6。此时若沿用 <code>TORCH_CUDA_ARCH_LIST="12.0"</code>，编译产物在 4090 上无法执行；反之若在 4090 上一次性编译全部架构，编译时间会长到不可接受。正确做法是让它与所装 PyTorch 的 CUDA 版本一致（本机为 <code>2.7.1+cu126</code> 对应 nvcc 12.6），架构只留 <code>8.9</code>，单个扩展的编译时间由十几分钟降到约 3 分钟。</li>
+<li><strong>torch.hub 只同步了仓库代码、漏了权重缓存。</strong>迁移时把 <code>~/.cache/torch/hub/</code> 下的两个仓库目录同步过来后，程序仍会在运行时联网下载权重：<code>torch.hub.load_state_dict_from_url</code> 取 <code>xfeat.pt</code>、lpips 取 <code>vgg16-397923af.pth</code>、MegaLoc 通过 <code>hf_hub_download</code> 取权重，而这三个文件分别在 <code>hub/checkpoints/</code> 与 <code>~/.cache/huggingface/hub/models--gberton--MegaLoc/</code> 下，不在仓库目录里。在断网环境下表现为 SSL <code>UNEXPECTED_EOF</code> 与 <code>LocalEntryNotFoundError</code>。把这两个缓存目录一并同步后，整个流程真正实现零联网启动。</li>
+<li><strong>禁用构建隔离后缺少构建后端。</strong>为让 CUDA 扩展复用环境内的 torch，安装时用了 <code>--no-build-isolation</code>；但该选项同时也意味着 pip 不再自动准备构建后端，因此安装以 hatchling 为后端的 <code>depth-anything-3</code> 与 <code>graphdecoviewer</code> 时报 <code>BackendUnavailable: Cannot import 'hatchling.build'</code>。先 <code>pip install hatchling</code> 再装即可。</li>
+</ol>
+<p>以上十二处问题中，真正需要改动论文代码的只有 3 处，集中在 2 个文件（<code>scene/vpr_model.py</code> 与 <code>poses/lighterglue_matcher.py</code>），均以 <code>[LOCAL PATCH]</code> 注释标注，可直接对照移植；其余均为环境、依赖与资源层面的处理，不涉及算法实现。</p>
+
+<p>最终可用的一键配置命令（以本次最终出结果的 4090 + CUDA 12.6 环境为准；5090 上把 cu126/8.9 换成 cu128/12.0 即可）：</p>
+<pre>conda create -y -p /datafast/zhengwei-i3dgs/envs/i3dgs python=3.12
+export CUDA_HOME=/usr/local/cuda          # 12.6
+export TORCH_CUDA_ARCH_LIST="8.9"         # sm_89（RTX 4090）
+export HF_ENDPOINT=https://hf-mirror.com
+export HF_HUB_OFFLINE=1
+pip install torch==2.7.1 torchvision==0.22.1
+pip install hatchling                     # --no-build-isolation 下需自备构建后端
+cd i3dgs && pip install -r requirements.txt --no-build-isolation
+pip install cupy-cuda12x
+pip install omegaconf einops moviepy==1.0.3 matplotlib pycolmap evo trimesh imageio e3nn plyfile glfw websockets imgui-bundle</pre>
+
+<p>需要联网的三处依赖（<code>depth-anything-3</code>、<code>fused-ssim</code>、<code>graphdecoviewer</code>）在 GitHub 不通时用 <code>codeload.github.com</code> 下 tarball 后本地安装，命令形如：</p>
+<pre>curl -sL -o da3.tgz https://codeload.github.com/ByteDance-Seed/Depth-Anything-3/tar.gz/40674546e40144452ec93035ac77d762f4b5d16f
+tar xzf da3.tgz && pip install --no-deps --no-build-isolation ./Depth-Anything-3-40674546*/</pre>
+
+<h3>5.3　运行方式</h3>
+<p>官方提供三种运行方式，均已写入我们提交的演示脚本。以下命令以迁移后的机器（172.88.88.14）为例，项目根目录为 <code>/home/hjadmin/zhengwei/i3dgs-demo</code>：</p>
+<ul>
+<li><strong>训练/重建</strong>：<code>cd i3dgs &amp;&amp; CUDA_VISIBLE_DEVICES=2 python train.py -s ../data/MipNeRF360/garden -m ../results/garden_ds2 --downsampling 2 --da3_model_dir ../weights/DA3-BASE</code>。首次运行要做 JIT 编译，启动较慢。</li>
+<li><strong>带质量评估的重建</strong>：在上述命令后追加 <code>--test_hold 8 --test_frequency 20 --eval_poses</code>，即每 8 帧留 1 帧作测试集、每 20 个关键帧评估一次，并把位姿与 COLMAP 真值对比；结果写入 <code>metadata.json</code> 与 <code>test_images/</code>。</li>
+<li><strong>渲染漫游视频</strong>：<code>python scripts/render_path.py -m ../results/garden_ds2 --render_path ../results/garden_ds2/sparse/0 --out_dir ../results/garden_ds2/video</code>，沿优化出的相机轨迹导出逐帧图像与视频。</li>
+<li><strong>交互式查看</strong>：<code>python gaussianviewer.py server ../results/garden_ds2</code> 在服务器渲染，本地运行 <code>gaussianviewer.py client --ip 172.88.88.14</code> 连接即可漫游——客户端不需要 GPU，适合课程现场演示。</li>
+</ul>
+
+<h2>6　读后感</h2>
+<p><strong>关于方法设计的取舍。</strong>这篇论文最打动我的不是某个模块的技巧性，而是它对"代价"的清醒分配：作者把系统拆成"每帧都要做的小事"（匹配、局部 BA、30 次高斯迭代）与"偶尔做一次的大事"（回环修正、层级合并），并保证后者不需要重跑全局优化。回环一节尤其精彩——用 Dijkstra 在协视图上找"最可信的位姿链"，再按测地距离把 Sim(3) 修正量插值传播出去，本质上是用<strong>图上的距离</strong>替代<strong>全局优化的解</strong>，在工程上非常有借鉴价值。</p>
+<p><strong>优势。</strong>(1) 解决的是实际采集流程中的真痛点，而不是在已有基准上刷指标；(2) 无序打乱后质量仅掉 0.5 dB，鲁棒性扎实；(3) 速度优势是数量级的（分钟 vs 小时），质量只比离线方案低 1–2 dB，这一性价比对现场应用具有决定性；(4) 代码开源、自带查看器，工程完成度高。</p>
+<p><strong>劣势与局限。</strong>(1) 纯旋转或低视差序列无法三角化，这是 SfM/SLAM 系方法的共病，作者亦有说明；(2) 基于图传播的修正虽快，但精度不及真正的全局 BA，几何精度与 GLOMAP 仍有差距；(3) 系统依赖位置识别、局部匹配、单目深度等一串上游模型，任一环节在弱纹理、强反光、夜间等场景退化都会传导到最终结果；(4) 层级合并的阈值（0.5 px、1 px、20%）属经验值，跨数据集时可能需要重调。</p>
+<p><strong>对领域前景的看法。</strong>这类工作的价值在于把 3DGS 从"事后重建"推向"采集时的助手"。可以预见，下一步的竞争点会从"重建质量"转向"采集体验"——例如实时提示"这里还没覆盖""该视角重投影误差偏大"，甚至主动规划拍摄路径。这与主动重建、机器人在线建图等方向是收敛的。</p>
+<p><strong>关于复现本身的体会。</strong>本次复现最大的收获不是跑通脚本，而是理解了 3DGS 生态的"隐性依赖"：CUDA 架构、子模块层级、模型权重来源，任何一环不通都会让"照 README 敲命令"直接失败。也正因为如此，课程要求中"代码分析和运行情况"这一节非常必要——它检验的是能否把一个研究工作真正落地，而不只是读懂论文。</p>
+
+<h2 class="ref">参考文献</h2>
+<div class="ref">
+<p>[1] Meuleman A, Franke L, Zhestiankin B, Montemagni C, Drettakis G. Immediate 3D Gaussian Splat Reconstruction of Unordered Input with Global Consistency[C]. ACM SIGGRAPH 2026 Conference Papers, 2026. DOI: 10.1145/3799902.3811167.</p>
+<p>[2] Kerbl B, Kopanas G, Leimkühler T, Drettakis G. 3D Gaussian Splatting for Real-Time Radiance Field Rendering[J]. ACM Transactions on Graphics, 2023, 42(4): 139.</p>
+<p>[3] Meuleman A, et al. On-The-Fly Novel View Synthesis[C]. 2025.</p>
+<p>[4] Matsuki H, Murai R, Kelly J, Davison A J. Gaussian Splatting SLAM[C]. CVPR, 2024.</p>
+<p>[5] Huang H, Li L, Cheng H, Yeung S K. Photo-SLAM: Real-time Photorealistic SLAM with Efficient 3D Gaussian Splatting[J]. 2024.</p>
+<p>[6] Ali M, et al. MixVPR: Feature Mixing for Visual Place Recognition[C]. WACV, 2023.</p>
+<p>[7] Potje G, Cadar F, Avallone G, et al. XFeat: Accelerated Features for Lightweight Image Matching[C]. CVPR, 2024.</p>
+<p>[8] Lindenberger P, Sarlin P E, Pollefeys M. LightGlue: Local Feature Matching at Light Speed[C]. ICCV, 2023.</p>
+<p>[9] Kerbl B, Meuleman A, Kopanas G, Drettakis G. A Hierarchical 3D Gaussian Representation for Real-Time Rendering of Very Large Datasets[J]. ACM Transactions on Graphics, 2024.</p>
+<p>[10] Ren K, et al. Octree-GS: Towards Consistent Real-time Rendering with LOD-Structured 3D Gaussians[J]. 2024.</p>
+</div>
+
+</body>
+</html>
