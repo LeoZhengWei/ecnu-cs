@@ -1,0 +1,28 @@
+<Slide style={{ width: '1280px', height: '720px', backgroundColor: '#FFFFFF', padding: '0px', flexDirection: 'column' }}>
+    <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
+    <Box style={{ padding: '34px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>摘要</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>02 / 12</Text>
+    </Box>
+    <Box style={{ padding: '20px 40px 0px 40px', flexDirection: 'column', gap: 13 }}>
+        <Box style={{ backgroundColor: '#F0F5FC', borderLeft: '5px solid #1E4FA8', padding: '14px 20px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1E4FA8' }}>问题</Text>
+            <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.5, marginTop: 6 }}>3DGS 重建质量高、可实时渲染，但训练前必须由 SfM（COLMAP）离线解算相机位姿；SfM 要等<b>全部图像到齐</b>，且对<b>乱序采集</b>敏感。</Text>
+        </Box>
+        <Box style={{ backgroundColor: '#F7F9FC', borderLeft: '5px solid #4A5568', padding: '14px 20px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#4A5568' }}>现状缺口</Text>
+            <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.5, marginTop: 6 }}>离线 SfM + 3DGS 质量好、但慢且无现场反馈；SLAM 类增量重建能实时，却<b>假设图像有序</b>——两者之间没人补齐。</Text>
+        </Box>
+        <Box style={{ backgroundColor: '#F0F5FC', borderLeft: '5px solid #1E4FA8', padding: '14px 20px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1E4FA8' }}>本文做法</Text>
+            <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.5, marginTop: 6 }}>首个面向无序输入、具备全局一致性的即时反馈 3DGS 重建：三级快速匹配 + GPU 局部 BA + 簇级回环图传播 + 渐进式高斯层级。</Text>
+        </Box>
+        <Box style={{ backgroundColor: '#F7F9FC', borderLeft: '5px solid #3D7BD9', padding: '14px 20px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#3D7BD9' }}>结果与复现</Text>
+            <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.5, marginTop: 6 }}>MipNeRF360 上 <b>1 分 17 秒</b>达到 <b>26.29 dB</b>（离线参考 8 分 50 秒 / 27.52 dB）；输入打乱仅降 <b>0.5 dB</b>。我们完成了端到端复现：<b>25.95 dB / 62.7 秒 / 185 帧</b>。</Text>
+        </Box>
+    </Box>
+    <Box style={{ padding: '16px 40px 0px 40px' }}>
+        <Text style={{ fontSize: 16, color: '#4A5568' }}>关键词：三维高斯泼溅 · 无序采集 · 即时重建 · 协视图 · 回环闭合 · 渐进式层级</Text>
+    </Box>
+</Slide>

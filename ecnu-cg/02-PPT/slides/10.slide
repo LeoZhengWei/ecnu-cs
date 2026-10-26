@@ -1,0 +1,53 @@
+<Slide style={{ width: '1280px', height: '720px', backgroundColor: '#FFFFFF', padding: '0px', flexDirection: 'column' }}>
+    <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
+    <Box style={{ padding: '30px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>论文实验：快一个数量级，只差 1–2 dB</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>10 / 12</Text>
+    </Box>
+    <Box style={{ padding: '18px 40px 0px 40px', flexDirection: 'column' }}>
+        <Box style={{ flexDirection: 'row', backgroundColor: '#1E4FA8', padding: '11px 14px' }}>
+            <Text style={{ flex: 1.5, fontSize: 19, fontWeight: 'bold', color: '#FFFFFF' }}>数据集（有序）</Text>
+            <Text style={{ flex: 1.4, fontSize: 19, fontWeight: 'bold', color: '#FFFFFF' }}>本方法 PSNR / 时间</Text>
+            <Text style={{ flex: 1.7, fontSize: 19, fontWeight: 'bold', color: '#FFFFFF' }}>离线参考 GLOMAP+3DGS(7k)</Text>
+            <Text style={{ flex: 1.4, fontSize: 19, fontWeight: 'bold', color: '#FFFFFF' }}>结论</Text>
+        </Box>
+        <Box style={{ flexDirection: 'row', padding: '11px 14px', borderBottom: '1px solid #D6DCE5' }}>
+            <Text style={{ flex: 1.5, fontSize: 19, color: '#1A2230' }}>TUM</Text>
+            <Text style={{ flex: 1.4, fontSize: 19, fontWeight: 'bold', color: '#1E4FA8' }}>24.77 / 1:22</Text>
+            <Text style={{ flex: 1.7, fontSize: 19, color: '#1A2230' }}>25.29 / 3:33</Text>
+            <Text style={{ flex: 1.4, fontSize: 19, color: '#1A2230' }}>比 LongSplat 快约 75×</Text>
+        </Box>
+        <Box style={{ flexDirection: 'row', padding: '11px 14px', backgroundColor: '#F7F9FC', borderBottom: '1px solid #D6DCE5' }}>
+            <Text style={{ flex: 1.5, fontSize: 19, color: '#1A2230' }}>MipNeRF360</Text>
+            <Text style={{ flex: 1.4, fontSize: 19, fontWeight: 'bold', color: '#1E4FA8' }}>26.29 / 1:17</Text>
+            <Text style={{ flex: 1.7, fontSize: 19, color: '#1A2230' }}>27.52 / 8:50</Text>
+            <Text style={{ flex: 1.4, fontSize: 19, color: '#1A2230' }}>快 6.9×，差 1.23 dB</Text>
+        </Box>
+        <Box style={{ flexDirection: 'row', padding: '11px 14px', borderBottom: '1px solid #D6DCE5' }}>
+            <Text style={{ flex: 1.5, fontSize: 19, color: '#1A2230' }}>StaticHikes</Text>
+            <Text style={{ flex: 1.4, fontSize: 19, fontWeight: 'bold', color: '#1E4FA8' }}>22.12 / 2:14</Text>
+            <Text style={{ flex: 1.7, fontSize: 19, color: '#1A2230' }}>20.23 / 1:02:34</Text>
+            <Text style={{ flex: 1.4, fontSize: 19, color: '#1A2230' }}>质量反超离线</Text>
+        </Box>
+        <Box style={{ flexDirection: 'row', padding: '11px 14px', backgroundColor: '#F7F9FC', borderBottom: '1px solid #D6DCE5' }}>
+            <Text style={{ flex: 1.5, fontSize: 19, color: '#1A2230' }}>CityWalk（4050 帧）</Text>
+            <Text style={{ flex: 1.4, fontSize: 19, fontWeight: 'bold', color: '#1E4FA8' }}>22.03 / 29:38</Text>
+            <Text style={{ flex: 1.7, fontSize: 19, color: '#1A2230' }}>Octree-GS 17.33 / 3:11:40</Text>
+            <Text style={{ flex: 1.4, fontSize: 19, color: '#1A2230' }}>大场景最优</Text>
+        </Box>
+    </Box>
+    <Box style={{ padding: '16px 40px 0px 40px', flexDirection: 'row', gap: 16 }}>
+        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', borderRadius: 6, padding: '13px 16px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 36, fontWeight: 'bold', color: '#1E4FA8' }}>0.5 dB</Text>
+            <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.45, marginTop: 4 }}>输入顺序打乱后 PSNR 26.29 → 25.73，"无序"不是门槛</Text>
+        </Box>
+        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', borderRadius: 6, padding: '13px 16px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 36, fontWeight: 'bold', color: '#1E4FA8' }}>8.5</Text>
+            <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.45, marginTop: 4 }}>MipNeRF360 平移 APE（对比 Photo-SLAM 161+）</Text>
+        </Box>
+        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', borderRadius: 6, padding: '13px 16px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 36, fontWeight: 'bold', color: '#1E4FA8' }}>324 ms</Text>
+            <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.45, marginTop: 4 }}>MipNeRF360 平均每帧延迟，具备"即时反馈"资格</Text>
+        </Box>
+    </Box>
+</Slide>

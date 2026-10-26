@@ -1,0 +1,18 @@
+# 入库白名单思路：文档 / 源码片段 / 小型数据可以进，重资产一律不进
+*.tar.gz
+*.whl
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+*.bin
+__pycache__/
+*.py[cod]
+.pytest_cache/
+build/
+dist/
+*.egg-info/
+checkpoints/
+results/
+data/
