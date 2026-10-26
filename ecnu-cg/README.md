@@ -3,7 +3,7 @@
 > 课程：图形和视觉前沿技术（ECNU）　|　类型：SIGGRAPH 顶会论文复现 + 演示
 >
 > 论文：**Immediate 3D Gaussian Splat Reconstruction of Unordered Input with Global Consistency**
-> 作者：Meuleman 等（Inria GraphDeco / Université Côte d'Azur）
+> 作者：**Andreas Meuleman**、**Linus Franke**（共同一作）、Boris Zhestiankin、Camille Montemagni、**George Drettakis**（Inria GraphDeco / Université Côte d'Azur 等）
 > 会议：SIGGRAPH 2026（ACM TOG）
 > 官方代码：<https://github.com/graphdeco-inria/i3dgs>
 > 论文原文：<https://arxiv.org/abs/2607.14481>
@@ -11,6 +11,9 @@
 本仓库只收录**复现产出的关键内容**（报告、PPT、讲稿、演示脚本、实验数据、演示视频）。
 可运行的代码工作区（含 CUDA 扩展构建产物、数据集、模型权重，约 8 GB）不入库，
 放置在 `172.88.88.14:/home/hjadmin/zhengwei/i3dgs-demo`，详见 `05-DEMO/`。
+
+> **署名声明**：本仓库是课程复现作业。上面的论文及其 PDF（`03-论文/`）是 **Andreas Meuleman 等作者的
+> 原创成果**，著作权归原作者与 ACM；本仓库作者只负责阅读、复现与中文翻译，**不主张论文的任何署名权**。
 
 ---
 
@@ -34,7 +37,7 @@ ecnu-cg/
 | | `report.html`、`tools/embed_img.py` | 报告排版源；docx 中图片以 base64 内联，故有此脚本 |
 | `02-PPT/` | `PPT-即时三维高斯泼溅重建.pptx` | 12 页（要求 ≤15），含摘要页与贡献点页 |
 | | `slides/01..12.slide`、`DESIGN.md`、`STORY.md` | slidep DSL 源、视觉规范、叙事结构 |
-| `03-论文/` | `i3dgs_SIGGRAPH2026_原文.pdf` | arXiv v1 官方 PDF（14.8 MB），**版权归 ACM 与作者**，仅供课程学习 |
+| `03-论文/` | `Meuleman2026_i3dgs_SIGGRAPH2026_原文.pdf` | **原作者版** arXiv v1 PDF（14.8 MB），著作权归 Andreas Meuleman 等作者与 ACM，仅供课程学习，本仓库不主张署名权 |
 | | `i3dgs_论文中文全译.md` | 约 2.77 万字，摘要→结论 + 附录 A/B，表格数字全部保留 |
 | | `README.md` | 作者、DOI、arXiv 编号、BibTeX 与使用范围声明 |
 | `04-讲稿/` | `演讲讲稿与答辩手册.md` | 12 页逐页口播词（总 12:30）+ 20 个答辩问题 |
