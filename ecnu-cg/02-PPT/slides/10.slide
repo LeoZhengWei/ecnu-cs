@@ -2,7 +2,7 @@
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
     <Box style={{ padding: '30px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>关键方式④：渐进式高斯层级控显存</Text>
-        <Text style={{ fontSize: 15, color: '#8B97A8' }}>10 / 15</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>10 / 14</Text>
     </Box>
     <Box style={{ padding: '20px 40px 0px 40px', flexDirection: 'row', gap: 26 }}>
         <Box style={{ width: '380px', backgroundColor: '#F0F5FC', borderRadius: 6, padding: '22px 20px', flexDirection: 'column' }}>

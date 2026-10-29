@@ -2,7 +2,7 @@
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
     <Box style={{ padding: '30px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>过去遇到的问题：等、乱、漂、爆</Text>
-        <Text style={{ fontSize: 15, color: '#8B97A8' }}>05 / 15</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>05 / 14</Text>
     </Box>
     <Box style={{ padding: '16px 40px 0px 40px' }}>
         <Text style={{ fontSize: 21, color: '#4A5568', lineHeight: 1.5 }}>如果拿手机去拍一个房间，这四件事几乎一定会遇到——它们不是算法"不够准"，而是<b>流程本身没有为现场反馈设计</b>。</Text>
