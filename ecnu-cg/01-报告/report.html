@@ -30,7 +30,7 @@
 
 <h1>面向无序输入与全局一致性的即时三维高斯泼溅重建</h1>
 <p class="subtitle">——SIGGRAPH 2026 论文 i3dgs 的复现与分析</p>
-<p class="meta">组员：×××　×××　　课程：图形和视觉前沿技术　　2026 年 11 月</p>
+<p class="meta">组员：郑炜　周子懿　　指导教师：DeepSeek　　课程：图形和视觉前沿技术　　2026 年 11 月</p>
 
 <p class="noindent"><span class="abs-title">摘要：</span>三维高斯泼溅（3D Gaussian Splatting, 3DGS）已成为场景重建与实时新视角合成的代表性技术，但其训练流程高度依赖运动恢复结构（Structure from Motion, SfM）离线提供相机位姿，而 SfM 必须等待全部图像采集完毕才能开始计算，且对"无序采集"（拍摄者来回走动、反复回头补拍）较为敏感。本文分析并复现了 SIGGRAPH 2026 论文《Immediate 3D Gaussian Splat Reconstruction of Unordered Input with Global Consistency》。该工作首次为无序图像输入提供了具备全局一致性的"即时反馈"辐射场重建方案：利用视觉位置识别模型与协视图（covisibility graph）实现两级快速匹配，通过 GPU 定制的局部光束法平差（Bundle Adjustment, BA）与精细化高斯投放实现快速局部重建，提出基于簇（cluster）的回环检测与"图传播"式的免优化漂移修正，并用渐进式高斯层级支撑大场景显存受限下的持续重建。我们在两台服务器上从零搭建了复现环境（先在 NVIDIA RTX 5090 上以 PyTorch 2.7.1 + CUDA 12.8 + sm_120 打通模块链路，后迁移至 4×RTX 4090 + CUDA 12.6 完成端到端重建），累计修复十余处阻塞性工程问题，在 MipNeRF360 的 garden 场景上完成了不依赖 COLMAP 位姿先验的无序重建：PSNR 25.95 dB / SSIM 0.786 / LPIPS 0.206，位姿误差 R° 0.155 / t 1.888，185 帧输入的流式处理墙钟耗时 62.7 s，并导出了漫游视频与测试视角渲染图，最后对其工程实现、性能权衡与局限进行了分析。</p>
 

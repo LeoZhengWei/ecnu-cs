@@ -1,29 +1,32 @@
 <Slide style={{ width: '1280px', height: '720px', backgroundColor: '#FFFFFF', padding: '0px', flexDirection: 'column' }}>
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
     <Box style={{ padding: '30px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>研究背景：两条路线之间空着一块</Text>
-        <Text style={{ fontSize: 15, color: '#8B97A8' }}>04 / 12</Text>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>研究背景：两条路线，各自卡在一个前提上</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>04 / 15</Text>
     </Box>
-    <Box style={{ padding: '18px 40px 0px 40px', flexDirection: 'row', gap: 24 }}>
+    <Box style={{ padding: '16px 40px 0px 40px' }}>
+        <Text style={{ fontSize: 21, color: '#4A5568', lineHeight: 1.5 }}>拿到"一组照片 → 一个可漫游的 3D 场景"，过去只有两条路可走。它们的分歧不在算法细节，而在<b>什么时候允许开始计算</b>。</Text>
+    </Box>
+    <Box style={{ padding: '16px 40px 0px 40px', flexDirection: 'row', gap: 24 }}>
         <Box style={{ flex: 1, backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '16px 20px', flexDirection: 'column' }}>
-            <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#1A2230' }}>离线 SfM + 3DGS</Text>
+            <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#1A2230' }}>路线一　离线 SfM + 3DGS</Text>
             <Text style={{ fontSize: 19, color: '#4A5568', marginTop: 6 }}>COLMAP / GLOMAP + 3DGS、H3DGS、Octree-GS</Text>
-            <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.55, marginTop: 12 }}>质量高、全局一致。但必须先拿到全部图像才能开始解算，耗时从分钟到小时；用户在拍摄现场无从判断"拍得够不够"。</Text>
-            <Text style={{ fontSize: 21, color: '#1E4FA8', fontWeight: 'bold', marginTop: 12 }}>优点：质量与一致性最强</Text>
-            <Text style={{ fontSize: 21, color: '#D9534F', fontWeight: 'bold', marginTop: 4 }}>代价：无法即时反馈</Text>
+            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.55, marginTop: 12 }}>先把所有照片两两匹配、三角化、全局 BA 解出位姿，再训练高斯。质量最高、全局一致，但<b>必须等图全部到齐</b>，耗时从分钟到小时。</Text>
+            <Text style={{ fontSize: 21, color: '#1E4FA8', fontWeight: 'bold', marginTop: 12 }}>前提：先有完整的照片集合</Text>
+            <Text style={{ fontSize: 21, color: '#D9534F', fontWeight: 'bold', marginTop: 4 }}>代价：现场给不出任何反馈</Text>
         </Box>
         <Box style={{ flex: 1, backgroundColor: '#F0F5FC', border: '1px solid #3D7BD9', borderRadius: 6, padding: '16px 20px', flexDirection: 'column' }}>
-            <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#1A2230' }}>增量 / 类 SLAM 重建</Text>
+            <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#1A2230' }}>路线二　增量 / 类 SLAM</Text>
             <Text style={{ fontSize: 19, color: '#4A5568', marginTop: 6 }}>Photo-SLAM、MonoGS、DROID-Splat、LongSplat</Text>
-            <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.55, marginTop: 12 }}>边收边建、可交互。但新帧只与时间上相邻的帧匹配，一旦拍摄者转身回访、或把两段序列拼在一起，匹配就断了。</Text>
-            <Text style={{ fontSize: 21, color: '#1E4FA8', fontWeight: 'bold', marginTop: 12 }}>优点：即时、内存可控</Text>
-            <Text style={{ fontSize: 21, color: '#D9534F', fontWeight: 'bold', marginTop: 4 }}>前提：输入必须有序</Text>
+            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.55, marginTop: 12 }}>边收边建、可交互。但新帧只与<b>时间上相邻</b>的少数帧匹配（通常 5 帧窗口），一旦转身回访、或把两段序列拼起来，匹配就断了。</Text>
+            <Text style={{ fontSize: 21, color: '#1E4FA8', fontWeight: 'bold', marginTop: 12 }}>前提：输入必须是连续视频</Text>
+            <Text style={{ fontSize: 21, color: '#D9534F', fontWeight: 'bold', marginTop: 4 }}>代价：离开时间邻域就失效</Text>
         </Box>
     </Box>
-    <Box style={{ margin: '22px 40px 0px 40px', backgroundColor: '#1E4FA8', borderRadius: 6, padding: '18px 24px' }}>
-        <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.5 }}>空缺：既有即时性、又能吃无序输入、还保持全局一致——本文要填的正是这一块。</Text>
+    <Box style={{ margin: '20px 40px 0px 40px', backgroundColor: '#1E4FA8', borderRadius: 6, padding: '16px 24px' }}>
+        <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.5 }}>两条路的前提是同一个东西：<b>帧序</b>。一条等它全部确定，一条假设它天然有序——而真实拍摄两样都不满足。</Text>
     </Box>
-    <Box style={{ padding: '14px 40px 0px 40px' }}>
-        <Text style={{ fontSize: 17, color: '#8B97A8' }}>真实采集几乎总是无序的：绕行、转身、回头补拍角落，覆盖更好，但让 SfM 的匹配与全局优化代价陡增。</Text>
+    <Box style={{ padding: '12px 40px 0px 40px' }}>
+        <Text style={{ fontSize: 17, color: '#8B97A8' }}>真实采集几乎总是无序的：绕行、转身、回头补拍角落，覆盖更好，但让匹配与全局优化的代价陡增。</Text>
     </Box>
 </Slide>

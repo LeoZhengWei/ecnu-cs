@@ -1,0 +1,60 @@
+<Slide style={{ width: '1280px', height: '720px', backgroundColor: '#FFFFFF', padding: '0px', flexDirection: 'column' }}>
+    <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
+    <Box style={{ padding: '30px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>这条线怎么长出来的：三代工作</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>14 / 15</Text>
+    </Box>
+    <Box style={{ padding: '16px 40px 0px 40px' }}>
+        <Text style={{ fontSize: 21, color: '#4A5568', lineHeight: 1.5 }}>本文不是孤立的一篇。同一团队三年做的是同一件事：<b>把辐射场重建变"局部、渐进、免位姿"</b>，本文补上最后一块"无序 + 全局一致"。</Text>
+    </Box>
+
+    <Box style={{ padding: '20px 40px 0px 40px', flexDirection: 'row', gap: 24 }}>
+        <Box style={{ width: '750px', flexDirection: 'column' }}>
+            <Box style={{ flexDirection: 'row', gap: 16 }}>
+                <Box style={{ width: '108px', backgroundColor: '#F0F5FC', borderRadius: 4, padding: '8px 8px', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1E4FA8' }}>2023</Text>
+                    <Text style={{ fontSize: 15, color: '#4A5568' }}>CVPR</Text>
+                </Box>
+                <Box style={{ flex: 1, flexDirection: 'column' }}>
+                    <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1A2230' }}>渐进式局部辐射场</Text>
+                    <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.5, marginTop: 6 }}>Progressively Optimized Local Radiance Fields：把场景切块、渐进而非一次性优化，是本文"渐进层级"的思想来源。</Text>
+                </Box>
+            </Box>
+            <Box style={{ height: '1px', backgroundColor: '#D6DCE5', marginTop: 16, marginBottom: 16 }} />
+            <Box style={{ flexDirection: 'row', gap: 16 }}>
+                <Box style={{ width: '108px', backgroundColor: '#F0F5FC', borderRadius: 4, padding: '8px 8px', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1E4FA8' }}>2025</Text>
+                    <Text style={{ fontSize: 15, color: '#4A5568' }}>ACM TOG</Text>
+                </Box>
+                <Box style={{ flex: 1, flexDirection: 'column' }}>
+                    <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1A2230' }}>免位姿的大场景即时重建（直接前作）</Text>
+                    <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.5, marginTop: 6 }}>On-the-fly Reconstruction for Large-Scale NVS from Unposed Images：已做到"不用 COLMAP + 大场景 + 即时"，但<b>要求图像有序、且不做回环</b>。</Text>
+                </Box>
+            </Box>
+            <Box style={{ height: '1px', backgroundColor: '#D6DCE5', marginTop: 16, marginBottom: 16 }} />
+            <Box style={{ flexDirection: 'row', gap: 16 }}>
+                <Box style={{ width: '108px', backgroundColor: '#1E4FA8', borderRadius: 4, padding: '8px 8px', alignItems: 'center' }}>
+                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>2026</Text>
+                    <Text style={{ fontSize: 15, color: '#D6E4F7' }}>SIGGRAPH</Text>
+                </Box>
+                <Box style={{ flex: 1, flexDirection: 'column' }}>
+                    <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1A2230' }}>本文：无序匹配 + 簇级回环</Text>
+                    <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.5, marginTop: 6 }}>在前作之上只补两件事——在全部历史里检索重叠帧、用图传播做不重算的回环。增量不大，但恰好补在前作的假设上。</Text>
+                </Box>
+            </Box>
+        </Box>
+
+        <Box style={{ flex: 1, backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '18px 20px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 23, fontWeight: 'bold', color: '#1A2230' }}>之后呢</Text>
+            <Text style={{ fontSize: 17, color: '#4A5568', lineHeight: 1.45, marginTop: 6 }}>截至 2026-10-29 检索，未见正式发表的后续论文（本文 7 月才上线）。以下为按其脉络的判断：</Text>
+            <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.5, marginTop: 12 }}><b>① 走向采集端</b>　从"重建工具"变成"拍摄仪表盘"。</Text>
+            <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.5, marginTop: 10 }}><b>② 精度回填</b>　在线粗轨迹 + 收尾一次全局 BA。</Text>
+            <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.5, marginTop: 10 }}><b>③ 动态与大尺度</b>　4050 帧已是当前上限，动态物体仍是空白。</Text>
+            <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.5, marginTop: 10 }}><b>④ 与离线并存</b>　更可能被采集 App 吸收，而非取代离线流程。</Text>
+        </Box>
+    </Box>
+
+    <Box style={{ padding: '16px 40px 0px 40px' }}>
+        <Text style={{ fontSize: 16, color: '#8B97A8', lineHeight: 1.45 }}>前两项工作引自本文参考文献（Meuleman et al. 2023 / 2025）；"之后呢"四条为汇报人判断，不代表作者观点，答辩时请按"推测"表述。</Text>
+    </Box>
+</Slide>

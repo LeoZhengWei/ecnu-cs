@@ -1,27 +1,46 @@
 <Slide style={{ width: '1280px', height: '720px', backgroundColor: '#FFFFFF', padding: '0px', flexDirection: 'column' }}>
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
     <Box style={{ padding: '30px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>核心二、三：局部重建与回环修正</Text>
-        <Text style={{ fontSize: 15, color: '#8B97A8' }}>08 / 12</Text>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>关键方式①：两级匹配 + 加权协视图</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>08 / 15</Text>
     </Box>
-    <Box style={{ padding: '16px 40px 0px 40px', flexDirection: 'row', gap: 20 }}>
-        <Box style={{ flex: 1, backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '16px 18px', flexDirection: 'column' }}>
-            <Text style={{ fontSize: 25, fontWeight: 'bold', color: '#1A2230' }}>GPU 局部重建</Text>
-            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.55, marginTop: 10 }}>关键帧 <b>N=20</b>（SLAM 通常只用 5 帧时间窗），路标点固定 <b>1 万</b>，按被观测次数采样。</Text>
-            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.55, marginTop: 8 }}>每个路标只允许被协视性选出的固定子集观测，避免观测数随帧数二次增长。</Text>
-            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.55, marginTop: 8 }}>自写核函数算残差与雅可比，稠密 Schur 补求解。</Text>
-            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1E4FA8', marginTop: 12 }}>比 g2o / CUDA-BA 快约 5 倍</Text>
-            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.55, marginTop: 10 }}>高斯投放改为<b>分块估计深度尺度与偏移</b>再插值上采样（消融 26.29 → 25.41 dB），落点更贴表面。</Text>
+    <Box style={{ padding: '18px 40px 0px 40px', flexDirection: 'column', gap: 0 }}>
+        <Box style={{ flexDirection: 'row', backgroundColor: '#1E4FA8', padding: '12px 16px' }}>
+            <Text style={{ width: '90px', fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>层级</Text>
+            <Text style={{ flex: 2, fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>方法</Text>
+            <Text style={{ flex: 3, fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>作用</Text>
+            <Text style={{ flex: 1.6, fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>代价</Text>
         </Box>
-        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', border: '1px solid #3D7BD9', borderRadius: 6, padding: '16px 18px', flexDirection: 'column' }}>
-            <Text style={{ fontSize: 25, fontWeight: 'bold', color: '#1A2230' }}>簇级回环 + 图传播</Text>
-            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.55, marginTop: 10 }}>检测：出现两组"内部密、彼此疏"的簇，图上跳数 &gt; 5 且有效匹配对 &gt; 2。</Text>
-            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.55, marginTop: 8 }}>求解：两簇各扩 N/2 帧组成焊接窗口做局部 BA，由锚点刚体变换与深度尺度得到 <b>Sim(3)</b>。</Text>
-            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.55, marginTop: 8 }}>传播：Dijkstra 找累计权重最小的<b>主干路径</b>，按测地距离比例插值（旋转用 6D、尺度取对数），对全图位姿与高斯套用同一变换。</Text>
-            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#D9534F', marginTop: 12 }}>代价随场景规模近似线性</Text>
+        <Box style={{ flexDirection: 'row', padding: '13px 16px', borderBottom: '1px solid #D6DCE5' }}>
+            <Text style={{ width: '90px', fontSize: 20, fontWeight: 'bold', color: '#1E4FA8' }}>1</Text>
+            <Text style={{ flex: 2, fontSize: 20, color: '#1A2230' }}>视觉位置识别（全局描述子）</Text>
+            <Text style={{ flex: 3, fontSize: 20, color: '#1A2230' }}>余弦相似度排序，取 top-20 候选</Text>
+            <Text style={{ flex: 1.6, fontSize: 20, color: '#1A2230' }}>≈1 ms / 1000 对</Text>
+        </Box>
+        <Box style={{ flexDirection: 'row', padding: '13px 16px', backgroundColor: '#F7F9FC', borderBottom: '1px solid #D6DCE5' }}>
+            <Text style={{ width: '90px', fontSize: 20, fontWeight: 'bold', color: '#1E4FA8' }}>2</Text>
+            <Text style={{ flex: 2, fontSize: 20, color: '#1A2230' }}>XFeat 轻量局部特征</Text>
+            <Text style={{ flex: 3, fontSize: 20, color: '#1A2230' }}>按内点数从 20 中保留 5 个</Text>
+            <Text style={{ flex: 1.6, fontSize: 20, color: '#1A2230' }}>≈0.5 ms / 对</Text>
+        </Box>
+        <Box style={{ flexDirection: 'row', padding: '13px 16px', borderBottom: '1px solid #D6DCE5' }}>
+            <Text style={{ width: '90px', fontSize: 20, fontWeight: 'bold', color: '#1E4FA8' }}>3</Text>
+            <Text style={{ flex: 2, fontSize: 20, color: '#1A2230' }}>LightGlue + RANSAC</Text>
+            <Text style={{ flex: 3, fontSize: 20, color: '#1A2230' }}>精确验证，内点数 &gt; 500 才接受</Text>
+            <Text style={{ flex: 1.6, fontSize: 20, color: '#1A2230' }}>≈4 ms / 对</Text>
         </Box>
     </Box>
-    <Box style={{ margin: '18px 40px 0px 40px', backgroundColor: '#F0F5FC', borderLeft: '5px solid #1E4FA8', padding: '14px 20px' }}>
-        <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.5 }}>用"图上的距离"替代"全局优化的解"——这是全文最值得借鉴的工程取舍：牺牲一点精度，换来数量级的实时性。</Text>
+    <Box style={{ padding: '18px 40px 0px 40px', flexDirection: 'row', gap: 18 }}>
+        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', borderRadius: 6, padding: '14px 18px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1E4FA8' }}>加权协视图</Text>
+            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.5, marginTop: 8 }}>边权取内点数倒数 w = 1/#inliers：内点越多、边越"短"。于是图上的最短路 = 最可靠的位姿链。</Text>
+        </Box>
+        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', borderRadius: 6, padding: '14px 18px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1E4FA8' }}>消融：这一环最关键</Text>
+            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.5, marginTop: 8 }}>去掉位置识别只比相邻 5 帧：PSNR 26.29 → <b>24.78 dB</b>；改成优化最后 20 帧：→ <b>24.56 dB</b>。</Text>
+        </Box>
+    </Box>
+    <Box style={{ padding: '12px 40px 0px 40px' }}>
+        <Text style={{ fontSize: 17, color: '#8B97A8' }}>候选集逐级收缩：1000 对 → 20 → 5 → 1，精确匹配只作用在极小候选上，这是"无序也能快"的根本原因。</Text>
     </Box>
 </Slide>
