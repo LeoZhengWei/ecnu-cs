@@ -2,7 +2,7 @@
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
     <Box style={{ padding: '30px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>这条线怎么长出来的：三代工作</Text>
-        <Text style={{ fontSize: 15, color: '#8B97A8' }}>13 / 14</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>13 / 15</Text>
     </Box>
     <Box style={{ padding: '16px 40px 0px 40px' }}>
         <Text style={{ fontSize: 21, color: '#4A5568', lineHeight: 1.5 }}>本文不是孤立的一篇。同一团队三年做的是同一件事：<b>把辐射场重建变"局部、渐进、免位姿"</b>，本文补上最后一块"无序 + 全局一致"。</Text>

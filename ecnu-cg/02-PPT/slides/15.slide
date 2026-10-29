@@ -1,0 +1,77 @@
+<Slide style={{ width: '1280px', height: '720px', backgroundColor: '#FFFFFF', padding: '0px', flexDirection: 'column' }}>
+    <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
+    <Box style={{ padding: '16px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#1E4FA8' }}>附：七个步骤在源码里长什么样</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>15 / 15</Text>
+    </Box>
+    <Box style={{ padding: '6px 40px 0px 40px' }}>
+        <Text style={{ fontSize: 17, color: '#4A5568' }}>真实源码片段，行号对应第 7 页七步链：<b>①②③ 定跟谁比、④ 定跟谁一起算、⑤ 才真解位姿、⑥⑦ 修漂移与压显存</b>。</Text>
+    </Box>
+    <Box style={{ padding: '9px 40px 0px 40px', flexDirection: 'row', gap: 14 }}>
+        <Box style={{ flex: 1, flexDirection: 'column', gap: 8 }}>
+        <Box style={{ backgroundColor: '#0F1D33', borderRadius: 5, padding: '6px 11px 6px 11px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#8FBBFF', marginBottom: 1 }}>① ② ③  检索 → 粗筛 → 建边</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#6D87AC', marginBottom: 3 }}>scene/scene_model_loop_closure.py:179</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>cossim = self.vpr_features @ vpr_feature.T     # 全局描述子</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>_, cand = torch.topk(cossim_best, n_candidates)   # top-20</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>n_m = self.matcher.batched_evaluate_match(...)  # XFeat</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>_, best = torch.topk(n_m, n)                      # 留 top-5</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>self.matcher(..., remove_outliers=True, use_lightglue=True)  # 建边</Text>
+        </Box>
+        <Box style={{ backgroundColor: '#0F1D33', borderRadius: 5, padding: '6px 11px 6px 11px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#8FBBFF', marginBottom: 1 }}>④  协视图贪心扩张（式 1）</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#6D87AC', marginBottom: 3 }}>poses/ba_problem.py:648</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>while len(selected_ids) &#60; get_n_keyframes:        # 扩到 20 帧</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>    for sid in selected_ids:</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>        for nb in self.pose_graph.neighbors(sid):</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>            if nb not in selected_ids:            # 边权 = 1/|M|</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>                neighbor_counts[nb] += 1.0 / w(sid, nb)</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>    selected_ids.add(neighbor_counts.most_common(1)[0][0])</Text>
+        </Box>
+        <Box style={{ backgroundColor: '#0F1D33', borderRadius: 5, padding: '6px 11px 6px 11px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#8FBBFF', marginBottom: 1 }}>⑤  局部 BA：LM 迭代 + Schur 消元</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#6D87AC', marginBottom: 3 }}>poses/mini_ba.py:285</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>for it in range(self.iters):</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>    jtj_cam, ..., resid = self._assemble_jtj(...)</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>    jtj_cam.diagonal().mul_(1 + lm)        # LM 阻尼</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>    jtj_xyz_inv = self.inv_3x3(jtj_xyz)    # C^-1</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>    S = jtj_cam - jtj_xyz_inv @ jtj_cam_xyz.T @ jtj_cam_xyz</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>    L = torch.linalg.cholesky_ex(S)[0]      # 舒尔补 S</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>    dcam = torch.linalg.solve_triangular(...)  # ΔT</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>    dxyz = torch.bmm(b.view(-1, 1, 3), jtj_xyz_inv)</Text>
+        </Box>
+        </Box>
+        <Box style={{ flex: 1, flexDirection: 'column', gap: 8 }}>
+        <Box style={{ backgroundColor: '#0F1D33', borderRadius: 5, padding: '6px 11px 6px 11px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#8FBBFF', marginBottom: 1 }}>⑥  回环检测与补边</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#6D87AC', marginBottom: 3 }}>poses/ba_problem.py:1054</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>if dists.max() &#62; self.min_loop_size:      # 图距 &#62; 10</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>    clusters_t = split_into_clusters(dists)   # 分两簇</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>is_loop = (min(n_robust_pairs) &#62; n // 2 and</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>           min(max_matches_robustness) &#62; 0.5 * max(...))</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>if len(match.kpts) &#62;= self.min_matches_edge:   # τm=500</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>    self.pose_graph.add_match(i, j, 1.0 / len(match.kpts))</Text>
+        </Box>
+        <Box style={{ backgroundColor: '#0F1D33', borderRadius: 5, padding: '6px 11px 6px 11px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#8FBBFF', marginBottom: 1 }}>⑦-a  分块深度对齐</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#6D87AC', marginBottom: 3 }}>scene/mono_depth.py:315</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>tri_idepth = 1 / (pts3d[has_pt3d] @ R.T + t)[..., -1]</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>mono_al, g_s, g_o = align_samples(tri_idepth, sampled)</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>valid = err &#60; m_err + grid_outlier_mult * err_dev</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>return align_depth_grid(..., 4, g_s, g_o)   # 4x4 分块</Text>
+        </Box>
+        <Box style={{ backgroundColor: '#0F1D33', borderRadius: 5, padding: '6px 11px 6px 11px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#8FBBFF', marginBottom: 1 }}>⑦-b  渐进层级与合并</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#6D87AC', marginBottom: 3 }}>scene/hierarchy_cut.py:105</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>mask = screen_size &#60; self.hierarchy_screen_size_threshold  # 0.5 px</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>if mask.sum() &#62; max(len(self.xyz) * 0.1, 200_000):</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>    n_merged = self.create_hierarchy_level(cam_centre, mask)</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}># 合并权重 = opacity * screen_size^2（非 KL 投影）</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 13, color: '#D7E3F6', lineHeight: 1.28 }}>weights = opa.sigmoid() * screen_size[selected] ** 2</Text>
+        </Box>
+        </Box>
+    </Box>
+    <Box style={{ padding: '8px 40px 0px 40px' }}>
+        <Text style={{ fontSize: 14, color: '#8B97A8', lineHeight: 1.4 }}>为排版做了换行与变量缩写（w = edge_weight），逻辑未改。第 7 页按源码默认值修正：回环触发为<b>加权图距 &gt; 10</b>；层级合并触发为<b>可并数 &gt; max(10%, 20 万)</b>，且是 <b>kNN 加权平均</b>而非 KL。</Text>
+    </Box>
+</Slide>

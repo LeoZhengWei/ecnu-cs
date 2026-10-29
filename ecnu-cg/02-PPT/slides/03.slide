@@ -2,7 +2,7 @@
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
     <Box style={{ padding: '34px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>主要贡献点</Text>
-        <Text style={{ fontSize: 15, color: '#8B97A8' }}>03 / 14</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>03 / 15</Text>
     </Box>
     <Box style={{ padding: '22px 40px 0px 40px', flexDirection: 'row', gap: 20 }}>
         <Box style={{ flex: 1, backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '18px 20px', flexDirection: 'column' }}>
