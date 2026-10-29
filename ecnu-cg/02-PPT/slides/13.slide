@@ -1,0 +1,38 @@
+<Slide style={{ width: '1280px', height: '720px', backgroundColor: '#FFFFFF', padding: '0px', flexDirection: 'column' }}>
+    <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
+    <Box style={{ padding: '30px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>不足与改进：哪些是硬伤，哪些能补</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>13 / 15</Text>
+    </Box>
+    <Box style={{ padding: '18px 40px 0px 40px' }}>
+        <Text style={{ fontSize: 21, color: '#4A5568', lineHeight: 1.5 }}>左栏是它现在的边界（①–④ 来自论文自述，⑤ 是我们复现的边界），右栏是对应的补法。</Text>
+    </Box>
+    <Box style={{ padding: '12px 40px 0px 40px', flexDirection: 'row', gap: 26 }}>
+        <Box style={{ flex: 1, flexDirection: 'column' }}>
+            <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Box style={{ width: '5px', height: '26px', backgroundColor: '#D9534F' }} />
+                <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#1A2230' }}>目前方法的不足</Text>
+            </Box>
+            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>① 低视差直接失效</b>　纯旋转或平移太小，三角化不出深度，论文自述这类采集会失败。</Text>
+            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>② 精度有天花板</b>　作者用 NoGraphProp 消融证明图传播不比全局 PGO 差，但同时承认仍不如全局 BA。</Text>
+            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>③ 上游依赖重</b>　VPR + XFeat + LightGlue + Depth Anything 3 串成一条链，任一环失效整条断。</Text>
+            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>④ 阈值靠经验</b>　合并 0.5 px / 占比 20%、跳数 5、建边 500 匹配，换场景需重调。</Text>
+            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>⑤ 我们的复现边界</b>　只跑有序序列（未验真无序）、2 倍降采样、单场景。</Text>
+        </Box>
+        <Box style={{ width: '1px', backgroundColor: '#D6DCE5' }} />
+        <Box style={{ flex: 1, flexDirection: 'column' }}>
+            <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Box style={{ width: '5px', height: '26px', backgroundColor: '#1E4FA8' }} />
+                <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#1A2230' }}>以后的改进点</Text>
+            </Box>
+            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>① 低视差帧降级</b>　只参与渲染、不进位姿求解，避免污染轨迹。</Text>
+            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>② 在线粗 + 离线精</b>　实时出预览，结束时用 GLOMAP 回填一次全局 BA，把 1.2 dB 补回来。</Text>
+            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>③ 采集端闭环</b>　实时覆盖率与重投影误差热图，直接提示"这块没拍"——论文 motivation 的自然下一步。</Text>
+            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>④ 阈值自适应</b>　按纹理强度与重叠度在线估计，替代固定常数。</Text>
+            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>⑤ 我们能立刻做的</b>　打乱实验（--shuffle）、全分辨率重跑、再换 2–3 个场景。</Text>
+        </Box>
+    </Box>
+    <Box style={{ margin: '12px 40px 0px 40px', backgroundColor: '#F0F5FC', borderLeft: '5px solid #1E4FA8', padding: '15px 20px' }}>
+        <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.5 }}>它把"精度"换成了"时间"。补回精度只有两条路：<b>要么离线回填，要么让采集端少犯错</b>——后者才是它真正打开的方向。</Text>
+    </Box>
+</Slide>

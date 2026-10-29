@@ -1,31 +1,67 @@
 <Slide style={{ width: '1280px', height: '720px', backgroundColor: '#FFFFFF', padding: '0px', flexDirection: 'column' }}>
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
-    <Box style={{ padding: '30px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>读后感与结论</Text>
-        <Text style={{ fontSize: 15, color: '#8B97A8' }}>12 / 12</Text>
+    <Box style={{ padding: '26px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>我们的复现：跑通了什么、拿到了什么数</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>12 / 15</Text>
     </Box>
-    <Box style={{ padding: '18px 40px 0px 40px', flexDirection: 'row', gap: 16 }}>
-        <Box style={{ flex: 1, backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '14px 16px', flexDirection: 'column' }}>
-            <Text style={{ fontSize: 23, fontWeight: 'bold', color: '#1E4FA8' }}>它强在哪</Text>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 8 }}>解决真实采集痛点而非刷指标；乱序只掉 0.5 dB；分钟级 vs 小时级；工程完整、可直接用。</Text>
+
+    <Box style={{ padding: '16px 40px 0px 40px', flexDirection: 'row', gap: 14 }}>
+        <Box style={{ flex: 1, backgroundColor: '#1E4FA8', borderRadius: 6, padding: '12px 14px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#FFFFFF' }}>25.95 dB</Text>
+            <Text style={{ fontSize: 16, color: '#D6E4F7' }}>PSNR（SSIM 0.786 / LPIPS 0.206）</Text>
         </Box>
-        <Box style={{ flex: 1, backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '14px 16px', flexDirection: 'column' }}>
-            <Text style={{ fontSize: 23, fontWeight: 'bold', color: '#1E4FA8' }}>它弱在哪</Text>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 8 }}>纯旋转 / 低视差失败；图传播精度不及全局 BA；依赖一长串上游模型；层级阈值靠经验。</Text>
+        <Box style={{ flex: 1, backgroundColor: '#1E4FA8', borderRadius: 6, padding: '12px 14px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#FFFFFF' }}>62.7 s</Text>
+            <Text style={{ fontSize: 16, color: '#D6E4F7' }}>185 帧流式重建，2.95 帧/秒</Text>
         </Box>
-        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', border: '1px solid #3D7BD9', borderRadius: 6, padding: '14px 16px', flexDirection: 'column' }}>
-            <Text style={{ fontSize: 23, fontWeight: 'bold', color: '#1E4FA8' }}>往哪走</Text>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 8 }}>竞争点从"重建质量"转向"采集体验"：实时提示覆盖不足、重投影误差，甚至主动规划拍摄路径。</Text>
+        <Box style={{ flex: 1, backgroundColor: '#1E4FA8', borderRadius: 6, padding: '12px 14px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#FFFFFF' }}>R° 0.16</Text>
+            <Text style={{ fontSize: 16, color: '#D6E4F7' }}>位姿误差（t 1.89，未用 COLMAP 先验）</Text>
+        </Box>
+        <Box style={{ flex: 1, backgroundColor: '#1E4FA8', borderRadius: 6, padding: '12px 14px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#FFFFFF' }}>19.5 GB</Text>
+            <Text style={{ fontSize: 16, color: '#D6E4F7' }}>峰值显存（2× 降采样，36.2 万高斯）</Text>
         </Box>
     </Box>
-    <Box style={{ margin: '20px 40px 0px 40px', backgroundColor: '#1E4FA8', borderRadius: 6, padding: '18px 22px' }}>
-        <Text style={{ fontSize: 23, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.5 }}>一句话总结：它用"图上的距离"换掉了"全局优化的解"，把 3DGS 从离线工具变成了采集现场的仪表盘。</Text>
+
+    <Box style={{ padding: '14px 40px 0px 40px', flexDirection: 'row', gap: 22 }}>
+        <Box style={{ width: '430px', flexDirection: 'column', gap: 8 }}>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1A2230' }}>四步全部走完</Text>
+            <Box style={{ backgroundColor: '#F0F5FC', borderRadius: 6, padding: '9px 12px', flexDirection: 'row', gap: 8 }}>
+                <Text style={{ fontSize: 17, color: '#1E4FA8', fontWeight: 'bold' }}>✓</Text>
+                <Text style={{ fontSize: 16, color: '#1A2230', lineHeight: 1.4 }}>环境搭建：torch 2.7.1+cu126，扩展按 sm_89 编译通过</Text>
+            </Box>
+            <Box style={{ backgroundColor: '#F0F5FC', borderRadius: 6, padding: '9px 12px', flexDirection: 'row', gap: 8 }}>
+                <Text style={{ fontSize: 17, color: '#1E4FA8', fontWeight: 'bold' }}>✓</Text>
+                <Text style={{ fontSize: 16, color: '#1A2230', lineHeight: 1.4 }}>数据与模型链：185 张图 + 5 个上游权重全部离线可用</Text>
+            </Box>
+            <Box style={{ backgroundColor: '#F0F5FC', borderRadius: 6, padding: '9px 12px', flexDirection: 'row', gap: 8 }}>
+                <Text style={{ fontSize: 17, color: '#1E4FA8', fontWeight: 'bold' }}>✓</Text>
+                <Text style={{ fontSize: 16, color: '#1A2230', lineHeight: 1.4 }}>端到端重建：156 个关键帧、36.2 万高斯，一次跑通</Text>
+            </Box>
+            <Box style={{ backgroundColor: '#F0F5FC', borderRadius: 6, padding: '9px 12px', flexDirection: 'row', gap: 8 }}>
+                <Text style={{ fontSize: 17, color: '#1E4FA8', fontWeight: 'bold' }}>✓</Text>
+                <Text style={{ fontSize: 16, color: '#1A2230', lineHeight: 1.4 }}>评估与可视化：149 帧漫游视频 + 24 张测试视角渲染图</Text>
+            </Box>
+            <Box style={{ backgroundColor: '#FFF6F6', border: '1px solid #E8C4C2', borderRadius: 6, padding: '9px 12px', flexDirection: 'column' }}>
+                <Text style={{ fontSize: 15, color: '#D9534F', fontWeight: 'bold' }}>换成 4×RTX 4090 才跑完</Text>
+                <Text style={{ fontSize: 15, color: '#5A6B80', lineHeight: 1.4, marginTop: 2 }}>原 5090 机器长期被他人任务占满，可跑通模块但无法完成整段重建。</Text>
+            </Box>
+        </Box>
+        <Box style={{ flex: 1, flexDirection: 'column', gap: 7 }}>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1A2230' }}>照 README 装完跑不起来 —— 累计 12 个坑</Text>
+            <Text style={{ fontSize: 16, color: '#1A2230', lineHeight: 1.45 }}><b>① 架构</b>　sm_120 要 cu128；换 4090 后要改回 sm_89，否则编译产物不可用</Text>
+            <Text style={{ fontSize: 16, color: '#1A2230', lineHeight: 1.45 }}><b>② 源码</b>　嵌套 glm 子模块缺失；DA-V2 子模块为空，改用 codeload tarball</Text>
+            <Text style={{ fontSize: 16, color: '#1A2230', lineHeight: 1.45 }}><b>③ 网络</b>　GitHub / HuggingFace 均不可达，权重与 hub 缓存全部本地化</Text>
+            <Text style={{ fontSize: 16, color: '#1A2230', lineHeight: 1.45 }}><b>④ 精度</b>　MegaLoc 半精度冲突、VPR 前向硬写 half，改为跟随 dtype</Text>
+            <Text style={{ fontSize: 16, color: '#1A2230', lineHeight: 1.45 }}><b>⑤ 环境</b>　必须在 i3dgs/ 下运行；DA3 缺 6 个运行期依赖 + 2 个构建后端</Text>
+            <Text style={{ fontSize: 16, color: '#1A2230', lineHeight: 1.45 }}><b>⑥ 缓存</b>　torch.hub 只搬了仓库代码、漏了 checkpoints 与 HF 缓存，一启动就联网</Text>
+            <Text style={{ fontSize: 14, color: '#8B97A8', lineHeight: 1.4, marginTop: 2 }}>12 个坑里真正要改代码的只有 3 处，落在 2 个文件，均标注 [LOCAL PATCH]。</Text>
+        </Box>
     </Box>
-    <Box style={{ padding: '16px 40px 0px 40px' }}>
-        <Text style={{ fontSize: 19, color: '#4A5568', lineHeight: 1.5 }}>复现心得：真正拖住复现的往往不是论文里的算法，而是 CUDA 架构、子模块层级、权重来源这些"隐性依赖"——这也是课程要求写"代码分析"的意义。</Text>
-    </Box>
-    <Box style={{ padding: '22px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#1E4FA8' }}>谢谢，欢迎提问</Text>
-        <Text style={{ fontSize: 15, color: '#8B97A8' }}>论文：SIGGRAPH 2026 / arXiv:2607.14481 · 代码：github.com/graphdeco-inria/i3dgs</Text>
+
+    <Box style={{ marginTop: 'auto', marginLeft: 40, marginRight: 40, marginBottom: 26, backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '11px 14px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Text style={{ fontSize: 15, color: '#3A4A5E' }}>一键复现：<b>bash scripts/run_all_14.sh</b>　（自动挑最空闲的 4090 → 重建 → 渲染漫游视频 → 汇总指标）</Text>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>172.88.88.14 / 4×RTX 4090</Text>
     </Box>
 </Slide>

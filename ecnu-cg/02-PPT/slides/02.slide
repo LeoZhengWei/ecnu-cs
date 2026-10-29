@@ -2,7 +2,7 @@
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
     <Box style={{ padding: '34px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>摘要</Text>
-        <Text style={{ fontSize: 15, color: '#8B97A8' }}>02 / 12</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>02 / 15</Text>
     </Box>
     <Box style={{ padding: '20px 40px 0px 40px', flexDirection: 'column', gap: 13 }}>
         <Box style={{ backgroundColor: '#F0F5FC', borderLeft: '5px solid #1E4FA8', padding: '14px 20px', flexDirection: 'column' }}>
@@ -15,7 +15,7 @@
         </Box>
         <Box style={{ backgroundColor: '#F0F5FC', borderLeft: '5px solid #1E4FA8', padding: '14px 20px', flexDirection: 'column' }}>
             <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1E4FA8' }}>本文做法</Text>
-            <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.5, marginTop: 6 }}>首个面向无序输入、具备全局一致性的即时反馈 3DGS 重建：三级快速匹配 + GPU 局部 BA + 簇级回环图传播 + 渐进式高斯层级。</Text>
+            <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.5, marginTop: 6 }}>首个面向无序输入、具备全局一致性的即时反馈 3DGS 重建：两级快速匹配 + GPU 局部 BA + 簇级回环图传播 + 渐进式高斯层级。</Text>
         </Box>
         <Box style={{ backgroundColor: '#F7F9FC', borderLeft: '5px solid #3D7BD9', padding: '14px 20px', flexDirection: 'column' }}>
             <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#3D7BD9' }}>结果与复现</Text>
