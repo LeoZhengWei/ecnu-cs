@@ -2,7 +2,7 @@
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
     <Box style={{ padding: '26px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>算法地图：七步重建链，用在哪、算什么、管什么</Text>
-        <Text style={{ fontSize: 15, color: '#8B97A8' }}>07 / 15</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>07 / 14</Text>
     </Box>
     <Box style={{ padding: '10px 40px 0px 40px' }}>
         <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.4 }}>位姿重建真正发生在 <b>第 5 步</b>：前三步只为它准备可信观测，第 4 步划定它的变量范围，第 6 步修它累积的漂移，第 7 步才轮到高斯。</Text>

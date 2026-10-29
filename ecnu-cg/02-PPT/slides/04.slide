@@ -2,7 +2,7 @@
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
     <Box style={{ padding: '30px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>研究背景：两条路线，各自卡在一个前提上</Text>
-        <Text style={{ fontSize: 15, color: '#8B97A8' }}>04 / 15</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>04 / 14</Text>
     </Box>
     <Box style={{ padding: '16px 40px 0px 40px' }}>
         <Text style={{ fontSize: 21, color: '#4A5568', lineHeight: 1.5 }}>拿到"一组照片 → 一个可漫游的 3D 场景"，过去只有两条路可走。它们的分歧不在算法细节，而在<b>什么时候允许开始计算</b>。</Text>

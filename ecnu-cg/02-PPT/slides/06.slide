@@ -2,7 +2,7 @@
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
     <Box style={{ padding: '30px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>方法总览：每来一个关键帧做六件事</Text>
-        <Text style={{ fontSize: 15, color: '#8B97A8' }}>06 / 15</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>06 / 14</Text>
     </Box>
     <Box style={{ padding: '14px 40px 0px 40px' }}>
         <Text style={{ fontSize: 22, color: '#4A5568', lineHeight: 1.5 }}>设计哲学一句话：<b>每帧做小事，偶尔做一次大事</b>。前者保证实时，后者保证不漂。每一步都对应上一页四个问题中的一个。</Text>
