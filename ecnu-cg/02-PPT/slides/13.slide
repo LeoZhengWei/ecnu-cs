@@ -1,38 +1,53 @@
 <Slide style={{ width: '1280px', height: '720px', backgroundColor: '#FFFFFF', padding: '0px', flexDirection: 'column' }}>
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
-    <Box style={{ padding: '30px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>不足与改进：哪些是硬伤，哪些能补</Text>
+    <Box style={{ padding: '13px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Text style={{ fontSize: 31, fontWeight: 'bold', color: '#1E4FA8' }}>核心优化：位姿求解是作者自己写的 GPU 核</Text>
         <Text style={{ fontSize: 15, color: '#8B97A8' }}>13 / 15</Text>
     </Box>
-    <Box style={{ padding: '18px 40px 0px 40px' }}>
-        <Text style={{ fontSize: 21, color: '#4A5568', lineHeight: 1.5 }}>左栏是它现在的边界（均来自论文自述），右栏是对应的补法。</Text>
+    <Box style={{ padding: '5px 40px 0px 40px' }}>
+        <Text style={{ fontSize: 17, color: '#4A5568' }}>论文没有调用 g2o / Ceres / CUDA-BA，第 ⑤ 步的 BA 从残差到求解全是自己写的：<b>雅可比解析、LM 迭代、Schur 消元、位姿更新，四步都留在显存里</b>。</Text>
     </Box>
-    <Box style={{ padding: '12px 40px 0px 40px', flexDirection: 'row', gap: 26 }}>
-        <Box style={{ flex: 1, flexDirection: 'column' }}>
-            <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Box style={{ width: '5px', height: '26px', backgroundColor: '#D9534F' }} />
-                <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#1A2230' }}>目前方法的不足</Text>
+    <Box style={{ padding: '7px 40px 0px 40px', flexDirection: 'row', gap: 14 }}>
+        <Box style={{ flex: 1, flexDirection: 'column', gap: 10 }}>
+            <Box style={{ backgroundColor: '#1E1E1E', borderRadius: 5, padding: '5px 10px', flexDirection: 'column' }}>
+                <Text style={{ fontSize: 13.5, fontWeight: 'bold', color: '#8FBBFF' }}>优化 1　手写解析雅可比，废掉 autograd</Text>
+                <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#7F8C9F', marginBottom: 2 }}>poses/mini_ba_utils.cu:133</Text>
+                <Image src="opt_png/01.png" style={{ width: 579, height: 173 }} />
             </Box>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>① 低视差直接失效</b>　纯旋转或平移太小，三角化不出深度，论文自述这类采集会失败。</Text>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>② 精度有天花板</b>　作者用 NoGraphProp 消融证明图传播不比全局 PGO 差，但同时承认仍不如全局 BA。</Text>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>③ 上游依赖重</b>　VPR + XFeat + LightGlue + Depth Anything 3 串成一条链，任一环失效整条断。</Text>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>④ 阈值靠经验</b>　合并 0.5 px / 占比 10%、加权图距 10、建边 500 匹配，换场景需重调。</Text>
-            
+            <Box style={{ backgroundColor: '#1E1E1E', borderRadius: 5, padding: '5px 10px', flexDirection: 'column' }}>
+                <Text style={{ fontSize: 13.5, fontWeight: 'bold', color: '#8FBBFF' }}>优化 2　手写 se(3) 指数映射，更新融成一个核</Text>
+                <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#7F8C9F', marginBottom: 2 }}>poses/mini_ba_utils.cu:186</Text>
+                <Image src="opt_png/02.png" style={{ width: 579, height: 173 }} />
+            </Box>
         </Box>
-        <Box style={{ width: '1px', backgroundColor: '#D6DCE5' }} />
-        <Box style={{ flex: 1, flexDirection: 'column' }}>
-            <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Box style={{ width: '5px', height: '26px', backgroundColor: '#1E4FA8' }} />
-                <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#1A2230' }}>以后的改进点</Text>
+        <Box style={{ flex: 1, flexDirection: 'column', gap: 10 }}>
+            <Box style={{ backgroundColor: '#1E1E1E', borderRadius: 5, padding: '5px 10px', flexDirection: 'column' }}>
+                <Text style={{ fontSize: 13.5, fontWeight: 'bold', color: '#8FBBFF' }}>优化 3　Schur 补与 Cholesky 不落回 CPU</Text>
+                <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#7F8C9F', marginBottom: 2 }}>poses/mini_ba.py:296</Text>
+                <Image src="opt_png/03.png" style={{ width: 579, height: 191 }} />
             </Box>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>① 低视差帧降级</b>　只参与渲染、不进位姿求解，避免污染轨迹。</Text>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>② 在线粗 + 离线精</b>　实时出预览，结束时用 GLOMAP 回填一次全局 BA，把 1.2 dB 补回来。</Text>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>③ 采集端闭环</b>　实时覆盖率与重投影误差热图，直接提示"这块没拍"——论文 motivation 的自然下一步。</Text>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>④ 阈值自适应</b>　按纹理强度与重叠度在线估计，替代固定常数。</Text>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>⑤ 验证还可扩展</b>　打乱输入顺序（--shuffle）、全分辨率重跑、换 2–3 个场景验证阈值是否稳定。</Text>
+            <Box style={{ backgroundColor: '#1E1E1E', borderRadius: 5, padding: '5px 10px', flexDirection: 'column' }}>
+                <Text style={{ fontSize: 13.5, fontWeight: 'bold', color: '#8FBBFF' }}>优化 4　整轮 LM 压成一张 CUDA Graph</Text>
+                <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#7F8C9F', marginBottom: 2 }}>poses/mini_ba.py:506（无分支写法见 :391）</Text>
+                <Image src="opt_png/04.png" style={{ width: 579, height: 191 }} />
+            </Box>
         </Box>
     </Box>
-    <Box style={{ margin: '12px 40px 0px 40px', backgroundColor: '#F0F5FC', borderLeft: '5px solid #1E4FA8', padding: '15px 20px' }}>
-        <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.5 }}>它把"精度"换成了"时间"。补回精度只有两条路：<b>要么离线回填，要么让采集端少犯错</b>——后者才是它真正打开的方向。</Text>
+    <Box style={{ margin: '9px 40px 0px 40px', backgroundColor: '#F0F5FC', borderLeft: '5px solid #1E4FA8', padding: '9px 18px', flexDirection: 'row', gap: 22 }}>
+        <Box style={{ flex: 1, flexDirection: 'column' }}>
+            <Text style={{ fontSize: 15.5, fontWeight: 'bold', color: '#1E4FA8' }}>省掉反向图</Text>
+            <Text style={{ fontSize: 15, color: '#1A2230', lineHeight: 1.35 }}>雅可比手推成解析式，残差与 J 一核同出。</Text>
+        </Box>
+        <Box style={{ flex: 1, flexDirection: 'column' }}>
+            <Text style={{ fontSize: 15.5, fontWeight: 'bold', color: '#1E4FA8' }}>省掉主机同步</Text>
+            <Text style={{ fontSize: 15, color: '#1A2230', lineHeight: 1.35 }}>观测追加 atomicAdd 抢 slot，不等 CPU 派号。</Text>
+        </Box>
+        <Box style={{ flex: 1, flexDirection: 'column' }}>
+            <Text style={{ fontSize: 15.5, fontWeight: 'bold', color: '#1E4FA8' }}>省掉启动开销</Text>
+            <Text style={{ fontSize: 15, color: '#1A2230', lineHeight: 1.35 }}>上百次 LM 迭代提交一次图，不许有分支。</Text>
+        </Box>
+    </Box>
+    <Box style={{ marginTop: 'auto', padding: '6px 40px 10px 40px' }}>
+        <Text style={{ fontSize: 13, color: '#8B97A8', lineHeight: 1.4 }}>行号指向片段起点；为投影宽度做了换行与变量缩写（v = jacxr_cam − BD @ jacxr_xyz），逻辑未改。共同点不是算法更聪明，而是<b>把每一步都做成 GPU 原生的形状</b>——这才是「普通显卡上实时」的落点。</Text>
     </Box>
 </Slide>

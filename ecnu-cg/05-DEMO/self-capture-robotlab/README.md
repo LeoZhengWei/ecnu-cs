@@ -120,8 +120,14 @@ bash /home/hjadmin/zhengwei/i3dgs-demo/scripts/run_scene14.sh \
      --name robotlab --ds 1
 
 # 四、渲染新轨迹（不是 render_path.py，那条路会退回成照片回放）
-python scripts/orbit_render.py --result <result_dir> --mode smooth --frames 240
+python scripts/orbit_render.py \
+     --model_path /datafast/zhengwei-i3dgs/results/robotlab_ds1 \
+     --out_dir   /datafast/zhengwei-i3dgs/results/robotlab_ds1/orbit \
+     --mode smooth --n_frames 240 --fps 30
 ```
+
+> 上面是压缩版。**逐条可复制、含环境变量与排错说明的完整版**见同目录
+> [`REBUILD-GUIDE.md`](REBUILD-GUIDE.md)（从 85 张照片到可旋转 3D 场景，7 节 + 速查）。
 
 ## 七、产物说明
 
