@@ -12,13 +12,13 @@
         <Box style={{ flex: 1, backgroundColor: '#F0F5FC', borderRadius: 6, padding: '13px 11px', flexDirection: 'column' }}>
             <Text style={{ fontSize: 29, fontWeight: 'bold', color: '#1E4FA8' }}>①</Text>
             <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1A2230', marginTop: 3 }}>全局检索</Text>
-            <Text style={{ fontSize: 16.5, color: '#1A2230', lineHeight: 1.45, marginTop: 6 }}>全局描述子算余弦，取 top-20 候选</Text>
+            <Text style={{ fontSize: 16.5, color: '#1A2230', lineHeight: 1.45, marginTop: 6 }}>全局描述子算余弦，取 top-20 候选帧</Text>
             <Text style={{ fontSize: 15.5, color: '#1D5FC0', fontWeight: 'bold', marginTop: 10 }}>治“乱”</Text>
         </Box>
         <Box style={{ flex: 1, backgroundColor: '#F0F5FC', borderRadius: 6, padding: '13px 11px', flexDirection: 'column' }}>
             <Text style={{ fontSize: 29, fontWeight: 'bold', color: '#1E4FA8' }}>②</Text>
             <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1A2230', marginTop: 3 }}>局部粗筛</Text>
-            <Text style={{ fontSize: 16.5, color: '#1A2230', lineHeight: 1.45, marginTop: 6 }}>XFeat 比内点数，20 → 5</Text>
+            <Text style={{ fontSize: 16.5, color: '#1A2230', lineHeight: 1.45, marginTop: 6 }}>XFeat 比内点数，20 → 5 个候选</Text>
             <Text style={{ fontSize: 15.5, color: '#1D5FC0', fontWeight: 'bold', marginTop: 10 }}>治“乱”</Text>
         </Box>
         <Box style={{ flex: 1, backgroundColor: '#F0F5FC', borderRadius: 6, padding: '13px 11px', flexDirection: 'column' }}>
@@ -58,14 +58,15 @@
         <Text style={{ fontSize: 17, color: '#4A5568', lineHeight: 1.4, marginTop: 4 }}>前三步只产出“约束”，第四五步只产出“位姿”，第六步修位姿，第七步才碰辐射场。</Text>
     </Box>
 
-    <Box style={{ padding: '16px 40px 0px 40px', flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-        <Box style={{ backgroundColor: '#1E4FA8', borderRadius: 4, padding: '6px 12px' }}>
+    <Box style={{ padding: '16px 40px 0px 40px', flexDirection: 'row', gap: 10, alignItems: 'flex-start' }}>
+        <Box style={{ backgroundColor: '#1E4FA8', borderRadius: 4, padding: '5px 12px', marginTop: 3 }}>
             <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#FFFFFF' }}>时间账</Text>
         </Box>
-        <Text style={{ fontSize: 17.5, color: '#1A2230', lineHeight: 1.4 }}>视觉前端 <b>27.8 ms</b>　·　局部 BA <b>40.5 ms</b>　·　回环摊销 <b>121.6 ms</b>（仅绕回起点时）　·　渲染 <b>480 fps</b></Text>
-    </Box>
-    <Box style={{ padding: '4px 40px 0px 40px' }}>
-        <Text style={{ fontSize: 15.5, color: '#8B97A8' }}>以上为论文单关键帧摊销实测；②③ 的候选数已压到 20 / 5，所以前端不是瓶颈——瓶颈是一次回环后的全局修正。</Text>
+        <Box style={{ flex: 1, flexDirection: 'column', gap: 5 }}>
+            <Text style={{ fontSize: 16.5, color: '#1A2230', lineHeight: 1.35 }}><b>单帧预算</b>　前端 27.8 ＋ 局部 BA 40.5 ＋ 高斯/层级更新 → 论文实测 <b>324 ms</b>（峰值 386）·　本次复现 <b>668 ms</b></Text>
+            <Text style={{ fontSize: 16.5, color: '#1A2230', lineHeight: 1.35 }}><b>全流程</b>　85 张 <b>54 s</b>（ds=1）/ 30.9 s（ds=2）　←　离线 COLMAP＋3DGS 同场景 <b>8 min 50 s</b>，本文 1 min 17 s，<b>快 6.9×</b></Text>
+            <Text style={{ fontSize: 16.5, color: '#4A5568', lineHeight: 1.35 }}><b>immediate 的含义</b>　单帧 &lt; 1 秒，够边拍边判断要不要补拍；<b>不是</b> 30 fps 视频——渲染 480 fps 是 3DGS 自带的，不算本文贡献</Text>
+        </Box>
     </Box>
 
     <Box style={{ padding: '16px 40px 0px 40px', flexDirection: 'column', gap: 8 }}>
