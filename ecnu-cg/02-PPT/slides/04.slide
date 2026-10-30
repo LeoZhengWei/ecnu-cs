@@ -63,8 +63,8 @@
             <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#FFFFFF' }}>时间账</Text>
         </Box>
         <Box style={{ flex: 1, flexDirection: 'column', gap: 5 }}>
-            <Text style={{ fontSize: 16.5, color: '#1A2230', lineHeight: 1.35 }}><b>单帧预算</b>　前端 27.8 ＋ 局部 BA 40.5 ＋ 高斯/层级更新 → 论文实测 <b>324 ms</b>（峰值 386）·　本次复现 <b>668 ms</b></Text>
-            <Text style={{ fontSize: 16.5, color: '#1A2230', lineHeight: 1.35 }}><b>全流程</b>　85 张 <b>54 s</b>（ds=1）/ 30.9 s（ds=2）　←　离线 COLMAP＋3DGS 同场景 <b>8 min 50 s</b>，本文 1 min 17 s，<b>快 6.9×</b></Text>
+            <Text style={{ fontSize: 16.5, color: '#1A2230', lineHeight: 1.35 }}><b>单帧延迟</b>　前端 27.8 ＋ 局部 BA 40.5 ＋ 高斯/层级 → 论文 <b>324 ms</b>（峰值 386）·　本次实测平均 <b>311 ms</b>、中位 87 ms、最慢 1.72 s</Text>
+            <Text style={{ fontSize: 16.5, color: '#1A2230', lineHeight: 1.35 }}><b>全流程</b>　85 张 <b>54.5 s</b>（ds=1）/ 30.9 s（ds=2）　←　离线 COLMAP＋3DGS 同场景 <b>8 min 50 s</b>，本文 1 min 17 s，<b>快 6.9×</b></Text>
             <Text style={{ fontSize: 16.5, color: '#4A5568', lineHeight: 1.35 }}><b>immediate 的含义</b>　单帧 &lt; 1 秒，够边拍边判断要不要补拍；<b>不是</b> 30 fps 视频——渲染 480 fps 是 3DGS 自带的，不算本文贡献</Text>
         </Box>
     </Box>

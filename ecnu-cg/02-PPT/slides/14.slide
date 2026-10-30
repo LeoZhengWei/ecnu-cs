@@ -5,68 +5,171 @@
         <Text style={{ fontSize: 15, color: '#8B97A8' }}>14 / 16</Text>
     </Box>
     <Box style={{ padding: '6px 40px 0px 40px' }}>
-        <Text style={{ fontSize: 19, color: '#4A5568', lineHeight: 1.35 }}>85 张照片全程 <b>54 秒</b>；12 格的<b>相机位姿与内参完全固定</b>，唯一的变量是“模型当时建到哪儿”。</Text>
+        <Text style={{ fontSize: 19, color: '#4A5568', lineHeight: 1.35 }}>85 张照片全程 <b>54.5 秒</b>。12 格<b>相机位姿与内参完全固定</b>，唯一变量是“模型建到哪儿”；格下蓝字是该帧<b>处理完的时刻</b>。</Text>
     </Box>
 
-    <Box style={{ padding: '8px 40px 0px 40px', flexDirection: 'column', gap: 6 }}>
-        <Box style={{ flexDirection: 'row', gap: 8, justifyContent: 'center' }}>
-            <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
-                <Image src="prog_fix/tiles/t01.jpg" style={{ width: 164, height: 219 }} />
-                <Text style={{ fontSize: 12.5, color: '#4A5568', marginTop: 4 }}>#36 ｜ 8 关键帧</Text>
+    <Box style={{ padding: '9px 40px 0px 40px', flexDirection: 'row', gap: 16 }}>
+        <Box style={{ width: 976, flexDirection: 'column', gap: 8 }}>
+            <Box style={{ flexDirection: 'row', gap: 8, justifyContent: 'space-between' }}>
+                <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
+                    <Image src="prog_fix/tiles/t01.jpg" style={{ width: 156, height: 208 }} />
+                    <Box style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 4 }}>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>#36</Text>
+                        <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#0F2E66' }}>4.4 s</Text>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>8 KF</Text>
+                    </Box>
+                </Box>
+                <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
+                    <Image src="prog_fix/tiles/t02.jpg" style={{ width: 156, height: 208 }} />
+                    <Box style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 4 }}>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>#40</Text>
+                        <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#0F2E66' }}>5.3 s</Text>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>9 KF</Text>
+                    </Box>
+                </Box>
+                <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
+                    <Image src="prog_fix/tiles/t03.jpg" style={{ width: 156, height: 208 }} />
+                    <Box style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 4 }}>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>#44</Text>
+                        <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#0F2E66' }}>6.7 s</Text>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>11 KF</Text>
+                    </Box>
+                </Box>
+                <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
+                    <Image src="prog_fix/tiles/t04.jpg" style={{ width: 156, height: 208 }} />
+                    <Box style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 4 }}>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>#48</Text>
+                        <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#0F2E66' }}>7.6 s</Text>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>12 KF</Text>
+                    </Box>
+                </Box>
+                <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
+                    <Image src="prog_fix/tiles/t05.jpg" style={{ width: 156, height: 208 }} />
+                    <Box style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 4 }}>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>#52</Text>
+                        <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#0F2E66' }}>9.0 s</Text>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>14 KF</Text>
+                    </Box>
+                </Box>
+                <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
+                    <Image src="prog_fix/tiles/t06.jpg" style={{ width: 156, height: 208 }} />
+                    <Box style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 4 }}>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>#60</Text>
+                        <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#0F2E66' }}>12.0 s</Text>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>18 KF</Text>
+                    </Box>
+                </Box>
             </Box>
-            <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
-                <Image src="prog_fix/tiles/t02.jpg" style={{ width: 164, height: 219 }} />
-                <Text style={{ fontSize: 12.5, color: '#4A5568', marginTop: 4 }}>#40 ｜ 9 关键帧</Text>
-            </Box>
-            <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
-                <Image src="prog_fix/tiles/t03.jpg" style={{ width: 164, height: 219 }} />
-                <Text style={{ fontSize: 12.5, color: '#4A5568', marginTop: 4 }}>#44 ｜ 11 关键帧</Text>
-            </Box>
-            <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
-                <Image src="prog_fix/tiles/t04.jpg" style={{ width: 164, height: 219 }} />
-                <Text style={{ fontSize: 12.5, color: '#4A5568', marginTop: 4 }}>#48 ｜ 12 关键帧</Text>
-            </Box>
-            <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
-                <Image src="prog_fix/tiles/t05.jpg" style={{ width: 164, height: 219 }} />
-                <Text style={{ fontSize: 12.5, color: '#4A5568', marginTop: 4 }}>#52 ｜ 14 关键帧</Text>
-            </Box>
-            <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
-                <Image src="prog_fix/tiles/t06.jpg" style={{ width: 164, height: 219 }} />
-                <Text style={{ fontSize: 12.5, color: '#4A5568', marginTop: 4 }}>#60 ｜ 18 关键帧</Text>
+
+            <Box style={{ flexDirection: 'row', gap: 8, justifyContent: 'space-between' }}>
+                <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
+                    <Image src="prog_fix/tiles/t07.jpg" style={{ width: 156, height: 208 }} />
+                    <Box style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 4 }}>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>#64</Text>
+                        <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#0F2E66' }}>14.5 s</Text>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>22 KF</Text>
+                    </Box>
+                </Box>
+                <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
+                    <Image src="prog_fix/tiles/t08.jpg" style={{ width: 156, height: 208 }} />
+                    <Box style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 4 }}>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>#68</Text>
+                        <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#0F2E66' }}>17.2 s</Text>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>26 KF</Text>
+                    </Box>
+                </Box>
+                <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
+                    <Image src="prog_fix/tiles/t09.jpg" style={{ width: 156, height: 208 }} />
+                    <Box style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 4 }}>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>#72</Text>
+                        <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#0F2E66' }}>21.2 s</Text>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>32 KF</Text>
+                    </Box>
+                </Box>
+                <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
+                    <Image src="prog_fix/tiles/t10.jpg" style={{ width: 156, height: 208 }} />
+                    <Box style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 4 }}>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>#76</Text>
+                        <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#0F2E66' }}>22.7 s</Text>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>34 KF</Text>
+                    </Box>
+                </Box>
+                <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
+                    <Image src="prog_fix/tiles/t11.jpg" style={{ width: 156, height: 208 }} />
+                    <Box style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 4 }}>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>#80</Text>
+                        <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#0F2E66' }}>23.6 s</Text>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>35 KF</Text>
+                    </Box>
+                </Box>
+                <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
+                    <Image src="prog_fix/tiles/t12.jpg" style={{ width: 156, height: 208, border: '2px solid #1E4FA8' }} />
+                    <Box style={{ flexDirection: 'row', alignItems: 'baseline', gap: 4, marginTop: 4 }}>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>#84</Text>
+                        <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1E4FA8' }}>26.1 s</Text>
+                        <Text style={{ fontSize: 11, color: '#8B97A8' }}>81 KF</Text>
+                    </Box>
+                </Box>
             </Box>
         </Box>
-        <Box style={{ flexDirection: 'row', gap: 8, justifyContent: 'center' }}>
-            <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
-                <Image src="prog_fix/tiles/t07.jpg" style={{ width: 164, height: 219 }} />
-                <Text style={{ fontSize: 12.5, color: '#4A5568', marginTop: 4 }}>#64 ｜ 22 关键帧</Text>
+
+        <Box style={{ width: 208, backgroundColor: '#F7F9FC', borderTop: '4px solid #1E4FA8', borderRadius: 4, padding: '12px 14px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1E4FA8' }}>重建花了多少时间</Text>
+            <Text style={{ fontSize: 12, color: '#8B97A8', marginTop: 2 }}>单帧延迟（= 下一张可拍前）</Text>
+            <Box style={{ flexDirection: 'column', gap: 3, marginTop: 8 }}>
+                <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <Text style={{ fontSize: 13.5, color: '#4A5568' }}>中位</Text>
+                    <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#1E4FA8' }}>87 ms</Text>
+                </Box>
+                <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <Text style={{ fontSize: 13.5, color: '#4A5568' }}>p90</Text>
+                    <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#1A2230' }}>756 ms</Text>
+                </Box>
+                <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <Text style={{ fontSize: 13.5, color: '#4A5568' }}>最慢一帧</Text>
+                    <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#1A2230' }}>1.72 s</Text>
+                </Box>
             </Box>
-            <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
-                <Image src="prog_fix/tiles/t08.jpg" style={{ width: 164, height: 219 }} />
-                <Text style={{ fontSize: 12.5, color: '#4A5568', marginTop: 4 }}>#68 ｜ 26 关键帧</Text>
+            <Box style={{ height: 1, backgroundColor: '#D6DCE5', marginTop: 11, marginBottom: 9 }} />
+            <Text style={{ fontSize: 12, color: '#8B97A8' }}>整段流程（85 张）</Text>
+            <Box style={{ flexDirection: 'column', gap: 4, marginTop: 7 }}>
+                <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <Text style={{ fontSize: 13, color: '#4A5568' }}>84 帧主体</Text>
+                    <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1E4FA8' }}>26.1 s</Text>
+                </Box>
+                <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <Text style={{ fontSize: 13, color: '#4A5568' }}>收尾重试</Text>
+                    <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1A2230' }}>28.4 s</Text>
+                </Box>
+                <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <Text style={{ fontSize: 13, color: '#4A5568' }}>全程</Text>
+                    <Text style={{ fontSize: 17, fontWeight: 'bold', color: '#1A2230' }}>54.5 s</Text>
+                </Box>
             </Box>
-            <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
-                <Image src="prog_fix/tiles/t09.jpg" style={{ width: 164, height: 219 }} />
-                <Text style={{ fontSize: 12.5, color: '#4A5568', marginTop: 4 }}>#72 ｜ 32 关键帧</Text>
+            <Box style={{ height: 1, backgroundColor: '#D6DCE5', marginTop: 10, marginBottom: 8 }} />
+            <Text style={{ fontSize: 12, color: '#8B97A8' }}>与论文对照（论文 · 本次）</Text>
+            <Box style={{ flexDirection: 'column', gap: 3, marginTop: 6 }}>
+                <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <Text style={{ fontSize: 13, color: '#4A5568' }}>平均</Text>
+                    <Text style={{ fontSize: 14.5, color: '#1A2230' }}>324 ms · <b style={{ color: '#1E4FA8' }}>311 ms</b></Text>
+                </Box>
+                <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <Text style={{ fontSize: 13, color: '#4A5568' }}>峰值</Text>
+                    <Text style={{ fontSize: 14.5, color: '#1A2230' }}>386 ms · <b style={{ color: '#1E4FA8' }}>1.72 s</b></Text>
+                </Box>
+                <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                    <Text style={{ fontSize: 13, color: '#4A5568' }}>全流程</Text>
+                    <Text style={{ fontSize: 14.5, color: '#1A2230' }}>8 min 50 s → <b style={{ color: '#1E4FA8' }}>54.5 s</b></Text>
+                </Box>
             </Box>
-            <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
-                <Image src="prog_fix/tiles/t10.jpg" style={{ width: 164, height: 219 }} />
-                <Text style={{ fontSize: 12.5, color: '#4A5568', marginTop: 4 }}>#76 ｜ 34 关键帧</Text>
-            </Box>
-            <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
-                <Image src="prog_fix/tiles/t11.jpg" style={{ width: 164, height: 219 }} />
-                <Text style={{ fontSize: 12.5, color: '#4A5568', marginTop: 4 }}>#80 ｜ 35 关键帧</Text>
-            </Box>
-            <Box style={{ flexDirection: 'column', alignItems: 'center' }}>
-                <Image src="prog_fix/tiles/t12.jpg" style={{ width: 164, height: 219, border: '2px solid #1E4FA8' }} />
-                <Text style={{ fontSize: 12.5, color: '#1E4FA8', fontWeight: 'bold', marginTop: 4 }}>#84 ｜ 81 关键帧</Text>
-            </Box>
+            <Text style={{ fontSize: 11, color: '#8B97A8', lineHeight: 1.3, marginTop: 9 }}>像素量为论文典型场景约 4 倍，故峰值更高；离线一栏为 COLMAP＋3DGS 同场景。</Text>
         </Box>
     </Box>
 
     <Box style={{ marginTop: 'auto', padding: '8px 40px 12px 40px', flexDirection: 'column', gap: 5 }}>
-        <Box style={{ backgroundColor: '#F0F5FC', borderLeft: '5px solid #1E4FA8', padding: '9px 14px' }}>
-            <Text style={{ fontSize: 17.5, color: '#1A2230', lineHeight: 1.4 }}>第 36 张进来时只有 <b>8 个关键帧</b>，画面还是一团噪点——但<b>哪块没拍到已经看得出来</b>，这正是 immediate 的用处；第 60 张跨过 18 个关键帧后陡然清晰，第 84 张 <b>81 个关键帧</b>、噪点收净。</Text>
+        <Box style={{ backgroundColor: '#F0F5FC', borderLeft: '5px solid #1E4FA8', padding: '8px 14px' }}>
+            <Text style={{ fontSize: 17, color: '#1A2230', lineHeight: 1.38 }}>第 36 张在 <b>4.4 s</b> 就建到 8 个关键帧——画面还是噪点，但<b>哪块没拍到已经看得出来</b>；第 60 张（<b>12.0 s</b>）跨过 18 个关键帧陡然清晰；第 84 张（<b>26.1 s</b>）81 个关键帧、噪点收净。之后 28 秒只<b>重试搁置帧</b>，不影响边拍边看。</Text>
         </Box>
-        <Text style={{ fontSize: 12.5, color: '#8B97A8', lineHeight: 1.4 }}><b>每一格都是那一帧处理完立刻渲染的，不用等全部拍完。</b>快照由官方 --save_every 4 落盘，这轮为写盘牺牲了速度（342 s）；纯净运行 85 张 54.1 s、单帧 668 ms；前 28 帧尚无高斯，首个快照取第 36 帧。</Text>
+        <Text style={{ fontSize: 12, color: '#8B97A8', lineHeight: 1.4 }}>逐帧打点实测（纯净运行，无写盘开销）：84 帧主体 26.1 s；单帧中位 87 ms、p90 756 ms、最大 1.72 s。图像取自 --save_every 4 快照轮，两轮关键帧序列一致（8 → 81）。</Text>
     </Box>
 </Slide>
