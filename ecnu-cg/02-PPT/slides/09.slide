@@ -2,7 +2,7 @@
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
     <Box style={{ padding: '26px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <Text style={{ fontSize: 33, fontWeight: 'bold', color: '#1E4FA8' }}>局部 BA：真正把位姿解出来的唯一一步</Text>
-        <Text style={{ fontSize: 15, color: '#8B97A8' }}>09 / 15</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>09 / 16</Text>
     </Box>
     <Box style={{ padding: '8px 40px 0px 40px' }}>
         <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.4 }}>在选出的 20 帧上解一次带鲁棒核的最小二乘，用 Schur 补把问题压到“只解相机”。</Text>

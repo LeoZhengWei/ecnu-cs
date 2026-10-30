@@ -2,7 +2,7 @@
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
     <Box style={{ padding: '30px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>论文实验：快一个数量级，只差 1–2 dB</Text>
-        <Text style={{ fontSize: 15, color: '#8B97A8' }}>12 / 15</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>12 / 16</Text>
     </Box>
     <Box style={{ padding: '18px 40px 0px 40px', flexDirection: 'column' }}>
         <Box style={{ flexDirection: 'row', backgroundColor: '#1E4FA8', padding: '11px 14px' }}>

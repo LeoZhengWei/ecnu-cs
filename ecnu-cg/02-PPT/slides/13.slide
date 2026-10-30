@@ -2,7 +2,7 @@
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
     <Box style={{ padding: '13px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <Text style={{ fontSize: 31, fontWeight: 'bold', color: '#1E4FA8' }}>核心优化：位姿求解是作者自己写的 GPU 核</Text>
-        <Text style={{ fontSize: 15, color: '#8B97A8' }}>13 / 15</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>13 / 16</Text>
     </Box>
     <Box style={{ padding: '5px 40px 0px 40px' }}>
         <Text style={{ fontSize: 17, color: '#4A5568' }}>论文没有调用 g2o / Ceres / CUDA-BA，第 ⑤ 步的 BA 从残差到求解全是自己写的：<b>雅可比解析、LM 迭代、Schur 消元、位姿更新，四步都留在显存里</b>。</Text>
