@@ -1,49 +1,102 @@
 <Slide style={{ width: '1280px', height: '720px', backgroundColor: '#FFFFFF', padding: '0px', flexDirection: 'column' }}>
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
-    <Box style={{ padding: '14px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#1E4FA8' }}>附：七个步骤在源码里长什么样</Text>
-        <Text style={{ fontSize: 15, color: '#8B97A8' }}>15 / 15</Text>
+    <Box style={{ padding: '18px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#1E4FA8' }}>结论：三句话带走，加一张边界清单</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>15 / 16</Text>
     </Box>
-    <Box style={{ padding: '5px 40px 0px 40px' }}>
-        <Text style={{ fontSize: 17, color: '#4A5568' }}>真实源码截图，与第 04 页七步链、第 05–11 页逐页对应：<b>①②③ 定跟谁比、④ 定跟谁一起算、⑤ 才真解位姿、⑥⑦ 修漂移与压显存</b>。</Text>
-    </Box>
-    <Box style={{ padding: '8px 40px 0px 40px', flexDirection: 'row', gap: 14 }}>
-        <Box style={{ flex: 1, flexDirection: 'column', gap: 10 }}>
-        <Box style={{ backgroundColor: '#1E1E1E', borderRadius: 5, padding: '5px 11px 5px 11px', flexDirection: 'column' }}>
-            <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#8FBBFF', marginBottom: 0 }}>① ② ③  检索 → 粗筛 → 建边</Text>
-            <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#7F8C9F', marginBottom: 2 }}>scene/scene_model_loop_closure.py:179</Text>
-            <Image src="code_png/01.png" style={{ width: 568, height: 104.5 }} />
+
+    <Box style={{ padding: '15px 40px 0px 40px', flexDirection: 'column', gap: 18 }}>
+        <Box style={{ flexDirection: 'row', gap: 16, alignItems: 'flex-start' }}>
+            <Box style={{ width: '34px', height: '34px', backgroundColor: '#1E4FA8', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#FFFFFF' }}>1</Text>
+            </Box>
+            <Box style={{ flex: 1, flexDirection: 'column' }}>
+                <Text style={{ fontSize: 23, fontWeight: 'bold', color: '#1A2230' }}>它填的是一块空格，不是"更快的离线 SfM"</Text>
+                <Text style={{ fontSize: 18, color: '#4A5568', lineHeight: 1.4, marginTop: 4 }}>即时、无序、全局一致三者同时成立，此前没有方法做到。速度是手段，"现场可判断"才是目的。</Text>
+            </Box>
         </Box>
-        <Box style={{ backgroundColor: '#1E1E1E', borderRadius: 5, padding: '5px 11px 5px 11px', flexDirection: 'column' }}>
-            <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#8FBBFF', marginBottom: 0 }}>④  协视图贪心扩张（式 1）</Text>
-            <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#7F8C9F', marginBottom: 2 }}>poses/ba_problem.py:648</Text>
-            <Image src="code_png/02.png" style={{ width: 568, height: 123.0 }} />
+        <Box style={{ flexDirection: 'row', gap: 16, alignItems: 'flex-start' }}>
+            <Box style={{ width: '34px', height: '34px', backgroundColor: '#1E4FA8', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#FFFFFF' }}>2</Text>
+            </Box>
+            <Box style={{ flex: 1, flexDirection: 'column' }}>
+                <Text style={{ fontSize: 23, fontWeight: 'bold', color: '#1A2230' }}>题眼是用"图上的距离"替换"全局优化的解"</Text>
+                <Text style={{ fontSize: 18, color: '#4A5568', lineHeight: 1.4, marginTop: 4 }}>判定看加权图距、不看时间，求解用焊接窗口得 Sim(3)，再把修正按测地距离摊给全图——回环不必重算第二遍。</Text>
+            </Box>
         </Box>
-        <Box style={{ backgroundColor: '#1E1E1E', borderRadius: 5, padding: '5px 11px 5px 11px', flexDirection: 'column' }}>
-            <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#8FBBFF', marginBottom: 0 }}>⑤  局部 BA：LM 迭代 + Schur 消元</Text>
-            <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#7F8C9F', marginBottom: 2 }}>poses/mini_ba.py:285</Text>
-            <Image src="code_png/03.png" style={{ width: 568, height: 160.0 }} />
-        </Box>
-        </Box>
-        <Box style={{ flex: 1, flexDirection: 'column', gap: 10 }}>
-        <Box style={{ backgroundColor: '#1E1E1E', borderRadius: 5, padding: '5px 11px 5px 11px', flexDirection: 'column' }}>
-            <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#8FBBFF', marginBottom: 0 }}>⑥  回环检测与补边</Text>
-            <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#7F8C9F', marginBottom: 2 }}>poses/ba_problem.py:1054</Text>
-            <Image src="code_png/04.png" style={{ width: 568, height: 123.0 }} />
-        </Box>
-        <Box style={{ backgroundColor: '#1E1E1E', borderRadius: 5, padding: '5px 11px 5px 11px', flexDirection: 'column' }}>
-            <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#8FBBFF', marginBottom: 0 }}>⑦-a  分块深度对齐</Text>
-            <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#7F8C9F', marginBottom: 2 }}>scene/mono_depth.py:315</Text>
-            <Image src="code_png/05.png" style={{ width: 568, height: 86.0 }} />
-        </Box>
-        <Box style={{ backgroundColor: '#1E1E1E', borderRadius: 5, padding: '5px 11px 5px 11px', flexDirection: 'column' }}>
-            <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#8FBBFF', marginBottom: 0 }}>⑦-b  渐进层级与合并</Text>
-            <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#7F8C9F', marginBottom: 2 }}>scene/hierarchy_cut.py:105</Text>
-            <Image src="code_png/06.png" style={{ width: 568, height: 104.5 }} />
-        </Box>
+        <Box style={{ flexDirection: 'row', gap: 16, alignItems: 'flex-start' }}>
+            <Box style={{ width: '34px', height: '34px', backgroundColor: '#0E3F8C', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#FFFFFF' }}>3</Text>
+            </Box>
+            <Box style={{ flex: 1, flexDirection: 'column' }}>
+                <Text style={{ fontSize: 23, fontWeight: 'bold', color: '#1A2230' }}>代价是真的：让出 1.2 dB，换来一条自写的 GPU 求解栈</Text>
+                <Text style={{ fontSize: 18, color: '#4A5568', lineHeight: 1.4, marginTop: 4 }}>不调 g2o / Ceres，雅可比、Schur 消元、迭代更新自己写成核——精度上限低于全局 BA，但换来了时间。</Text>
+            </Box>
         </Box>
     </Box>
-    <Box style={{ padding: '7px 40px 0px 40px' }}>
-        <Text style={{ fontSize: 13.5, color: '#8B97A8', lineHeight: 1.35 }}>行号指向片段起点；为投影宽度做了换行与变量缩写（w = edge_weight），逻辑未改。第 04、05–11 页已按源码默认值修正：回环触发为<b>加权图距 &gt; 10</b>；层级合并触发为<b>可并数 &gt; max(10%, 20 万)</b>，且是 <b>kNN 加权平均</b>而非 KL。</Text>
+
+    <Box style={{ margin: '17px 40px 0px 40px', backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '9px 16px', flexDirection: 'column' }}>
+        <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' }}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#1A2230' }}>它现在的边界　→　对应的补法</Text>
+            <Text style={{ fontSize: 14, color: '#8B97A8' }}>论文自述的局限，非我们的复现问题</Text>
+        </Box>
+        <Box style={{ flexDirection: 'row', gap: 14, marginTop: 7 }}>
+            <Box style={{ flex: 1, flexDirection: 'column' }}>
+                <Text style={{ fontSize: 14.5, fontWeight: 'bold', color: '#B03A37' }}>① 低视差直接失效</Text>
+                <Text style={{ fontSize: 14, color: '#1A2230', lineHeight: 1.35, marginTop: 2 }}>低视差帧只参与渲染、不进位姿求解，避免污染轨迹</Text>
+            </Box>
+            <Box style={{ flex: 1, flexDirection: 'column' }}>
+                <Text style={{ fontSize: 14.5, fontWeight: 'bold', color: '#B03A37' }}>② 精度低于全局 BA</Text>
+                <Text style={{ fontSize: 14, color: '#1A2230', lineHeight: 1.35, marginTop: 2 }}>在线出预览，结束时 GLOMAP 回填一次全局 BA，补回 1.2 dB</Text>
+            </Box>
+            <Box style={{ flex: 1, flexDirection: 'column' }}>
+                <Text style={{ fontSize: 14.5, fontWeight: 'bold', color: '#B03A37' }}>③ 上游依赖链太重</Text>
+                <Text style={{ fontSize: 14, color: '#1A2230', lineHeight: 1.35, marginTop: 2 }}>采集端给实时覆盖率与误差热图，直接提示"这块没拍"</Text>
+            </Box>
+            <Box style={{ flex: 1, flexDirection: 'column' }}>
+                <Text style={{ fontSize: 14.5, fontWeight: 'bold', color: '#B03A37' }}>④ 阈值靠经验</Text>
+                <Text style={{ fontSize: 14, color: '#1A2230', lineHeight: 1.35, marginTop: 2 }}>按纹理强度与重叠度在线估计，替代固定常数</Text>
+            </Box>
+        </Box>
+    </Box>
+
+    <Box style={{ margin: '16px 40px 0px 40px', backgroundColor: '#FAFBFD', border: '1px solid #E3E8F0', borderRadius: 6, padding: '10px 16px 12px 16px', flexDirection: 'row' }}>
+        <Box style={{ flex: 1, borderTop: '2px solid #C8D4E4', padding: '9px 14px 0px 14px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#3D7BD9' }}>2019</Text>
+            <Text style={{ fontSize: 17.5, fontWeight: 'bold', color: '#1A2230', marginTop: 2 }}>NeRF</Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.35, marginTop: 4 }}>离线、必须有序输入</Text>
+            <Text style={{ fontSize: 13.5, color: '#8B97A8', lineHeight: 1.35, marginTop: 3 }}>一次训练以小时计</Text>
+        </Box>
+        <Box style={{ flex: 1, borderTop: '2px solid #C8D4E4', padding: '9px 14px 0px 14px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#3D7BD9' }}>2023</Text>
+            <Text style={{ fontSize: 17.5, fontWeight: 'bold', color: '#1A2230', marginTop: 2 }}>3DGS</Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.35, marginTop: 4 }}>渲染快了，位姿仍靠 COLMAP</Text>
+            <Text style={{ fontSize: 13.5, color: '#8B97A8', lineHeight: 1.35, marginTop: 3 }}>前置步骤还是离线 SfM</Text>
+        </Box>
+        <Box style={{ flex: 1, borderTop: '2px solid #C8D4E4', padding: '9px 14px 0px 14px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#3D7BD9' }}>2024–25</Text>
+            <Text style={{ fontSize: 17.5, fontWeight: 'bold', color: '#1A2230', marginTop: 2 }}>增量 / 无位姿重建</Text>
+            <Text style={{ fontSize: 14, color: '#4A5568', lineHeight: 1.35, marginTop: 4 }}>要么依赖有序，要么非全局</Text>
+            <Text style={{ fontSize: 13.5, color: '#8B97A8', lineHeight: 1.35, marginTop: 3 }}>两条路各缺一条</Text>
+        </Box>
+        <Box style={{ flex: 1, borderTop: '2px solid #1E4FA8', padding: '9px 14px 0px 14px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#1E4FA8' }}>2026</Text>
+            <Text style={{ fontSize: 17.5, fontWeight: 'bold', color: '#1E4FA8', marginTop: 2 }}>i3dgs（本文）</Text>
+            <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#1E4FA8', lineHeight: 1.35, marginTop: 4 }}>即时 · 无序 · 全局一致</Text>
+            <Text style={{ fontSize: 13.5, fontWeight: 'bold', color: '#3D7BD9', lineHeight: 1.35, marginTop: 3 }}>三者首次同时成立</Text>
+        </Box>
+    </Box>
+
+    <Box style={{ margin: '11px 40px 0px 40px', backgroundColor: '#1E4FA8', borderRadius: 6, padding: '14px 22px', flexDirection: 'row', alignItems: 'center', gap: 26 }}>
+        <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.4, flex: 1 }}>一句话总结：它把 3DGS 从"拍完再算的离线工具"变成了"拍摄现场的仪表盘"。</Text>
+        <Box style={{ flexDirection: 'column' }}>
+            <Text style={{ fontSize: 15, color: '#C3D5EF' }}>论文 / 我们</Text>
+            <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#FFFFFF' }}>26.29 → 25.95 dB</Text>
+        </Box>
+    </Box>
+
+    <Box style={{ marginTop: 'auto', padding: '10px 40px 16px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1E4FA8' }}>谢谢，欢迎提问</Text>
+        <Text style={{ fontSize: 14, color: '#8B97A8' }}>论文：SIGGRAPH 2026 / arXiv:2607.14481 · 代码：github.com/graphdeco-inria/i3dgs</Text>
     </Box>
 </Slide>

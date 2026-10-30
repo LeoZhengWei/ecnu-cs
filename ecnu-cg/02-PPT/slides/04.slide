@@ -2,7 +2,7 @@
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
     <Box style={{ padding: '24px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <Text style={{ fontSize: 33, fontWeight: 'bold', color: '#1E4FA8' }}>方法总览：一帧进来，走完七步</Text>
-        <Text style={{ fontSize: 15, color: '#8B97A8' }}>04 / 15</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>04 / 16</Text>
     </Box>
     <Box style={{ padding: '8px 40px 0px 40px' }}>
         <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.4 }}>设计哲学一句话：<b>每帧做小事，偶尔做一次大事</b>。前者保证实时，后者保证不漂；每一步都对应上一页的一个病症。</Text>

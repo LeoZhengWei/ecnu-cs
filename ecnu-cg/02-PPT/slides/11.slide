@@ -2,7 +2,7 @@
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
     <Box style={{ padding: '26px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <Text style={{ fontSize: 33, fontWeight: 'bold', color: '#1E4FA8' }}>落位：先把深度对齐，再按屏幕尺寸压成层级</Text>
-        <Text style={{ fontSize: 15, color: '#8B97A8' }}>11 / 15</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>11 / 16</Text>
     </Box>
     <Box style={{ padding: '8px 40px 0px 40px' }}>
         <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.4 }}>位姿定下来之后才投放高斯：分块估深度尺度与偏移，再把屏幕上看不见的小高斯合并掉。</Text>

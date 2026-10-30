@@ -2,7 +2,7 @@
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
     <Box style={{ padding: '26px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <Text style={{ fontSize: 33, fontWeight: 'bold', color: '#1E4FA8' }}>精确验证：通过才建边，边就是后面一切判断的依据</Text>
-        <Text style={{ fontSize: 15, color: '#8B97A8' }}>07 / 15</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>07 / 16</Text>
     </Box>
     <Box style={{ padding: '8px 40px 0px 40px' }}>
         <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.4 }}>对 5 个候选跑 LightGlue 精确配对，RANSAC 剔除外点，内点数超过 500 才写进协视图。</Text>

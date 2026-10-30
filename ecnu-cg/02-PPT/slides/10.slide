@@ -2,7 +2,7 @@
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
     <Box style={{ padding: '26px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
         <Text style={{ fontSize: 33, fontWeight: 'bold', color: '#1E4FA8' }}>回环修正：判定“两簇其实重叠”，再把修正摊回全图</Text>
-        <Text style={{ fontSize: 15, color: '#8B97A8' }}>10 / 15</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>10 / 16</Text>
     </Box>
     <Box style={{ padding: '8px 40px 0px 40px' }}>
         <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.4 }}>不重跑全局 BA：用一次焊接窗口 BA 求出 Sim(3)，再沿主干路径按测地距离插值摊开。</Text>

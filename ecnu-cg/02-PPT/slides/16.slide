@@ -1,0 +1,49 @@
+<Slide style={{ width: '1280px', height: '720px', backgroundColor: '#FFFFFF', padding: '0px', flexDirection: 'column' }}>
+    <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
+    <Box style={{ padding: '14px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Text style={{ fontSize: 32, fontWeight: 'bold', color: '#1E4FA8' }}>附：七个步骤在源码里长什么样</Text>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>16 / 16</Text>
+    </Box>
+    <Box style={{ padding: '5px 40px 0px 40px' }}>
+        <Text style={{ fontSize: 17, color: '#4A5568' }}>真实源码截图，与第 04 页七步链、第 05–11 页逐页对应：<b>①②③ 定跟谁比、④ 定跟谁一起算、⑤ 才真解位姿、⑥⑦ 修漂移与压显存</b>。</Text>
+    </Box>
+    <Box style={{ padding: '8px 40px 0px 40px', flexDirection: 'row', gap: 14 }}>
+        <Box style={{ flex: 1, flexDirection: 'column', gap: 10 }}>
+        <Box style={{ backgroundColor: '#1E1E1E', borderRadius: 5, padding: '5px 11px 5px 11px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#8FBBFF', marginBottom: 0 }}>① ② ③  检索 → 粗筛 → 建边</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#7F8C9F', marginBottom: 2 }}>scene/scene_model_loop_closure.py:179</Text>
+            <Image src="code_png/01.png" style={{ width: 568, height: 104.5 }} />
+        </Box>
+        <Box style={{ backgroundColor: '#1E1E1E', borderRadius: 5, padding: '5px 11px 5px 11px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#8FBBFF', marginBottom: 0 }}>④  协视图贪心扩张（式 1）</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#7F8C9F', marginBottom: 2 }}>poses/ba_problem.py:648</Text>
+            <Image src="code_png/02.png" style={{ width: 568, height: 123.0 }} />
+        </Box>
+        <Box style={{ backgroundColor: '#1E1E1E', borderRadius: 5, padding: '5px 11px 5px 11px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#8FBBFF', marginBottom: 0 }}>⑤  局部 BA：LM 迭代 + Schur 消元</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#7F8C9F', marginBottom: 2 }}>poses/mini_ba.py:285</Text>
+            <Image src="code_png/03.png" style={{ width: 568, height: 160.0 }} />
+        </Box>
+        </Box>
+        <Box style={{ flex: 1, flexDirection: 'column', gap: 10 }}>
+        <Box style={{ backgroundColor: '#1E1E1E', borderRadius: 5, padding: '5px 11px 5px 11px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#8FBBFF', marginBottom: 0 }}>⑥  回环检测与补边</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#7F8C9F', marginBottom: 2 }}>poses/ba_problem.py:1054</Text>
+            <Image src="code_png/04.png" style={{ width: 568, height: 123.0 }} />
+        </Box>
+        <Box style={{ backgroundColor: '#1E1E1E', borderRadius: 5, padding: '5px 11px 5px 11px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#8FBBFF', marginBottom: 0 }}>⑦-a  分块深度对齐</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#7F8C9F', marginBottom: 2 }}>scene/mono_depth.py:315</Text>
+            <Image src="code_png/05.png" style={{ width: 568, height: 86.0 }} />
+        </Box>
+        <Box style={{ backgroundColor: '#1E1E1E', borderRadius: 5, padding: '5px 11px 5px 11px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#8FBBFF', marginBottom: 0 }}>⑦-b  渐进层级与合并</Text>
+            <Text style={{ fontFamily: 'Consolas', fontSize: 10, color: '#7F8C9F', marginBottom: 2 }}>scene/hierarchy_cut.py:105</Text>
+            <Image src="code_png/06.png" style={{ width: 568, height: 104.5 }} />
+        </Box>
+        </Box>
+    </Box>
+    <Box style={{ padding: '7px 40px 0px 40px' }}>
+        <Text style={{ fontSize: 13.5, color: '#8B97A8', lineHeight: 1.35 }}>行号指向片段起点；为投影宽度做了换行与变量缩写（w = edge_weight），逻辑未改。第 04、05–11 页已按源码默认值修正：回环触发为<b>加权图距 &gt; 10</b>；层级合并触发为<b>可并数 &gt; max(10%, 20 万)</b>，且是 <b>kNN 加权平均</b>而非 KL。</Text>
+    </Box>
+</Slide>
