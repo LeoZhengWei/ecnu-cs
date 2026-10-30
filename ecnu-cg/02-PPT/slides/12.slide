@@ -1,38 +1,84 @@
 <Slide style={{ width: '1280px', height: '720px', backgroundColor: '#FFFFFF', padding: '0px', flexDirection: 'column' }}>
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
     <Box style={{ padding: '30px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>不足与改进：哪些是硬伤，哪些能补</Text>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>论文实验：快一个数量级，只差 1–2 dB</Text>
         <Text style={{ fontSize: 15, color: '#8B97A8' }}>12 / 15</Text>
     </Box>
-    <Box style={{ padding: '18px 40px 0px 40px' }}>
-        <Text style={{ fontSize: 21, color: '#4A5568', lineHeight: 1.5 }}>左栏是它现在的边界（①–④ 来自论文自述，⑤ 是我们复现的边界），右栏是对应的补法。</Text>
-    </Box>
-    <Box style={{ padding: '12px 40px 0px 40px', flexDirection: 'row', gap: 26 }}>
-        <Box style={{ flex: 1, flexDirection: 'column' }}>
-            <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Box style={{ width: '5px', height: '26px', backgroundColor: '#D9534F' }} />
-                <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#1A2230' }}>目前方法的不足</Text>
-            </Box>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>① 低视差直接失效</b>　纯旋转或平移太小，三角化不出深度，论文自述这类采集会失败。</Text>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>② 精度有天花板</b>　作者用 NoGraphProp 消融证明图传播不比全局 PGO 差，但同时承认仍不如全局 BA。</Text>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>③ 上游依赖重</b>　VPR + XFeat + LightGlue + Depth Anything 3 串成一条链，任一环失效整条断。</Text>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>④ 阈值靠经验</b>　合并 0.5 px / 占比 20%、跳数 5、建边 500 匹配，换场景需重调。</Text>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>⑤ 我们的复现边界</b>　只跑有序序列（未验真无序）、2 倍降采样、单场景。</Text>
+    <Box style={{ padding: '18px 40px 0px 40px', flexDirection: 'column' }}>
+        <Box style={{ flexDirection: 'row', backgroundColor: '#1E4FA8', padding: '11px 14px' }}>
+            <Text style={{ flex: 1.5, fontSize: 19, fontWeight: 'bold', color: '#FFFFFF' }}>数据集（有序）</Text>
+            <Text style={{ flex: 1.4, fontSize: 19, fontWeight: 'bold', color: '#FFFFFF' }}>本方法 PSNR / 时间</Text>
+            <Text style={{ flex: 1.7, fontSize: 19, fontWeight: 'bold', color: '#FFFFFF' }}>离线参考 GLOMAP+3DGS(7k)</Text>
+            <Text style={{ flex: 1.4, fontSize: 19, fontWeight: 'bold', color: '#FFFFFF' }}>结论</Text>
         </Box>
-        <Box style={{ width: '1px', backgroundColor: '#D6DCE5' }} />
-        <Box style={{ flex: 1, flexDirection: 'column' }}>
-            <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Box style={{ width: '5px', height: '26px', backgroundColor: '#1E4FA8' }} />
-                <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#1A2230' }}>以后的改进点</Text>
-            </Box>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>① 低视差帧降级</b>　只参与渲染、不进位姿求解，避免污染轨迹。</Text>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>② 在线粗 + 离线精</b>　实时出预览，结束时用 GLOMAP 回填一次全局 BA，把 1.2 dB 补回来。</Text>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>③ 采集端闭环</b>　实时覆盖率与重投影误差热图，直接提示"这块没拍"——论文 motivation 的自然下一步。</Text>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>④ 阈值自适应</b>　按纹理强度与重叠度在线估计，替代固定常数。</Text>
-            <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.55, marginTop: 16 }}><b>⑤ 我们能立刻做的</b>　打乱实验（--shuffle）、全分辨率重跑、再换 2–3 个场景。</Text>
+        <Box style={{ flexDirection: 'row', padding: '11px 14px', borderBottom: '1px solid #D6DCE5' }}>
+            <Text style={{ flex: 1.5, fontSize: 19, color: '#1A2230' }}>TUM</Text>
+            <Text style={{ flex: 1.4, fontSize: 19, fontWeight: 'bold', color: '#1E4FA8' }}>24.77 / 1:22</Text>
+            <Text style={{ flex: 1.7, fontSize: 19, color: '#1A2230' }}>25.29 / 3:33</Text>
+            <Text style={{ flex: 1.4, fontSize: 19, color: '#1A2230' }}>比 LongSplat 快约 75×</Text>
+        </Box>
+        <Box style={{ flexDirection: 'row', padding: '11px 14px', backgroundColor: '#F7F9FC', borderBottom: '1px solid #D6DCE5' }}>
+            <Text style={{ flex: 1.5, fontSize: 19, color: '#1A2230' }}>MipNeRF360</Text>
+            <Text style={{ flex: 1.4, fontSize: 19, fontWeight: 'bold', color: '#1E4FA8' }}>26.29 / 1:17</Text>
+            <Text style={{ flex: 1.7, fontSize: 19, color: '#1A2230' }}>27.52 / 8:50</Text>
+            <Text style={{ flex: 1.4, fontSize: 19, color: '#1A2230' }}>快 6.9×，差 1.23 dB</Text>
+        </Box>
+        <Box style={{ flexDirection: 'row', padding: '11px 14px', borderBottom: '1px solid #D6DCE5' }}>
+            <Text style={{ flex: 1.5, fontSize: 19, color: '#1A2230' }}>StaticHikes</Text>
+            <Text style={{ flex: 1.4, fontSize: 19, fontWeight: 'bold', color: '#1E4FA8' }}>22.12 / 2:14</Text>
+            <Text style={{ flex: 1.7, fontSize: 19, color: '#1A2230' }}>20.23 / 1:02:34</Text>
+            <Text style={{ flex: 1.4, fontSize: 19, color: '#1A2230' }}>质量反超离线</Text>
+        </Box>
+        <Box style={{ flexDirection: 'row', padding: '11px 14px', backgroundColor: '#F7F9FC', borderBottom: '1px solid #D6DCE5' }}>
+            <Text style={{ flex: 1.5, fontSize: 19, color: '#1A2230' }}>CityWalk（4050 帧）</Text>
+            <Text style={{ flex: 1.4, fontSize: 19, fontWeight: 'bold', color: '#1E4FA8' }}>22.03 / 29:38</Text>
+            <Text style={{ flex: 1.7, fontSize: 19, color: '#1A2230' }}>Octree-GS 17.33 / 3:11:40</Text>
+            <Text style={{ flex: 1.4, fontSize: 19, color: '#1A2230' }}>大场景最优</Text>
         </Box>
     </Box>
-    <Box style={{ margin: '12px 40px 0px 40px', backgroundColor: '#F0F5FC', borderLeft: '5px solid #1E4FA8', padding: '15px 20px' }}>
-        <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.5 }}>它把"精度"换成了"时间"。补回精度只有两条路：<b>要么离线回填，要么让采集端少犯错</b>——后者才是它真正打开的方向。</Text>
+    <Box style={{ padding: '16px 40px 0px 40px', flexDirection: 'row', gap: 16 }}>
+        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', borderRadius: 6, padding: '13px 16px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 36, fontWeight: 'bold', color: '#1E4FA8' }}>0.5 dB</Text>
+            <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.45, marginTop: 4 }}>输入顺序打乱后 PSNR 26.29 → 25.73，"无序"不是门槛</Text>
+        </Box>
+        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', borderRadius: 6, padding: '13px 16px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 36, fontWeight: 'bold', color: '#1E4FA8' }}>8.5</Text>
+            <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.45, marginTop: 4 }}>MipNeRF360 平移 APE（对比 Photo-SLAM 161+）</Text>
+        </Box>
+        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', borderRadius: 6, padding: '13px 16px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 36, fontWeight: 'bold', color: '#1E4FA8' }}>324 ms</Text>
+            <Text style={{ fontSize: 19, color: '#1A2230', lineHeight: 1.45, marginTop: 4 }}>MipNeRF360 平均每帧延迟，具备"即时反馈"资格</Text>
+        </Box>
+    </Box>
+
+    <Box style={{ padding: '18px 40px 0px 40px', flexDirection: 'column' }}>
+        <Box style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 12 }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1E4FA8' }}>消融：哪一步最不能省</Text>
+            <Text style={{ fontSize: 16, color: '#8B97A8' }}>MipNeRF360 · PSNR（dB）· 横轴自 24 起，条越长越好</Text>
+        </Box>
+        <Box style={{ flexDirection: 'row', alignItems: 'center', padding: '8px 0px 4px 0px' }}>
+            <Text style={{ width: 330, fontSize: 17, fontWeight: 'bold', color: '#1A2230' }}>完整方法</Text>
+            <Box style={{ width: 568, height: 21, backgroundColor: '#1E4FA8', borderRadius: 2 }} />
+            <Text style={{ fontSize: 17.5, fontWeight: 'bold', color: '#1E4FA8', marginLeft: 9 }}>26.29</Text>
+        </Box>
+        <Box style={{ flexDirection: 'row', alignItems: 'center', padding: '4px 0px' }}>
+            <Text style={{ width: 330, fontSize: 17, color: '#1A2230' }}>不分块深度对齐（NoLoDepAlgn）</Text>
+            <Box style={{ width: 349, height: 21, backgroundColor: '#3D7BD9', borderRadius: 2 }} />
+            <Text style={{ fontSize: 17.5, fontWeight: 'bold', color: '#1A2230', marginLeft: 9 }}>25.41　<Text style={{ fontSize: 15.5, color: '#D9534F' }}>−0.88</Text></Text>
+        </Box>
+        <Box style={{ flexDirection: 'row', alignItems: 'center', padding: '4px 0px' }}>
+            <Text style={{ width: 330, fontSize: 17, color: '#1A2230' }}>去掉 VPR，只比相邻 5 帧</Text>
+            <Box style={{ width: 193, height: 21, backgroundColor: '#7FA5D8', borderRadius: 2 }} />
+            <Text style={{ fontSize: 17.5, fontWeight: 'bold', color: '#1A2230', marginLeft: 9 }}>24.78　<Text style={{ fontSize: 15.5, color: '#D9534F' }}>−1.51</Text></Text>
+        </Box>
+        <Box style={{ flexDirection: 'row', alignItems: 'center', padding: '4px 0px' }}>
+            <Text style={{ width: 330, fontSize: 17, color: '#1A2230' }}>优化窗改成"最后 20 帧"</Text>
+            <Box style={{ width: 139, height: 21, backgroundColor: '#A8BFE0', borderRadius: 2 }} />
+            <Text style={{ fontSize: 17.5, fontWeight: 'bold', color: '#1A2230', marginLeft: 9 }}>24.56　<Text style={{ fontSize: 15.5, color: '#D9534F' }}>−1.73</Text></Text>
+        </Box>
+    </Box>
+
+    <Box style={{ margin: '12px 40px 0px 40px', backgroundColor: '#F7F9FC', borderLeft: '5px solid #1E4FA8', padding: '9px 16px' }}>
+        <Text style={{ fontSize: 17, color: '#1A2230', lineHeight: 1.4 }}>三处消融都掉 0.9–1.7 dB，但省下的时间远不止——这正是"<b>先保实时、再谈精度</b>"的取舍证据；其中<b>选窗最贵</b>，所以第 08 页把它单列一页。</Text>
     </Box>
 </Slide>

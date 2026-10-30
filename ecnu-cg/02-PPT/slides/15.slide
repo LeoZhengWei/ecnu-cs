@@ -5,7 +5,7 @@
         <Text style={{ fontSize: 15, color: '#8B97A8' }}>15 / 15</Text>
     </Box>
     <Box style={{ padding: '5px 40px 0px 40px' }}>
-        <Text style={{ fontSize: 17, color: '#4A5568' }}>真实源码截图，行号对应第 7 页七步链：<b>①②③ 定跟谁比、④ 定跟谁一起算、⑤ 才真解位姿、⑥⑦ 修漂移与压显存</b>。</Text>
+        <Text style={{ fontSize: 17, color: '#4A5568' }}>真实源码截图，与第 04 页七步链、第 05–11 页逐页对应：<b>①②③ 定跟谁比、④ 定跟谁一起算、⑤ 才真解位姿、⑥⑦ 修漂移与压显存</b>。</Text>
     </Box>
     <Box style={{ padding: '8px 40px 0px 40px', flexDirection: 'row', gap: 14 }}>
         <Box style={{ flex: 1, flexDirection: 'column', gap: 10 }}>
@@ -44,6 +44,6 @@
         </Box>
     </Box>
     <Box style={{ padding: '7px 40px 0px 40px' }}>
-        <Text style={{ fontSize: 13.5, color: '#8B97A8', lineHeight: 1.35 }}>行号指向片段起点；为投影宽度做了换行与变量缩写（w = edge_weight），逻辑未改。第 7 页已按源码默认值修正：回环触发为<b>加权图距 &gt; 10</b>；层级合并触发为<b>可并数 &gt; max(10%, 20 万)</b>，且是 <b>kNN 加权平均</b>而非 KL。</Text>
+        <Text style={{ fontSize: 13.5, color: '#8B97A8', lineHeight: 1.35 }}>行号指向片段起点；为投影宽度做了换行与变量缩写（w = edge_weight），逻辑未改。第 04、05–11 页已按源码默认值修正：回环触发为<b>加权图距 &gt; 10</b>；层级合并触发为<b>可并数 &gt; max(10%, 20 万)</b>，且是 <b>kNN 加权平均</b>而非 KL。</Text>
     </Box>
 </Slide>

@@ -1,32 +1,83 @@
 <Slide style={{ width: '1280px', height: '720px', backgroundColor: '#FFFFFF', padding: '0px', flexDirection: 'column' }}>
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
-    <Box style={{ padding: '30px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>研究背景：两条路线，各自卡在一个前提上</Text>
+    <Box style={{ padding: '24px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Text style={{ fontSize: 33, fontWeight: 'bold', color: '#1E4FA8' }}>方法总览：一帧进来，走完七步</Text>
         <Text style={{ fontSize: 15, color: '#8B97A8' }}>04 / 15</Text>
     </Box>
-    <Box style={{ padding: '16px 40px 0px 40px' }}>
-        <Text style={{ fontSize: 21, color: '#4A5568', lineHeight: 1.5 }}>拿到"一组照片 → 一个可漫游的 3D 场景"，过去只有两条路可走。它们的分歧不在算法细节，而在<b>什么时候允许开始计算</b>。</Text>
+    <Box style={{ padding: '8px 40px 0px 40px' }}>
+        <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.4 }}>设计哲学一句话：<b>每帧做小事，偶尔做一次大事</b>。前者保证实时，后者保证不漂；每一步都对应上一页的一个病症。</Text>
     </Box>
-    <Box style={{ padding: '16px 40px 0px 40px', flexDirection: 'row', gap: 24 }}>
-        <Box style={{ flex: 1, backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '16px 20px', flexDirection: 'column' }}>
-            <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#1A2230' }}>路线一　离线 SfM + 3DGS</Text>
-            <Text style={{ fontSize: 19, color: '#4A5568', marginTop: 6 }}>COLMAP / GLOMAP + 3DGS、H3DGS、Octree-GS</Text>
-            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.55, marginTop: 12 }}>先把所有照片两两匹配、三角化、全局 BA 解出位姿，再训练高斯。质量最高、全局一致，但<b>必须等图全部到齐</b>，耗时从分钟到小时。</Text>
-            <Text style={{ fontSize: 21, color: '#1E4FA8', fontWeight: 'bold', marginTop: 12 }}>前提：先有完整的照片集合</Text>
-            <Text style={{ fontSize: 21, color: '#D9534F', fontWeight: 'bold', marginTop: 4 }}>代价：现场给不出任何反馈</Text>
+
+    <Box style={{ padding: '16px 40px 0px 40px', flexDirection: 'row', gap: 10 }}>
+        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', borderRadius: 6, padding: '13px 11px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 29, fontWeight: 'bold', color: '#1E4FA8' }}>①</Text>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1A2230', marginTop: 3 }}>全局检索</Text>
+            <Text style={{ fontSize: 16.5, color: '#1A2230', lineHeight: 1.45, marginTop: 6 }}>全局描述子算余弦，取 top-20 候选</Text>
+            <Text style={{ fontSize: 15.5, color: '#1D5FC0', fontWeight: 'bold', marginTop: 10 }}>治“乱”</Text>
         </Box>
-        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', border: '1px solid #3D7BD9', borderRadius: 6, padding: '16px 20px', flexDirection: 'column' }}>
-            <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#1A2230' }}>路线二　增量 / 类 SLAM</Text>
-            <Text style={{ fontSize: 19, color: '#4A5568', marginTop: 6 }}>Photo-SLAM、MonoGS、DROID-Splat、LongSplat</Text>
-            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.55, marginTop: 12 }}>边收边建、可交互。但新帧只与<b>时间上相邻</b>的少数帧匹配（通常 5 帧窗口），一旦转身回访、或把两段序列拼起来，匹配就断了。</Text>
-            <Text style={{ fontSize: 21, color: '#1E4FA8', fontWeight: 'bold', marginTop: 12 }}>前提：输入必须是连续视频</Text>
-            <Text style={{ fontSize: 21, color: '#D9534F', fontWeight: 'bold', marginTop: 4 }}>代价：离开时间邻域就失效</Text>
+        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', borderRadius: 6, padding: '13px 11px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 29, fontWeight: 'bold', color: '#1E4FA8' }}>②</Text>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1A2230', marginTop: 3 }}>局部粗筛</Text>
+            <Text style={{ fontSize: 16.5, color: '#1A2230', lineHeight: 1.45, marginTop: 6 }}>XFeat 比内点数，20 → 5</Text>
+            <Text style={{ fontSize: 15.5, color: '#1D5FC0', fontWeight: 'bold', marginTop: 10 }}>治“乱”</Text>
+        </Box>
+        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', borderRadius: 6, padding: '13px 11px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 29, fontWeight: 'bold', color: '#1E4FA8' }}>③</Text>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1A2230', marginTop: 3 }}>精验建边</Text>
+            <Text style={{ fontSize: 16.5, color: '#1A2230', lineHeight: 1.45, marginTop: 6 }}>LightGlue ＋ RANSAC，内点 &gt; 500 才建边</Text>
+            <Text style={{ fontSize: 15.5, color: '#1D5FC0', fontWeight: 'bold', marginTop: 10 }}>治“乱”</Text>
+        </Box>
+        <Box style={{ flex: 1, backgroundColor: '#F7F9FC', borderRadius: 6, padding: '13px 11px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 29, fontWeight: 'bold', color: '#1E4FA8' }}>④</Text>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1A2230', marginTop: 3 }}>贪心选窗</Text>
+            <Text style={{ fontSize: 16.5, color: '#1A2230', lineHeight: 1.45, marginTop: 6 }}>式 1 贪心扩张到 N = 20 帧</Text>
+            <Text style={{ fontSize: 15.5, color: '#1D5FC0', fontWeight: 'bold', marginTop: 10 }}>定变量范围</Text>
+        </Box>
+        <Box style={{ flex: 1, backgroundColor: '#1E4FA8', borderRadius: 6, padding: '13px 11px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 29, fontWeight: 'bold', color: '#FFFFFF' }}>⑤</Text>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF', marginTop: 3 }}>局部 BA</Text>
+            <Text style={{ fontSize: 16.5, color: '#D6E4F7', lineHeight: 1.45, marginTop: 6 }}>LM ＋ Schur 补，解出位姿与三维点</Text>
+            <Text style={{ fontSize: 15.5, color: '#FFFFFF', fontWeight: 'bold', marginTop: 10 }}>重建本体</Text>
+        </Box>
+        <Box style={{ flex: 1, backgroundColor: '#F7F9FC', borderRadius: 6, padding: '13px 11px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 29, fontWeight: 'bold', color: '#1E4FA8' }}>⑥</Text>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1A2230', marginTop: 3 }}>回环修正</Text>
+            <Text style={{ fontSize: 16.5, color: '#1A2230', lineHeight: 1.45, marginTop: 6 }}>图距 &gt; 10 触发，Sim(3) 沿主干摊开</Text>
+            <Text style={{ fontSize: 15.5, color: '#D9534F', fontWeight: 'bold', marginTop: 10 }}>治“漂”</Text>
+        </Box>
+        <Box style={{ flex: 1, backgroundColor: '#F7F9FC', borderRadius: 6, padding: '13px 11px', flexDirection: 'column' }}>
+            <Text style={{ fontSize: 29, fontWeight: 'bold', color: '#1E4FA8' }}>⑦</Text>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#1A2230', marginTop: 3 }}>高斯落位</Text>
+            <Text style={{ fontSize: 16.5, color: '#1A2230', lineHeight: 1.45, marginTop: 6 }}>分块深度对齐 ＋ 层级按屏幕尺寸合并</Text>
+            <Text style={{ fontSize: 15.5, color: '#1D5FC0', fontWeight: 'bold', marginTop: 10 }}>治“爆”</Text>
         </Box>
     </Box>
-    <Box style={{ margin: '20px 40px 0px 40px', backgroundColor: '#1E4FA8', borderRadius: 6, padding: '16px 24px' }}>
-        <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.5 }}>两条路的前提是同一个东西：<b>帧序</b>。一条等它全部确定，一条假设它天然有序——而真实拍摄两样都不满足。</Text>
+
+    <Box style={{ padding: '20px 40px 0px 40px', flexDirection: 'column' }}>
+        <Text style={{ fontSize: 20, color: '#1A2230', lineHeight: 1.5 }}>数据流：<b>关键帧图像</b>　→　<b>加权协视图 G</b>　→　<b>位姿 T_i / 三维点 X_j</b>　→　<b>高斯集合</b>　→　<b>渐进层级</b></Text>
+        <Text style={{ fontSize: 17, color: '#4A5568', lineHeight: 1.4, marginTop: 4 }}>前三步只产出“约束”，第四五步只产出“位姿”，第六步修位姿，第七步才碰辐射场。</Text>
     </Box>
-    <Box style={{ padding: '12px 40px 0px 40px' }}>
-        <Text style={{ fontSize: 17, color: '#8B97A8' }}>真实采集几乎总是无序的：绕行、转身、回头补拍角落，覆盖更好，但让匹配与全局优化的代价陡增。</Text>
+
+    <Box style={{ padding: '16px 40px 0px 40px', flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+        <Box style={{ backgroundColor: '#1E4FA8', borderRadius: 4, padding: '6px 12px' }}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#FFFFFF' }}>时间账</Text>
+        </Box>
+        <Text style={{ fontSize: 17.5, color: '#1A2230', lineHeight: 1.4 }}>视觉前端 <b>27.8 ms</b>　·　局部 BA <b>40.5 ms</b>　·　回环摊销 <b>121.6 ms</b>（仅绕回起点时）　·　渲染 <b>480 fps</b></Text>
+    </Box>
+    <Box style={{ padding: '4px 40px 0px 40px' }}>
+        <Text style={{ fontSize: 15.5, color: '#8B97A8' }}>以上为论文单关键帧摊销实测；②③ 的候选数已压到 20 / 5，所以前端不是瓶颈——瓶颈是一次回环后的全局修正。</Text>
+    </Box>
+
+    <Box style={{ padding: '16px 40px 0px 40px', flexDirection: 'column', gap: 8 }}>
+        <Box style={{ backgroundColor: '#F7F9FC', borderLeft: '5px solid #1E4FA8', padding: '9px 16px' }}>
+            <Text style={{ fontSize: 17.5, color: '#1A2230', lineHeight: 1.4 }}><b>节奏</b>　①–⑤ 与 ⑦ 每个关键帧都跑；<b>⑥ 只在检测到回环时跑</b>——“每帧做小事、偶尔做一次大事”的具体分工。</Text>
+        </Box>
+        <Box style={{ backgroundColor: '#F7F9FC', borderLeft: '5px solid #D6DCE5', padding: '9px 16px' }}>
+            <Text style={{ fontSize: 17.5, color: '#1A2230', lineHeight: 1.4 }}><b>容错</b>　匹配失败的帧先“搁置”，后续出现相似帧时再取出重试——乱序输入因此不必强求一次成功。</Text>
+        </Box>
+    </Box>
+
+    <Box style={{ marginTop: 'auto', padding: '6px 40px 12px 40px' }}>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>接下来七页，一步一页：每页都是「这步在做什么 → 长什么样 → 核心公式 → 超参取值 → 为什么这么做」。</Text>
     </Box>
 </Slide>

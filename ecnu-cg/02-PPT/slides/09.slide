@@ -1,27 +1,38 @@
 <Slide style={{ width: '1280px', height: '720px', backgroundColor: '#FFFFFF', padding: '0px', flexDirection: 'column' }}>
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
-    <Box style={{ padding: '30px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>关键方式②③：局部 BA 与图传播回环</Text>
+    <Box style={{ padding: '26px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Text style={{ fontSize: 33, fontWeight: 'bold', color: '#1E4FA8' }}>局部 BA：真正把位姿解出来的唯一一步</Text>
         <Text style={{ fontSize: 15, color: '#8B97A8' }}>09 / 15</Text>
     </Box>
-    <Box style={{ padding: '16px 40px 0px 40px', flexDirection: 'row', gap: 20 }}>
-        <Box style={{ flex: 1, backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '16px 18px', flexDirection: 'column' }}>
-            <Text style={{ fontSize: 25, fontWeight: 'bold', color: '#1A2230' }}>GPU 局部重建</Text>
-            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.55, marginTop: 10 }}>关键帧 <b>N=20</b>（SLAM 通常只用 5 帧时间窗），路标点固定 <b>1 万</b>，按被观测次数采样。</Text>
-            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.55, marginTop: 8 }}>每个路标只允许被协视性选出的固定子集观测，避免观测数随帧数二次增长。</Text>
-            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.55, marginTop: 8 }}>自写核函数算残差与雅可比，稠密 Schur 补求解。</Text>
-            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#1E4FA8', marginTop: 12 }}>比 g2o / CUDA-BA 快约 5 倍</Text>
-            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.55, marginTop: 10 }}>高斯投放改为<b>分块估计深度尺度与偏移</b>再插值上采样（消融 26.29 → 25.41 dB），落点更贴表面。</Text>
+    <Box style={{ padding: '8px 40px 0px 40px' }}>
+        <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.4 }}>在选出的 20 帧上解一次带鲁棒核的最小二乘，用 Schur 补把问题压到“只解相机”。</Text>
+    </Box>
+    <Box style={{ padding: '14px 40px 0px 40px', flexDirection: 'row', gap: 20 }}>
+        <Box style={{ width: 600, flexDirection: 'column', gap: 11 }}>
+            <Box style={{ backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '9px 16px' }}>
+                <Text style={{ fontSize: 18, color: '#1A2230', lineHeight: 1.45 }}><b>输入</b>　S 内 20 个关键帧 ＋ 约 1 万路标点（按被观测次数采样）</Text>
+            </Box>
+            <Box style={{ backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '9px 16px' }}>
+                <Text style={{ fontSize: 18, color: '#1A2230', lineHeight: 1.45 }}><b>做法</b>　LM 迭代：残差 = 重投影误差；构造正规方程后做稠密 Schur 消元，Cholesky 解相机</Text>
+            </Box>
+            <Box style={{ backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '9px 16px' }}>
+                <Text style={{ fontSize: 18, color: '#1A2230', lineHeight: 1.45 }}><b>输出</b>　相机位姿 T_i 与三维路标点 X_j —— 重建本体</Text>
+            </Box>
+            <Box style={{ backgroundColor: '#F0F5FC', border: '1px solid #3D7BD9', borderRadius: 6, padding: '10px 16px', flexDirection: 'column' }}>
+                <Text style={{ fontSize: 18, color: '#1A2230', lineHeight: 1.45 }}><b>关键取值</b>　N = 20、K ≈ 1e4　·　LM 阻尼按 mul_(1 + lm) 自适应</Text>
+                <Text style={{ fontSize: 16, color: '#4A5568', lineHeight: 1.4, marginTop: 4 }}>每个路标只允许被协视性选出的固定子集观测，避免观测数随帧数二次增长</Text>
+            </Box>
         </Box>
-        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', border: '1px solid #3D7BD9', borderRadius: 6, padding: '16px 18px', flexDirection: 'column' }}>
-            <Text style={{ fontSize: 25, fontWeight: 'bold', color: '#1A2230' }}>簇级回环 + 图传播</Text>
-            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.55, marginTop: 10 }}>检测：出现两组"内部密、彼此疏"的簇，图上跳数 &gt; 5 且有效匹配对 &gt; 2。</Text>
-            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.55, marginTop: 8 }}>求解：两簇各扩 N/2 帧组成焊接窗口做局部 BA，由锚点刚体变换与深度尺度得到 <b>Sim(3)</b>。</Text>
-            <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.55, marginTop: 8 }}>传播：Dijkstra 找累计权重最小的<b>主干路径</b>，按测地距离比例插值（旋转用 6D、尺度取对数），对全图位姿与高斯套用同一变换。</Text>
-            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#D9534F', marginTop: 12 }}>代价随场景规模近似线性</Text>
+        <Box style={{ width: 580, flexDirection: 'column' }}>
+            <Image src="figs/fig5_ba.png" style={{ width: 580, height: 362 }} />
+            <Text style={{ fontSize: 14.5, color: '#8B97A8', marginTop: 5 }}>图 5　二部图求解 + 分块矩阵：C 对角可逐点求逆，B 稀疏只解相机。</Text>
         </Box>
     </Box>
-    <Box style={{ margin: '18px 40px 0px 40px', backgroundColor: '#F0F5FC', borderLeft: '5px solid #1E4FA8', padding: '14px 20px' }}>
-        <Text style={{ fontSize: 21, color: '#1A2230', lineHeight: 1.5 }}>用"图上的距离"替代"全局优化的解"——这是全文最值得借鉴的工程取舍：牺牲一点精度，换来数量级的实时性。</Text>
+    <Box style={{ margin: '12px 40px 0px 40px', backgroundColor: '#F7F9FC', borderLeft: '5px solid #1E4FA8', padding: '10px 18px', flexDirection: 'column' }}>
+        <Image src="formula/f09.png" style={{ width: 596.5, height: 55.5 }} />
+        <Text style={{ fontSize: 16.5, color: '#4A5568', lineHeight: 1.4, marginTop: 3 }}>SLAM 通常只用 5 帧时间窗；这里用 20 帧并把核函数写到 GPU 上，比 g2o / CUDA-BA 快约 5 倍。</Text>
+    </Box>
+    <Box style={{ marginTop: 'auto', padding: '10px 40px 12px 40px' }}>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>前四步是“准备”，第六步是“纠错”，只有这一步在解——位姿重建真正发生在这里。</Text>
     </Box>
 </Slide>

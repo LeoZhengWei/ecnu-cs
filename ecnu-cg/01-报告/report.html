@@ -24,6 +24,7 @@
   li { margin-bottom: 3pt; }
   .ref p { text-indent: 0; font-size: 9pt; margin-bottom: 3pt; }
   .note { font-size: 9pt; color: #333; }
+  .eq { text-align: center; font-family: "Cambria Math","Times New Roman",serif; font-size: 11pt; margin: 5pt 0 8pt 0; text-indent: 0; }
 </style>
 </head>
 <body>
@@ -80,29 +81,67 @@
 <ol>
 <li><strong>面向无序序列的两级快速匹配与协视图关键帧选取</strong>：复用视觉位置识别模型做全局检索，再用轻量局部匹配与精确匹配逐级筛选，把匹配代价从两两全比降到常数级；并给出基于加权协视图的"高连通关键帧"贪心选取算法。</li>
 <li><strong>GPU 友好的局部重建框架</strong>：自写 BA 的 GPU 核函数（稠密 Schur 补），在 N=20 个关键帧、K=10000 个路标点的规模下比现有优化器快约 5 倍；并提出<strong>分块（tile）深度对齐</strong>的高斯投放策略，替代全图统一的尺度/偏移估计。</li>
-<li><strong>基于簇的回环闭合</strong>：不依赖时间顺序，用协视图上的"跳数距离"判定两个簇是否分离，从而检测回环；用焊接窗口 BA 求解相对变换，再用 Dijkstra 主干路径 + 测地距离插值把 Sim(3) 修正量传播到全图位姿与高斯，<strong>无需再跑一次全局优化</strong>。</li>
+<li><strong>基于簇的回环闭合</strong>：不依赖时间顺序，用协视图上的"加权图距"（内点数倒数作边权）判定两个簇是否分离，从而检测回环；用焊接窗口 BA 求解相对变换，再用 Dijkstra 主干路径 + 测地距离插值把 Sim(3) 修正量传播到全图位姿与高斯，<strong>无需再跑一次全局优化</strong>。</li>
 <li><strong>渐进式高斯层级</strong>：按高斯在屏幕上的投影尺寸自适应合并与回取，把细小图元卸载到 CPU 内存，使大场景（如 4050 帧的 CityWalk）在 24 GB 显存下也能持续重建。</li>
 </ol>
 
 <h3>3.3　方法细节</h3>
-<p><strong>(1) 系统主循环。</strong>每来一个新的关键帧 I<sub>q</sub>：两级匹配 → 更新协视图 → 回环检测 → 选取 N=20 个高连通关键帧 → 局部 BA →（若回环）焊接 BA + 主干传播 → 投放高斯 → 更新层级 → 优化高斯（每关键帧固定 30 次迭代）→ 重试此前"搁置"的帧。整个设计可以概括为"每帧做小事，偶尔做一次大事"。</p>
 
-<p><strong>(2) 两级快速匹配。</strong>候选集逐级收缩，是本文工程上最巧妙的部分，如表 2 所示。</p>
+<p><strong>(1) 系统主循环与七步链。</strong>每来一个新的关键帧 I<sub>q</sub>，系统按固定顺序做七件事：① 全局检索 → ② 局部粗筛 → ③ 精验建边 → ④ 贪心选窗 → ⑤ 局部 BA →（若检测到回环）⑥ 回环修正 → ⑦ 高斯落位与层级维护 → 优化高斯（每关键帧固定 30 次迭代）→ 重试此前"搁置"的帧。整条链的设计可以概括为"每帧做小事，偶尔做一次大事"：①–⑤ 与 ⑦ 每个关键帧都要跑，⑥ 只在两簇之间突然出现跨簇匹配时才触发。表 2 是先看全貌的总表，下文按七步逐步展开。</p>
+
 <table>
-<tr><th style="width:8%">层级</th><th style="width:30%">方法</th><th style="width:34%">作用</th><th>代价</th></tr>
-<tr><td>1</td><td>视觉位置识别（4096 维全局描述子）</td><td>余弦相似度排序，取 top-20 候选</td><td>约 1 ms / 1000 对</td></tr>
-<tr><td>2</td><td>XFeat 轻量局部特征</td><td>按内点数从 20 中保留 5</td><td>约 0.5 ms / 对</td></tr>
-<tr><td>3</td><td>LightGlue + RANSAC</td><td>精确验证，内点数 &gt; 500 才接受</td><td>约 4 ms / 对</td></tr>
+<tr><th style="width:7%">步</th><th style="width:22%">方法</th><th style="width:40%">核心公式 / 判据</th><th>在重建中的作用</th></tr>
+<tr><td>①</td><td>MegaLoc 全局描述子</td><td>s(i,j)=d<sub>i</sub><sup>⊤</sup>d<sub>j</sub>/(‖d<sub>i</sub>‖‖d<sub>j</sub>‖)，取 top-K=20</td><td>从全部历史帧里找"可能同处"的候选，与帧序无关</td></tr>
+<tr><td>②</td><td>XFeat 稀疏局部特征</td><td>K′=top-5 |M<sub>ij</sub>|（按内点数）</td><td>淘汰"外观像、但没对上点"的候选</td></tr>
+<tr><td>③</td><td>LightGlue + RANSAC</td><td>|M<sub>ij</sub>| &gt; τ<sub>m</sub>=500 才建边；w<sub>ij</sub>=1/|M<sub>ij</sub>|</td><td>唯一产生共视约束的一步，结果写入协视图</td></tr>
+<tr><td>④</td><td>协视图贪心扩张（式 1）</td><td>S<sub>t+1</sub>=S<sub>t</sub>∪{argmax<sub>i∉S<sub>t</sub></sub> Σ<sub>j∈S<sub>t</sub></sub>|M<sub>ij</sub>|}，至 N=20 帧</td><td>划定 BA 的变量范围：最该一起优化的 20 帧</td></tr>
+<tr><td>⑤</td><td>GPU 局部 BA（LM + Schur）</td><td>min Σρ(‖u<sub>ij</sub>−π(T<sub>i</sub>,X<sub>j</sub>)‖<sup>2</sup>)；S=B−EC<sup>−1</sup>E<sup>⊤</sup></td><td>真正解出位姿 T<sub>i</sub> 与三维点 X<sub>j</sub>——重建本体</td></tr>
+<tr><td>⑥</td><td>簇级回环 + 图传播</td><td>d<sub>G</sub>(C<sub>1</sub>,C<sub>2</sub>) &gt; 10 触发；ΔT<sub>α</sub>=exp(α log ΔT)</td><td>焊接窗口得 Sim(3)，沿主干按测地距离摊回全图</td></tr>
+<tr><td>⑦</td><td>分块深度对齐 + 渐进层级</td><td>d<sub>mono</sub>≈s<sub>k</sub>d<sub>tri</sub>+o<sub>k</sub>；screen &lt; 0.5 px 且可并数达标 → 合并</td><td>位姿定后才投放高斯；层级只压显存，不改位姿</td></tr>
 </table>
-<p class="caption">表 2　三级匹配的候选收缩与开销</p>
+<p class="caption">表 2　七步重建链：每步用什么算法、算什么、管什么</p>
 
-<p>匹配通过的关键帧对写入<strong>加权协视图</strong> G=(M, E, W)，边权取内点数的倒数 w<sub>ij</sub>=1/#inliers(i,j)。内点越多表示几何约束越强、权重越小，因此图上的"最短路"天然对应"最可靠的位姿链"。关键帧选取采用贪心策略：每一步加入与当前集合累计内点连接数最大的节点。由于每个节点平均只有约 10 条边，该过程开销极小。消融实验显示，这一环节（去掉位置识别 / 改成取最近 20 帧）对最终质量影响最大，PSNR 从 26.29 dB 掉到 24.78 dB / 24.56 dB。</p>
+<p><strong>(2) 步骤①　全局检索。</strong>新帧进入后，先由视觉位置识别模型提取一个全局描述子（论文正文写 MixVPR，开源实现因许可问题替换为 MegaLoc，两者都是"一帧 → 一个 4096 维向量"），与库中全部历史帧的描述子做余弦相似度排序，取前 K=20 个作为候选。这一步只依赖外观、完全不依赖拍摄时间，因此"乱序"在这里第一次被消化掉；其代价与已收帧数成线性关系——n 帧只需 n 次检索，而不是 n(n−1)/2 次两两比对。实测约 1 ms / 1000 对，是全链最便宜的一步。</p>
+<p class="eq">s(i, j) = d<sub>i</sub><sup>⊤</sup>d<sub>j</sub> / (‖d<sub>i</sub>‖·‖d<sub>j</sub>‖)　，　候选集 = top-K（K = 20）</p>
+<figure style="text-align:center;margin:8pt 0 4pt 0"><img src="img/m1.png" style="width:100%"/></figure>
+<p class="caption">图 1　步骤①：全局描述子检索——按余弦相似度从全部历史帧里取前 20 个候选</p>
 
-<p><strong>(3) GPU 局部重建。</strong>与 SLAM 系统通常只用 5 帧时间窗不同，本文使用 20 个关键帧并固定 10000 个路标点（按被观测次数做多项式采样），且每个路标只允许被协视性选出的固定子集观测，从而避免观测数随关键帧数二次增长——这是把"SLAM 式局部优化"扩展到"辐射场重建"的关键改动。高斯投放上，作者不再对整幅图估计一组深度尺度与偏移，而是把图像切块分别估计再插值上采样，使高斯落点更贴合真实表面（消融：PSNR 26.29 → 25.41 dB）。</p>
 
-<p><strong>(4) 基于簇的回环。</strong>当一次匹配中出现两组"各自内部很密、彼此很疏"的关键帧集合时，用图上的跳数距离 d<sub>G</sub>(C<sub>1</sub>,C<sub>2</sub>) &gt; 5 且有效匹配对 &gt; 2 判定为回环。随后从两个簇各扩 N/2 帧构成焊接窗口做局部 BA，得到锚点帧的刚体变换，再由路标深度变化估计尺度，组成 Sim(3) 修正；最后沿 Dijkstra 求出的"主干路径"按测地距离比例插值分配修正（旋转用 6D 表示插值、尺度用对数插值），并对每个记录了自己"出生关键帧"的高斯套用同一变换。这样回环修正的代价与场景规模近似线性，而不必再做一次全局 BA。</p>
+<p><strong>(3) 步骤②　局部粗筛。</strong>对 20 个候选逐个跑一次轻量的局部特征匹配（XFeat），只比较稀疏关键点的坐标一致性，得到内点对数 |M<sub>ij</sub>|，按大小排序后仅保留前 5 个。这一级故意选择"便宜但粗糙"的特征：它的任务只是排序，不是定论。被淘汰的通常是纯外观检索的典型假阳性——两块墙面的纹理相似、描述子接近，但几何上一个点也对不上。开销约 0.5 ms / 对。</p>
+<p class="eq">K′ = top-5 { |M<sub>ij</sub>| }　，只保留前 K′ 个候选进入精确匹配</p>
+<figure style="text-align:center;margin:8pt 0 4pt 0"><img src="img/m2.png" style="width:100%"/></figure>
+<p class="caption">图 2　步骤②：XFeat 粗筛——按坐标一致性排序，只保留内点最多的前 5 个候选</p>
 
-<p><strong>(5) 渐进式层级。</strong>当高斯在当前视角下的屏幕尺寸小于 0.5 px 且这类高斯占比超过 20% 时触发合并：KNN 找 4 个最近高斯按 KL 散度合并，并向层级插入父节点，叶节点参数卸载到 CPU 内存。渲染或导航时若某合并节点的贡献超过 1 px，则异步回取其子节点（双缓冲避免卡顿）。论文报告：不使用层级时，CityWalk 在 24 GB 卡上处理到第 795/4050 帧（不足 20%）即 OOM；使用层级后峰值训练高斯维持在 370 万以下、显存 &lt; 12.8 GB，大场景层级达 8 层。</p>
+
+<p><strong>(4) 步骤③　精验建边。</strong>对留下的 5 个候选跑 LightGlue 精确配对，并用 RANSAC 剔除外点；只有内点数超过 τ<sub>m</sub>=500 的帧对才在图中建立一条边。边权取内点数的倒数 w<sub>ij</sub>=1/|M<sub>ij</sub>|：内点越多说明几何约束越强、权重越小，于是图上的"最短路"天然对应"最可靠的位姿链"。这是全链中唯一产生共视约束的地方，后续所有位姿都由这些点对推出，边建错则后续全错。开销约 4 ms / 对。</p>
+<p class="eq">|M<sub>ij</sub>| &gt; τ<sub>m</sub> = 500　⇒　(i, j) ∈ E　，　w<sub>ij</sub> = 1 / |M<sub>ij</sub>|</p>
+<figure style="text-align:center;margin:8pt 0 4pt 0"><img src="img/m3.png" style="width:100%"/></figure>
+<p class="caption">图 3　步骤③：精验建边——内点数超过 500 才建边，边权取内点数的倒数</p>
+
+
+<p><strong>(5) 步骤④　贪心选窗。</strong>局部 BA 的变量范围由这一步决定：不是"时间上最近的 20 帧"，而是"与当前集合连接最强的帧"。每步把累计内点连接数最大的节点并入集合，直到凑满 N=20。由于每个节点平均只有约 10 条边，一次 argmax 的开销可以忽略。消融实验显示这一步对最终质量影响极大：去掉位置识别、只比相邻 5 帧，PSNR 从 26.29 dB 掉到 24.78 dB；改成"优化最后 20 帧"则为 24.56 dB——选窗比匹配本身更关键。</p>
+<p class="eq">S<sub>t+1</sub> = S<sub>t</sub> ∪ { argmax<sub>i∉S<sub>t</sub></sub> Σ<sub>j∈S<sub>t</sub></sub> |M<sub>ij</sub>| }　（式 1）</p>
+<figure style="text-align:center;margin:8pt 0 4pt 0"><img src="img/m4.png" style="width:100%"/></figure>
+<p class="caption">图 4　步骤④：贪心选窗——在加权协视图上按式 (1) 扩张，凑满 20 帧</p>
+
+
+<p><strong>(6) 步骤⑤　GPU 局部 BA。</strong>这是整条链中唯一真正求解位姿的步骤。与 SLAM 通常只用 5 帧时间窗不同，本文使用 20 个关键帧并固定约 1 万个路标点（按被观测次数采样），且每个路标只允许被协视性选出的固定子集观测，从而避免观测数随关键帧数二次增长——这是把"SLAM 式局部优化"扩展到"辐射场重建"的关键改动。求解采用 Levenberg–Marquardt 迭代，残差为重投影误差，鲁棒核抑制外点；构造正规方程后做稠密 Schur 消元，把相机与路标解耦，只对相机部分做 Cholesky 分解与两次三角回代。自写核函数使该步骤在 20 帧 / 1 万点的规模下比 g2o、CUDA-BA 等现有优化器快约 5 倍。</p>
+<p class="eq">min Σ<sub>i,j</sub> ρ( ‖u<sub>ij</sub> − π(T<sub>i</sub>, X<sub>j</sub>)‖<sup>2</sup> ) + λ‖δ‖<sup>2</sup>　，　S = B − E C<sup>−1</sup> E<sup>⊤</sup></p>
+<figure style="text-align:center;margin:8pt 0 4pt 0"><img src="img/m5.png" style="width:100%"/></figure>
+<p class="caption">图 5　步骤⑤：局部 BA——相机—路标二部图与 Schur 补消元</p>
+
+
+<p><strong>(7) 步骤⑥　簇级回环与图传播。</strong>当一次匹配让两组"各自内部很密、彼此很疏"的关键帧集合之间突然出现跨簇边时，用图上的<b>加权距离</b> d<sub>G</sub>(C<sub>1</sub>,C<sub>2</sub>) &gt; 10 且跨簇有效匹配对 &gt; 2 判定为回环（论文正文写作"跳数距离 &gt; 5"，这里按开源代码默认值 min_loop_size = 10 的加权图距表述）。随后从两个簇各扩 N/2 帧构成焊接窗口做一次局部 BA，得到锚点帧的相对刚体变换，再由路标深度变化估计尺度，组合成 Sim(3) 修正；最后沿 Dijkstra 求出的"主干路径"按测地距离比例插值分配修正（旋转用 6D 表示插值、尺度取对数插值），并对每个记录了自己"出生关键帧"的高斯套用同一变换。这样回环修正的代价与场景规模近似线性，而不必再做一次全局 BA。</p>
+<p class="eq">ΔT<sub>α</sub> = exp( α · log ΔT )　，　α ∝ 到锚点的测地距离</p>
+<figure style="text-align:center;margin:8pt 0 4pt 0"><img src="img/m6.png" style="width:100%"/></figure>
+<p class="caption">图 6　步骤⑥：簇级回环判定与沿主干路径的修正量传播</p>
+
+
+<p><strong>(8) 步骤⑦　深度对齐与渐进层级。</strong>位姿确定之后才把新关键帧的三维点投放为高斯。作者不再对整幅图估计一组深度尺度与偏移，而是把图像切成 4×4 块、每块单独拟合线性关系再插值上采样，使高斯落点更贴合真实表面（消融 NoLoDepAlgn：PSNR 26.29 → 25.41 dB）。层级方面：当高斯在当前视角下的屏幕投影尺寸小于 0.5 px 且满足合并数量条件（代码默认"可并数 &gt; max(10%, 20 万)"）时触发合并，用 KNN 取最近的若干个高斯按不透明度与屏幕面积加权平均生成父节点，叶节点参数卸载到 CPU 内存；渲染时若某合并节点的贡献超过 1 px，则异步回取其子节点（双缓冲避免卡顿）。需要说明的是，论文正文将合并描述为"按 KL 散度合并"，而开源代码实现为加权平均，量级与视觉效果接近，此处以代码为准。论文报告：不使用层级时 CityWalk 在 24 GB 卡上处理到第 795/4050 帧即 OOM；使用层级后峰值训练高斯维持在 370 万以下、显存 &lt; 12.8 GB，大场景层级达 8 层。</p>
+<p class="eq">d<sub>mono</sub> ≈ s<sub>k</sub> · d<sub>tri</sub> + o<sub>k</sub>（逐块拟合）　；　screen &lt; τ<sub>l</sub> 且可并数达标 → kNN 加权平均合并</p>
+<figure style="text-align:center;margin:8pt 0 4pt 0"><img src="img/m7.png" style="width:100%"/></figure>
+<p class="caption">图 7　步骤⑦：分块深度对齐与按屏幕投影尺寸触发的层级合并</p>
+
 
 <h2>4　实验分析</h2>
 
@@ -155,7 +194,7 @@
 <td style="width:33%"><img src="img/DSC07980.JPG" style="width:100%"/></td>
 <td style="width:33%"><img src="img/DSC08020.JPG" style="width:100%"/></td>
 </tr></table>
-<p class="caption">图 1　garden 场景测试视角的重建结果（半分辨率，仅由无序图像流在线重建，未使用 COLMAP 位姿初始化）</p>
+<p class="caption">图 8　garden 场景测试视角的重建结果（半分辨率，仅由无序图像流在线重建，未使用 COLMAP 位姿初始化）</p>
 
 
 <h2>5　代码分析</h2>
