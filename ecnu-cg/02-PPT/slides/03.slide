@@ -1,51 +1,80 @@
 <Slide style={{ width: '1280px', height: '720px', backgroundColor: '#FFFFFF', padding: '0px', flexDirection: 'column' }}>
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
-    <Box style={{ padding: '34px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>主要贡献点</Text>
+    <Box style={{ padding: '24px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+        <Text style={{ fontSize: 33, fontWeight: 'bold', color: '#1E4FA8' }}>摘要与贡献：它把哪件事第一次做成了</Text>
         <Text style={{ fontSize: 15, color: '#8B97A8' }}>03 / 15</Text>
     </Box>
-    <Box style={{ padding: '22px 40px 0px 40px', flexDirection: 'row', gap: 20 }}>
-        <Box style={{ flex: 1, backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '18px 20px', flexDirection: 'column' }}>
-            <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <Box style={{ width: '34px', height: '34px', backgroundColor: '#1E4FA8', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>1</Text>
-                </Box>
-                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1A2230' }}>无序序列快速匹配</Text>
+
+    <Box style={{ padding: '20px 40px 0px 40px', flexDirection: 'row', gap: 22 }}>
+        <Box style={{ width: 438, flexDirection: 'column', gap: 13 }}>
+            <Box style={{ backgroundColor: '#F0F5FC', borderLeft: '4px solid #1E4FA8', padding: '12px 15px', flexDirection: 'column' }}>
+                <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#1E4FA8' }}>问题</Text>
+                <Text style={{ fontSize: 18, color: '#1A2230', lineHeight: 1.45, marginTop: 4 }}>3DGS 质量高、可实时渲染，但训练前必须由 SfM 离线解位姿；SfM 要等图到齐，且对乱序敏感。</Text>
             </Box>
-            <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.55, marginTop: 12 }}>视觉位置识别 → XFeat 粗筛 → LightGlue 精验，三级把匹配代价从 O(n²) 降到常数级。</Text>
-            <Text style={{ fontSize: 20, color: '#1E4FA8', fontWeight: 'bold', marginTop: 14 }}>配加权协视图 + 高连通关键帧贪心选取</Text>
+            <Box style={{ backgroundColor: '#F7F9FC', borderLeft: '4px solid #4A5568', padding: '12px 15px', flexDirection: 'column' }}>
+                <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#4A5568' }}>做法</Text>
+                <Text style={{ fontSize: 18, color: '#1A2230', lineHeight: 1.45, marginTop: 4 }}>首个面向无序输入、具备全局一致性的即时 3DGS 重建：两级快速匹配 ＋ GPU 局部 BA ＋ 簇级回环图传播 ＋ 渐进式层级。</Text>
+            </Box>
+            <Box style={{ backgroundColor: '#F0F5FC', borderLeft: '4px solid #3D7BD9', padding: '12px 15px', flexDirection: 'column' }}>
+                <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#3D7BD9' }}>结果</Text>
+                <Text style={{ fontSize: 18, color: '#1A2230', lineHeight: 1.45, marginTop: 4 }}>MipNeRF360 上 <b>1 分 17 秒</b>达 <b>26.29 dB</b>（离线参考 8 分 50 秒 / 27.52 dB）；输入打乱只掉 <b>0.5 dB</b>。</Text>
+            </Box>
+            <Text style={{ fontSize: 15, color: '#8B97A8', lineHeight: 1.35 }}>关键词：三维高斯泼溅 · 无序采集 · 即时重建 · 协视图 · 回环闭合 · 渐进式层级</Text>
         </Box>
-        <Box style={{ flex: 1, backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '18px 20px', flexDirection: 'column' }}>
-            <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <Box style={{ width: '34px', height: '34px', backgroundColor: '#1E4FA8', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>2</Text>
+
+        <Box style={{ flex: 1, flexDirection: 'column', gap: 13 }}>
+            <Box style={{ flexDirection: 'row', gap: 13 }}>
+                <Box style={{ flex: 1, backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '13px 15px', flexDirection: 'column' }}>
+                    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <Box style={{ width: 26, height: 26, backgroundColor: '#1E4FA8', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
+                            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#FFFFFF' }}>1</Text>
+                        </Box>
+                        <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#1A2230' }}>无序序列快速匹配</Text>
+                    </Box>
+                    <Text style={{ fontSize: 17.5, color: '#1A2230', lineHeight: 1.45, marginTop: 7 }}>三级串联把候选从 1000 收到 1；配加权协视图 ＋ 高连通贪心选窗。</Text>
+                    <Text style={{ fontSize: 15.5, color: '#1E4FA8', fontWeight: 'bold', marginTop: 7 }}>治“乱” · 步骤 ①–④</Text>
                 </Box>
-                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1A2230' }}>GPU 局部重建</Text>
+                <Box style={{ flex: 1, backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '13px 15px', flexDirection: 'column' }}>
+                    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <Box style={{ width: 26, height: 26, backgroundColor: '#1E4FA8', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
+                            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#FFFFFF' }}>2</Text>
+                        </Box>
+                        <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#1A2230' }}>GPU 局部重建</Text>
+                    </Box>
+                    <Text style={{ fontSize: 17.5, color: '#1A2230', lineHeight: 1.45, marginTop: 7 }}>自写 BA 核函数（稠密 Schur 补），比现有优化器快约 5 倍；分块深度对齐。</Text>
+                    <Text style={{ fontSize: 15.5, color: '#1E4FA8', fontWeight: 'bold', marginTop: 7 }}>治“慢” · 步骤 ⑤、⑦</Text>
+                </Box>
             </Box>
-            <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.55, marginTop: 12 }}>自写 BA 核函数（稠密 Schur 补），20 关键帧 / 1 万路标点下比现有优化器快约 5 倍。</Text>
-            <Text style={{ fontSize: 20, color: '#1E4FA8', fontWeight: 'bold', marginTop: 14 }}>分块深度对齐，让高斯贴住真实表面</Text>
+            <Box style={{ flexDirection: 'row', gap: 13 }}>
+                <Box style={{ flex: 1, backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '13px 15px', flexDirection: 'column' }}>
+                    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <Box style={{ width: 26, height: 26, backgroundColor: '#1E4FA8', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
+                            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#FFFFFF' }}>3</Text>
+                        </Box>
+                        <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#1A2230' }}>簇级回环闭合</Text>
+                    </Box>
+                    <Text style={{ fontSize: 17.5, color: '#1A2230', lineHeight: 1.45, marginTop: 7 }}>焊接窗口 BA ＋ Dijkstra 主干测地插值，把 Sim(3) 摊到全图，不跑第二次全局优化。</Text>
+                    <Text style={{ fontSize: 15.5, color: '#D9534F', fontWeight: 'bold', marginTop: 7 }}>治“漂” · 步骤 ⑥</Text>
+                </Box>
+                <Box style={{ flex: 1, backgroundColor: '#F0F5FC', border: '1px solid #3D7BD9', borderRadius: 6, padding: '13px 15px', flexDirection: 'column' }}>
+                    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                        <Box style={{ width: 26, height: 26, backgroundColor: '#0E3F8C', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
+                            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#FFFFFF' }}>4</Text>
+                        </Box>
+                        <Text style={{ fontSize: 21, fontWeight: 'bold', color: '#1A2230' }}>渐进式高斯层级</Text>
+                    </Box>
+                    <Text style={{ fontSize: 17.5, color: '#1A2230', lineHeight: 1.45, marginTop: 7 }}>按屏幕投影尺寸合并 / 回取，叶节点卸载到 CPU；4050 帧显存仍控在 12.8 GB 内。</Text>
+                    <Text style={{ fontSize: 15.5, color: '#1E4FA8', fontWeight: 'bold', marginTop: 7 }}>治“爆” · 步骤 ⑦</Text>
+                </Box>
+            </Box>
+            <Box style={{ backgroundColor: '#FFFFFF', border: '1px solid #D6DCE5', borderRadius: 6, padding: '12px 15px' }}>
+                <Text style={{ fontSize: 17, color: '#4A5568', lineHeight: 1.45 }}>报告里的实测（我们的复现）：MipNeRF360 <b>garden</b> 2× 降采样 <b>25.95 dB / 62.7 s / 19.5 GB</b>，185 帧。差距来自分辨率与测试协议，不是方法失效。</Text>
+            </Box>
         </Box>
     </Box>
-    <Box style={{ padding: '20px 40px 0px 40px', flexDirection: 'row', gap: 20 }}>
-        <Box style={{ flex: 1, backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '18px 20px', flexDirection: 'column' }}>
-            <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <Box style={{ width: '34px', height: '34px', backgroundColor: '#1E4FA8', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>3</Text>
-                </Box>
-                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1A2230' }}>簇级回环闭合</Text>
-            </Box>
-            <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.55, marginTop: 12 }}>用协视图"跳数距离"判回环；焊接窗口 BA + Dijkstra 主干路径测地插值，把 Sim(3) 修正传到全图。</Text>
-            <Text style={{ fontSize: 20, color: '#D9534F', fontWeight: 'bold', marginTop: 14 }}>关键：无需第二次全局优化</Text>
-        </Box>
-        <Box style={{ flex: 1, backgroundColor: '#F0F5FC', border: '1px solid #3D7BD9', borderRadius: 6, padding: '18px 20px', flexDirection: 'column' }}>
-            <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                <Box style={{ width: '34px', height: '34px', backgroundColor: '#0E3F8C', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}>4</Text>
-                </Box>
-                <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#1A2230' }}>渐进式高斯层级</Text>
-            </Box>
-            <Text style={{ fontSize: 22, color: '#1A2230', lineHeight: 1.55, marginTop: 12 }}>按屏幕尺寸合并 / 回取，叶节点卸载到 CPU；4050 帧大场景显存仍控制在 12.8 GB 内。</Text>
-            <Text style={{ fontSize: 20, color: '#1E4FA8', fontWeight: 'bold', marginTop: 14 }}>峰值高斯 &lt; 370 万，层级达 8 层</Text>
-        </Box>
+
+    <Box style={{ marginTop: 'auto', margin: '12px 40px 12px 40px', backgroundColor: '#1E4FA8', borderRadius: 6, padding: '11px 22px', flexDirection: 'column' }}>
+        <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.4 }}>创新在哪：<b>不是从零发明</b>。2025 的直接前作已做到“免位姿 ＋ 大场景 ＋ 即时”，但要求图像有序、且不做回环。</Text>
+        <Text style={{ fontSize: 19, color: '#D6E4F7', lineHeight: 1.4, marginTop: 3 }}>本文只补这两个假设——在<b>全部历史</b>里检索重叠帧，用<b>图传播</b>做不重算的回环。增量不大，但恰好补在前作的假设上。</Text>
     </Box>
 </Slide>

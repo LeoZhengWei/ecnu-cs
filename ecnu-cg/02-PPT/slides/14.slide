@@ -21,7 +21,7 @@
             </Box>
             <Box style={{ flex: 1, flexDirection: 'column' }}>
                 <Text style={{ fontSize: 26, fontWeight: 'bold', color: '#1A2230' }}>题眼是用"图上的距离"替换"全局优化的解"</Text>
-                <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.45, marginTop: 6 }}>判定看跳数不看时间，求解用焊接窗口得 Sim(3)，再把修正按测地距离摊给全图——回环不必重算第二遍。</Text>
+                <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.45, marginTop: 6 }}>判定看加权图距、不看时间，求解用焊接窗口得 Sim(3)，再把修正按测地距离摊给全图——回环不必重算第二遍。</Text>
             </Box>
         </Box>
         <Box style={{ flexDirection: 'row', gap: 18, alignItems: 'flex-start' }}>

@@ -1,90 +1,38 @@
 <Slide style={{ width: '1280px', height: '720px', backgroundColor: '#FFFFFF', padding: '0px', flexDirection: 'column' }}>
     <Box style={{ width: '1280px', height: '8px', backgroundColor: '#1E4FA8' }} />
     <Box style={{ padding: '26px 40px 0px 40px', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#1E4FA8' }}>算法地图：七步重建链，用在哪、算什么、管什么</Text>
+        <Text style={{ fontSize: 33, fontWeight: 'bold', color: '#1E4FA8' }}>精确验证：通过才建边，边就是后面一切判断的依据</Text>
         <Text style={{ fontSize: 15, color: '#8B97A8' }}>07 / 15</Text>
     </Box>
-    <Box style={{ padding: '10px 40px 0px 40px' }}>
-        <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.4 }}>位姿重建真正发生在 <b>第 5 步</b>：前三步只为它准备可信观测，第 4 步划定它的变量范围，第 6 步修它累积的漂移，第 7 步才轮到高斯。</Text>
+    <Box style={{ padding: '8px 40px 0px 40px' }}>
+        <Text style={{ fontSize: 20, color: '#4A5568', lineHeight: 1.4 }}>对 5 个候选跑 LightGlue 精确配对，RANSAC 剔除外点，内点数超过 500 才写进协视图。</Text>
     </Box>
-
-    <Box style={{ padding: '12px 40px 0px 40px', flexDirection: 'row', gap: 10 }}>
-        <Box style={{ flex: 1, height: 46, backgroundColor: '#F0F5FC', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#1E4FA8' }}>① 检索</Text>
+    <Box style={{ padding: '14px 40px 0px 40px', flexDirection: 'row', gap: 20 }}>
+        <Box style={{ width: 600, flexDirection: 'column', gap: 11 }}>
+            <Box style={{ backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '9px 16px' }}>
+                <Text style={{ fontSize: 18, color: '#1A2230', lineHeight: 1.45 }}><b>输入</b>　② 留下的 5 个候选帧</Text>
+            </Box>
+            <Box style={{ backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '9px 16px' }}>
+                <Text style={{ fontSize: 18, color: '#1A2230', lineHeight: 1.45 }}><b>做法</b>　LightGlue 精确配对 ＋ RANSAC 剔外点；内点数 |M_ij| 即“这条边有多可信”</Text>
+            </Box>
+            <Box style={{ backgroundColor: '#F7F9FC', border: '1px solid #D6DCE5', borderRadius: 6, padding: '9px 16px' }}>
+                <Text style={{ fontSize: 18, color: '#1A2230', lineHeight: 1.45 }}><b>输出</b>　加权协视图 G = (M, E, W)，边权 w_ij = 1/|M_ij|</Text>
+            </Box>
+            <Box style={{ backgroundColor: '#F0F5FC', border: '1px solid #3D7BD9', borderRadius: 6, padding: '10px 16px', flexDirection: 'column' }}>
+                <Text style={{ fontSize: 18, color: '#1A2230', lineHeight: 1.45 }}><b>关键取值</b>　τ_m = 500 内点　·　min_matches_edge = 500</Text>
+                <Text style={{ fontSize: 16, color: '#4A5568', lineHeight: 1.4, marginTop: 4 }}>边权取内点数倒数：内点越多边越短，于是图上“最短路”= 最可靠的位姿链</Text>
+            </Box>
         </Box>
-        <Box style={{ flex: 1, height: 46, backgroundColor: '#F0F5FC', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#1E4FA8' }}>② 粗筛</Text>
-        </Box>
-        <Box style={{ flex: 1, height: 46, backgroundColor: '#F0F5FC', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#1E4FA8' }}>③ 建边</Text>
-        </Box>
-        <Box style={{ flex: 1, height: 46, backgroundColor: '#F0F5FC', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#1E4FA8' }}>④ 选窗</Text>
-        </Box>
-        <Box style={{ flex: 1, height: 46, backgroundColor: '#1E4FA8', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#FFFFFF' }}>⑤ 局部 BA</Text>
-        </Box>
-        <Box style={{ flex: 1, height: 46, backgroundColor: '#F0F5FC', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#1E4FA8' }}>⑥ 纠偏</Text>
-        </Box>
-        <Box style={{ flex: 1, height: 46, backgroundColor: '#F0F5FC', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#1E4FA8' }}>⑦ 落位</Text>
+        <Box style={{ width: 580, flexDirection: 'column' }}>
+            <Image src="figs/fig3_lightglue.png" style={{ width: 580, height: 362 }} />
+            <Text style={{ fontSize: 14.5, color: '#8B97A8', marginTop: 5 }}>图 3　绿=内点、红叉=被 RANSAC 剔除；通过的帧对才成为图上的一条边。</Text>
         </Box>
     </Box>
-
-    <Box style={{ padding: '12px 40px 0px 40px', flexDirection: 'column' }}>
-        <Box style={{ flexDirection: 'row', backgroundColor: '#1E4FA8', padding: '10px 14px' }}>
-            <Text style={{ width: '44px', fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' }}>步</Text>
-            <Text style={{ width: '258px', fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' }}>算法</Text>
-            <Text style={{ flex: 2.2, fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' }}>核心公式 / 判据</Text>
-            <Text style={{ flex: 2.4, fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' }}>在重建中的作用</Text>
-        </Box>
-        <Box style={{ flexDirection: 'row', alignItems: 'center', minHeight: 58, padding: '10px 14px', borderBottom: '1px solid #D6DCE5' }}>
-            <Text style={{ width: '44px', fontSize: 18, fontWeight: 'bold', color: '#1E4FA8' }}>①</Text>
-            <Text style={{ width: '258px', fontSize: 18, color: '#1A2230' }}>MegaLoc 全局描述子</Text>
-            <Text style={{ flex: 2.2, fontSize: 18, color: '#1A2230' }}>s = d_i · d_j，取 top-K = 20</Text>
-            <Text style={{ flex: 2.4, fontSize: 18, color: '#1A2230' }}>从全部历史帧里找"可能同处"的候选，与帧序无关</Text>
-        </Box>
-        <Box style={{ flexDirection: 'row', alignItems: 'center', minHeight: 58, padding: '10px 14px', backgroundColor: '#F7F9FC', borderBottom: '1px solid #D6DCE5' }}>
-            <Text style={{ width: '44px', fontSize: 18, fontWeight: 'bold', color: '#1E4FA8' }}>②</Text>
-            <Text style={{ width: '258px', fontSize: 18, color: '#1A2230' }}>XFeat 局部特征穷举</Text>
-            <Text style={{ flex: 2.2, fontSize: 18, color: '#1A2230' }}>K' = top-5 |M_ij|（按内点数）</Text>
-            <Text style={{ flex: 2.4, fontSize: 18, color: '#1A2230' }}>淘汰"外观像、但没对上点"的候选</Text>
-        </Box>
-        <Box style={{ flexDirection: 'row', alignItems: 'center', minHeight: 58, padding: '10px 14px', borderBottom: '1px solid #D6DCE5' }}>
-            <Text style={{ width: '44px', fontSize: 18, fontWeight: 'bold', color: '#1E4FA8' }}>③</Text>
-            <Text style={{ width: '258px', fontSize: 18, color: '#1A2230' }}>LightGlue + RANSAC</Text>
-            <Text style={{ flex: 2.2, fontSize: 18, color: '#1A2230' }}>|M_ij| &gt; τ_m = 500 才建边；w_ij = 1/|M_ij|</Text>
-            <Text style={{ flex: 2.4, fontSize: 18, color: '#1A2230' }}>唯一产生共视约束的一步，结果写入协视图</Text>
-        </Box>
-        <Box style={{ flexDirection: 'row', alignItems: 'center', minHeight: 58, padding: '10px 14px', backgroundColor: '#F7F9FC', borderBottom: '1px solid #D6DCE5' }}>
-            <Text style={{ width: '44px', fontSize: 18, fontWeight: 'bold', color: '#1E4FA8' }}>④</Text>
-            <Text style={{ width: '258px', fontSize: 18, color: '#1A2230' }}>协视图贪心扩张（式 1）</Text>
-            <Text style={{ flex: 2.2, fontSize: 18, color: '#1A2230' }}>S ← S ∪ argmax Σ_j |M_ij|，至 20 帧</Text>
-            <Text style={{ flex: 2.4, fontSize: 18, color: '#1A2230' }}>划定 BA 的变量范围：最该一起优化的 20 帧</Text>
-        </Box>
-        <Box style={{ flexDirection: 'row', alignItems: 'center', minHeight: 58, padding: '10px 14px', backgroundColor: '#E8F0FB', borderTop: '1px solid #3D7BD9', borderBottom: '1px solid #3D7BD9' }}>
-            <Text style={{ width: '44px', fontSize: 18, fontWeight: 'bold', color: '#1E4FA8' }}>⑤</Text>
-            <Text style={{ width: '258px', fontSize: 18, fontWeight: 'bold', color: '#1A2230' }}>GPU 局部 BA（LM + Schur）</Text>
-            <Text style={{ flex: 2.2, fontSize: 18, fontWeight: 'bold', color: '#1A2230' }}>min Σ ρ( ||u_ij − π(T_i, X_j)||² )</Text>
-            <Text style={{ flex: 2.4, fontSize: 18, fontWeight: 'bold', color: '#1A2230' }}>真正解出位姿 T_i 与三维点 X_j——重建本体</Text>
-        </Box>
-        <Box style={{ flexDirection: 'row', alignItems: 'center', minHeight: 58, padding: '10px 14px', borderBottom: '1px solid #D6DCE5' }}>
-            <Text style={{ width: '44px', fontSize: 18, fontWeight: 'bold', color: '#1E4FA8' }}>⑥</Text>
-            <Text style={{ width: '258px', fontSize: 18, color: '#1A2230' }}>簇级回环 + 图传播</Text>
-            <Text style={{ flex: 2.2, fontSize: 18, color: '#1A2230' }}>跳数 = 加权图距 &gt; 10 触发；T_Δ = T_a^opt(T_a^init)^-1</Text>
-            <Text style={{ flex: 2.4, fontSize: 18, color: '#1A2230' }}>两簇各扩 N/2 帧焊接，得 Sim(3) 后沿主干摊回</Text>
-        </Box>
-        <Box style={{ flexDirection: 'row', alignItems: 'center', minHeight: 58, padding: '10px 14px', backgroundColor: '#F7F9FC' }}>
-            <Text style={{ width: '44px', fontSize: 18, fontWeight: 'bold', color: '#1E4FA8' }}>⑦</Text>
-            <Text style={{ width: '258px', fontSize: 18, color: '#1A2230' }}>分块深度对齐 + 渐进层级</Text>
-            <Text style={{ flex: 2.2, fontSize: 18, color: '#1A2230' }}>size &lt; τ_l 且可并数 &gt; max(10%, 20 万) → kNN 加权合并</Text>
-            <Text style={{ flex: 2.4, fontSize: 18, color: '#1A2230' }}>位姿定后才投放高斯；层级只压显存，不改位姿</Text>
-        </Box>
+    <Box style={{ margin: '12px 40px 0px 40px', backgroundColor: '#F7F9FC', borderLeft: '5px solid #1E4FA8', padding: '10px 18px', flexDirection: 'column' }}>
+        <Image src="formula/f07.png" style={{ width: 498.0, height: 30.5 }} />
+        <Text style={{ fontSize: 16.5, color: '#4A5568', lineHeight: 1.4, marginTop: 3 }}>这是全链唯一产生“共视约束”的地方——后面所有位姿都由这些点对推出来，边建错，后面全歪。</Text>
     </Box>
-
-    <Box style={{ padding: '12px 40px 0px 40px' }}>
-        <Text style={{ fontSize: 16, color: '#8B97A8', lineHeight: 1.45 }}>加粗行是位姿求解本身，第 ⑥ 步会对已求出的位姿再整体修正一次。符号：u 像素观测、π 投影、ρ 鲁棒核、T 相机位姿、X 路标点。</Text>
-        <Text style={{ fontSize: 16, color: '#8B97A8', lineHeight: 1.45, marginTop: 3 }}>① 的 VPR 论文写 MixVPR，开源代码因许可原因换为 MegaLoc；τ_m = 500，τ_l = 0.5 px，N = 20，K = 20。</Text>
+    <Box style={{ marginTop: 'auto', padding: '10px 40px 12px 40px' }}>
+        <Text style={{ fontSize: 15, color: '#8B97A8' }}>到这一步为止，一张图还没解；但“谁和谁能一起算”已经确定下来了。</Text>
     </Box>
 </Slide>

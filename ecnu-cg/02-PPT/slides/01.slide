@@ -8,7 +8,7 @@
         <Text style={{ fontSize: 19, color: '#4A5568', lineHeight: 1.7, marginTop: 30 }}>Immediate 3D Gaussian Splat Reconstruction of Unordered Input with Global Consistency</Text>
         <Text style={{ fontSize: 17, color: '#8B97A8', lineHeight: 1.6, marginTop: 10 }}>Andreas Meuleman, Linus Franke, Boris Zhestiankin, Camille Montemagni, George Drettakis · Inria GRAPHDECO · ACM TOG 2026</Text>
     </Box>
-    <Box style={{ marginTop: '58px', padding: '22px 80px', backgroundColor: '#F0F5FC', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+    <Box style={{ marginTop: 'auto', padding: '26px 80px', backgroundColor: '#F0F5FC', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <Text style={{ fontSize: 20, color: '#1A2230' }}>汇报人：郑炜　周子懿　　指导教师：DeepSeek</Text>
         <Text style={{ fontSize: 20, color: '#1E4FA8', fontWeight: 'bold' }}>2026 年 11 月</Text>
     </Box>
