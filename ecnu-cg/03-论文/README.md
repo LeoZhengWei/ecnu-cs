@@ -10,10 +10,25 @@
 | 文件 | 说明 |
 |---|---|
 | `Meuleman2026_i3dgs_SIGGRAPH2026_原文.pdf` | 原作者版 arXiv PDF（v1），14.8 MB，含全部彩图 |
+| `Meuleman2025_OnTheFlyNVS_SIGGRAPH2025_原文.pdf` | **本文的直接前作**，12.2 MB，ACM TOG 44(4)；本文的 BA 扩展性、高斯生成方式、数据集与评测协议都沿用它 |
+| `Kerbl2023_3DGS_SIGGRAPH2023_原文.pdf` | **3DGS 开山之作**，Inria 官方低分辨率版（原图替换为压缩图，文字与公式不变），24.3 MB |
 | `i3dgs_论文中文全译.md` | 本仓库作者翻译的中文全译，约 2.77 万字，摘要→结论 + 附录 A/B |
 | `i3dgs_论文精要.md` | 约 2300 字（全译的 1/12），22 张表，见下节 |
 | `i3dgs_七步算法与公式详解.md` | **七步的算法与公式全解**：伪代码 + LaTeX 推导 + 超参对照（论文值 / 代码默认值） + **贡献归属表**（★本文 / ☆借用 / ○教科书），对应 PPT P4–P11 |
 | `i3dgs_关键步骤英文原文对照.md` | 七步的论文英文原句逐句摘录（标 Sec.）+ 中译 + 英文术语 + 源码标识符；附录 A 为 Algorithm 1 全英文伪代码，附录 C 为论文与代码不一致的三处 |
+
+## 三篇论文的承接关系
+
+本文不是凭空长出来的，读源码和原文可以拆成三层：
+
+| 年份 | 论文 | 本文从它那里拿了什么 |
+|---|---|---|
+| 2023 | Kerbl et al., *3D Gaussian Splatting for Real-Time Radiance Field Rendering* | 表示与渲染：显式高斯基元 + 可微泼溅光栅化。**没给位姿**，那一步当时仍交给 COLMAP |
+| 2025 | Meuleman et al., *On-the-fly Reconstruction for Large-Scale NVS from Unposed Images* | 工程底座：学习特征匹配、GPU 上的 mini-BA 求初值、按深度直接采样生成高斯、聚类成 anchor 把高斯搬出显存，以及数据集与评测协议。**前提是帧按顺序来** |
+| 2026 | Meuleman et al., *i3dgs*（本目录主论文） | 只改三处，每处都卡在「无序」上：VPR 检索替顺序匹配、固定槽位局部 BA 替全连接观测、聚类回环替位姿图优化 |
+
+对应 PPT 第 15 页《站在谁的肩膀上，以及下一步该往哪走》。
+
 
 ## 三份文档怎么用
 
