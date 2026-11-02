@@ -1,0 +1,58 @@
+{
+  "names": [
+    "Sky",
+    "Building",
+    "Pole",
+    "Road",
+    "Pavement",
+    "Tree",
+    "SignSymbol",
+    "Fence",
+    "Car",
+    "Pedestrian",
+    "Bicyclist"
+  ],
+  "weights": [
+    0.3287678360939026,
+    0.2288198471069336,
+    5.232846736907959,
+    0.19228403270244598,
+    0.8444564938545227,
+    0.5370575189590454,
+    4.849864959716797,
+    4.974440097808838,
+    1.0,
+    8.180023193359375,
+    20.305673599243164
+  ],
+  "train_pixels": [
+    59431837,
+    85391530,
+    3733967,
+    101616742,
+    23138288,
+    36382095,
+    4028829,
+    3927935,
+    19539277,
+    2388658,
+    962257
+  ],
+  "params": 28597451,
+  "config": {
+    "batch_size": 8,
+    "epochs": 40,
+    "lr": 0.0003,
+    "weight_decay": 0.0001,
+    "model": "fcn",
+    "base_channels": 64,
+    "img_height": 240,
+    "img_width": 320,
+    "num_workers": 4,
+    "seed": 42,
+    "data_root": "data/camvid",
+    "save_dir": "runs",
+    "num_classes": 11,
+    "ignore_index": 255
+  }
+}

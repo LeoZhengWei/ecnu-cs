@@ -1,0 +1,16 @@
+# 依据《实践1 软件安装与环境设置》
+# 环境：Anaconda3，Python 3.7
+# PyTorch 安装（PPT）：
+#   conda install pytorch torchvision cudatoolkit=10.2
+# pip 安装 CUDA 10.2 轮子：
+#   pip install torch==1.7.1+cu102 torchvision==0.8.2+cu102 -f https://download.pytorch.org/whl/torch_stable.html
+
+torch
+torchvision
+numpy
+scipy
+matplotlib
+pillow
+opencv-python
+scikit-learn
+configargparse
