@@ -1,0 +1,68 @@
+% !TEX root = ../eigenfaces_algorithm.tex
+%=====================================================
+\section{关键困难与 Gram 技巧：在 280 那一侧算}
+
+\subsection{困难：矩阵太大}
+
+$\mat{C}=\frac{1}{n-1}\mat{X}\mT\mat{X}\in\R^{4096\times4096}$。
+对它做完整特征分解约需 $O(d^3)\approx 7\times10^{10}$ 次运算，
+光把它存下来就要 $4096^2\times 8\text{B}\approx 134$ MB。
+而每个特征向量才用一次——太奢侈了。
+
+\subsection{Gram 技巧：三个等式解决问题}
+
+改看另一个矩阵：
+\[
+\mat{G}=\mat{X}\mat{X}\mT\in\R^{280\times 280}.
+\]
+它小得多。它的元素有直接含义：$G_{ij}=\inner{\mathbf{x}_i}{\mathbf{x}_j}$
+是第 $i$ 张残差脸和第 $j$ 张残差脸的\textbf{相似度}——所以 $\mat{G}$ 叫 Gram 矩阵（相似度矩阵）。
+
+\textbf{断言：}若 $\mat{G}\mathbf{u}=\lambda\mathbf{u}$ 且 $\lambda>0$，
+则 $\mathbf{v}=\mat{X}\mT\mathbf{u}$ 是 $\mat{X}\mT\mat{X}$ 的特征向量，特征值同为 $\lambda$。
+
+\textbf{证明（两行）：}
+\[
+\mat{X}\mT\mat{X}\,(\mat{X}\mT\mathbf{u})
+=\mat{X}\mT\,(\mat{X}\mat{X}\mT\,\mathbf{u})
+=\mat{X}\mT(\lambda\mathbf{u})
+=\lambda\,(\mat{X}\mT\mathbf{u}).\qquad\blacksquare
+\]
+
+\textbf{归一化：}$\mat{X}\mT\mathbf{u}$ 不是单位向量，需要除以它的长度：
+\[
+\norm{\mat{X}\mT\mathbf{u}}^2
+=\mathbf{u}\mT\mat{X}\mat{X}\mT\mathbf{u}
+=\lambda\,\mathbf{u}\mT\mathbf{u}=\lambda
+\quad\Longrightarrow\quad
+\boxed{\ \mathbf{v}=\frac{\mat{X}\mT\mathbf{u}}{\sqrt{\lambda}}\ },\qquad \norm{\mathbf{v}}=1 .
+\]
+
+\subsection{两套谱的关系与“空房间”}
+
+$\mat{X}\mT\mat{X}$ 与 $\mat{X}\mat{X}\mT$ 的非零特征值\textbf{完全相同}：
+$\mat{X}$ 的秩 $\le 279$，所以两边都至多 279 个非零特征值。
+协方差版本只差常数：$\mat{C}$ 的特征值为 $\lambda_i/(n-1)$。
+此外若 $\mathbf{u}_i\perp\mathbf{u}_j$（Gram 侧），则
+$\inner{\mathbf{v}_i}{\mathbf{v}_j}=\tfrac{1}{\sqrt{\lambda_i\lambda_j}}\mathbf{u}_i\mT\mat{X}\mat{X}\mT\mathbf{u}_j
+=\tfrac{\lambda_j}{\sqrt{\lambda_i\lambda_j}}\inner{\mathbf{u}_i}{\mathbf{u}_j}=0$：
+\textbf{特征脸彼此也是正交的}——正交性在小矩阵那侧算完就自动继承到大矩阵这侧。
+
+\begin{intuition}
+一个直观比喻：$\mat{X}$ 是一座桥，左岸住着 280 个“人”（$\mathbf{u}$ 们），
+右岸住着 4096 个“像素方向”（$\mathbf{v}$ 们）。
+桥上真正通行的“变异模式”只有 $\le 279$ 条。
+在左岸（人这一侧）把这条条模式找清楚，桥的对称性会自动告诉我们右岸的对应者是谁：
+$\mathbf{v}=\mat{X}\mT\mathbf{u}/\sqrt{\lambda}$。
+这就是“$n\ll d$ 时先算 $n\times n$ 那一侧”的全部秘密。
+\end{intuition}
+
+\subsection{与 SVD 的对应（一张对照表）}
+
+瘦奇异值分解 $\mat{X}=\mat{U}\mat{\Sigma}\mat{V}\mT$ 中
+$\sigma_i=\sqrt{\lambda_i}$，于是：
+\[
+\text{Gram 侧：}\ \mat{G}=\mat{U}\mat{\Lambda}\mat{U}\mT,\qquad
+\text{特征脸：}\ \mat{V}=\mat{X}\mT\mat{U}\mat{\Lambda}^{-1/2}.
+\]
+一句话总结本题的算法本质：\textbf{“特征脸 = 只用 $n$ 侧信息求出 $\mat{X}$ 的右奇异向量。”}

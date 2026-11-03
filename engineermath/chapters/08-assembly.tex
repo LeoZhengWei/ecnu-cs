@@ -1,0 +1,27 @@
+% !TEX root = ../eigenfaces_algorithm.tex
+%=====================================================
+\section{拼装：从 280 维的 $\mathbf{u}$ 到 4096 维的特征脸}
+
+每个 Gram 侧特征对 $(\lambda_i,\mathbf{u}_i)$ 按第 6 节公式提升：
+\[
+\mathbf{v}_i=\frac{\mat{X}\mT\mathbf{u}_i}{\sqrt{\lambda_i}}\in\R^{4096},\qquad
+i=1,\dots,k .
+\]
+三件实务：
+\begin{enumerate}
+  \item \textbf{丢掉伪根}：$\lambda_i<10^{-12}\lambda_1$ 的直接丢弃（数值噪声冒充的特征值，除以 $\sqrt\lambda$ 会爆炸）。
+  \item \textbf{符号固定}：$\pm\mathbf{v}_i$ 都是合法特征向量。约定“绝对值最大的分量取正”，
+  保证每次运行、每次与基准比对时方向一致，图像不会黑白颠倒。
+  \item \textbf{排序}：按 $\lambda$ 降序拼成 $\mat{V}_k=[\mathbf{v}_1,\dots,\mathbf{v}_k]\in\R^{4096\times k}$，
+  有 $\mat{V}_k\mT\mat{V}_k=\mat{I}_k$（正交性在 Gram 侧已保证，第 6.3 节验证过）。
+\end{enumerate}
+
+\textbf{与 \texttt{eigh} 比对的正确姿势。}基准真值不要用 4096² 的 \texttt{eigh}（不可行），
+用 $\mat{X}$ 的瘦 SVD：$\lambda_i^{\text{ref}}=\sigma_i^2$、$\mathbf{v}_i^{\text{ref}}$ 取右奇异向量。三项指标：
+\begin{enumerate}
+  \item 特征值相对误差：$|\lambda_i-\lambda_i^{\text{ref}}|/\lambda_i^{\text{ref}}$（对 $i$ 画曲线，看尾部抬升）；
+  \item 特征向量误差（先对齐符号）：$\min\big(\norm{\mathbf{v}_i-\mathbf{v}_i^{\text{ref}}},\ \norm{\mathbf{v}_i+\mathbf{v}_i^{\text{ref}}}\big)$；
+  \item \textbf{子空间主角}：$\mat{V}_k\mT\mat{V}_k^{\text{ref}}$ 的奇异值即 $\cos\theta_i$。
+  当两个特征值几乎重合时，单条特征向量会在子空间内部自由旋转、无法逐条比对，
+  只有子空间角度是稳定的比较对象。
+\end{enumerate}

@@ -1,0 +1,24 @@
+% !TEX root = ../eigenfaces_algorithm.tex
+%=====================================================
+\section*{附录 A：符号速查表}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+符号 & 含义 \\
+\midrule
+$n=280,\ d=4096$ & 训练脸数、像素维数 \\
+$\mat{A}\in\R^{n\times d}$ & 原始数据矩阵（每行一张脸）\\
+$\bar{\mathbf{a}}$ & 均值脸（只由训练集计算）\\
+$\mat{X}=\mat{A}-\mathbf{1}\bar{\mathbf{a}}\mT$ & 中心化数据矩阵，$\operatorname{rank}\le 279$ \\
+$\mat{G}=\mat{X}\mat{X}\mT\in\R^{n\times n}$ & Gram（相似度）矩阵 \\
+$\lambda_i,\ \mathbf{u}_i$ & $\mat{G}$ 的特征值 / 特征向量（280 维）\\
+$\mathbf{v}_i=\mat{X}\mT\mathbf{u}_i/\sqrt{\lambda_i}$ & 特征脸（4096 维）\\
+$\mat{V}_k=[\mathbf{v}_1\cdots\mathbf{v}_k]$ & 前 $k$ 张特征脸，$\mat{V}_k\mT\mat{V}_k=\mat{I}$ \\
+$\mathbf{c}=\mat{V}_k\mT\mathbf{x}$ & 一张脸在特征脸基下的 $k$ 维坐标 \\
+$\mat{P}=\mat{V}_k\mat{V}_k\mT$ & 正交投影矩阵，$\mat{P}^2=\mat{P}=\mat{P}\mT$ \\
+$\hat\lambda=\mathbf{u}\mT\mat{G}\mathbf{u}$ & Rayleigh 商（特征值的二阶精确估计）\\
+$R(k)$ & 累计解释方差比 \\
+\bottomrule
+\end{tabular}
+\end{center}

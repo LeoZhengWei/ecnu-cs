@@ -1,0 +1,50 @@
+% !TEX program = xelatex
+% !TEX root = eigenfaces_algorithm.tex
+% 编译（推荐，自动处理目录所需的多次编译）：
+%   latexmk -xelatex eigenfaces_algorithm.tex
+% 或手动：
+%   xelatex eigenfaces_algorithm.tex
+%   xelatex eigenfaces_algorithm.tex
+% 依赖：TeX Live / MiKTeX，需 ctex、amsmath、booktabs、hyperref、geometry。
+% Overleaf：编译器选 XeLaTeX，主文件设为本文件。
+\documentclass[12pt]{ctexart}
+
+\input{preamble/packages}
+\input{preamble/macros}
+
+\title{\textbf{特征脸（Eigenfaces）算法详解}\\[4pt]
+\large 幂迭代、PCA 重建与识别——从零开始的完整推导}
+\author{配合《高级工程数学》第 7 题\ 研究任务使用}
+\date{2026 年 11 月}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+本文档不假设读者会 PCA 或特征分解的任何“套路”，从“机器如何认人”这个问题出发，
+一步一步讲清楚特征脸算法的每一环节：为什么要中心化、为什么可以在 $280\times 280$ 的小矩阵上做、
+幂迭代为什么收敛、收缩为什么必须再正交化、重建和识别到底在算什么。
+每个公式都先给白话直觉，再给严格推导。
+\end{abstract}
+
+\tableofcontents
+\bigskip
+
+\input{chapters/01-background}
+\input{chapters/02-preliminaries}
+\input{chapters/03-data}
+\input{chapters/04-pca}
+\input{chapters/05-gram}
+\input{chapters/06-power-iteration}
+\input{chapters/07-deflation}
+\input{chapters/08-assembly}
+\input{chapters/09-reconstruction}
+\input{chapters/10-recognition}
+\input{chapters/11-convergence}
+\input{chapters/12-demo}
+\input{chapters/13-validation}
+\input{chapters/14-pitfalls}
+\input{chapters/appendix-a}
+\input{chapters/appendix-b}
+
+\end{document}

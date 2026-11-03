@@ -1,0 +1,85 @@
+% !TEX root = ../eigenfaces_algorithm.tex
+%=====================================================
+\section{投影与重建：一张脸 = 均值脸 + 若干份特征脸}
+
+\subsection{正变换：提取坐标}
+
+对任何一张脸（训练或测试都一样）：
+\[
+\mathbf{x}=\mathbf{a}-\bar{\mathbf{a}}\quad(\text{中心化})
+\qquad\Longrightarrow\qquad
+c_i=\inner{\mathbf{v}_i}{\mathbf{x}}=\mathbf{v}_i\mT\mathbf{x},\qquad
+\mathbf{c}=\mat{V}_k\mT\mathbf{x}\in\R^{k}.
+\]
+$c_i$ 的含义：这张脸里含有多少份“第 $i$ 号变化模式”。
+因为 $\{\mathbf{v}_i\}$ 是正交基，坐标唯一、且求法就是内积——
+这正是课程里“基与坐标唯一性、基变换”的直接应用。
+
+\subsection{逆变换：重建}
+
+\[
+\hat{\mathbf{x}}=\mat{V}_k\mathbf{c}
+=\sum_{i=1}^k c_i\mathbf{v}_i
+=\mat{V}_k\mat{V}_k\mT\,\mathbf{x}
+\qquad\Longrightarrow\qquad
+\boxed{\ \hat{\mathbf{a}}=\mat{V}_k\mat{V}_k\mT(\mathbf{a}-\bar{\mathbf{a}})+\bar{\mathbf{a}}\ }
+\]
+
+\begin{intuition}
+重建公式读成一句话：\textbf{这张脸 $\approx$ 平均脸 + $c_1$ 份 1 号特征脸 + $c_2$ 份 2 号特征脸 + ……}。
+基正交归一带来一个大便利：$\mat{V}_k^{-1}=\mat{V}_k\mT$，
+从坐标回到图像不需要解任何方程组，转置乘回去即可（谱定理的红利）。
+$k$ 越大，加进去的“模式”越多，脸越清晰；$k=279$ 时可完美复原（薄板被完整描述）。
+\end{intuition}
+
+\subsection{投影矩阵 $P=\mat{V}_k\mat{V}_k\mT$：它是一个真正的“投影”}
+
+$\mat{P}=\mat{V}_k\mat{V}_k\mT$（作用在 $\R^{4096}$ 上）满足：
+\[
+\mat{P}^2=\mat{P}\qquad(\text{投影两次不再改变}),\qquad
+\mat{P}\mT=\mat{P}\qquad(\text{对称}),\qquad
+\operatorname{rank}\mat{P}=k=\operatorname{trace}\mat{P}.
+\]
+验证 $\mat{P}^2=\mat{P}$ 只需 $\mat{V}\mT\mat{V}=\mat{I}$：
+$\mat{P}^2=\mat{V}(\mat{V}\mT\mat{V})\mat{V}\mT=\mat{V}\mat{V}\mT=\mat{P}$。
+这三条性质对应课程中“正交投影 $P^2=P=P\mT$”的完整刻画。
+残差
+\[
+\mathbf{r}=\mathbf{x}-\mat{P}\mathbf{x}
+\]
+满足 $\mathbf{v}_i\mT\mathbf{r}=c_i-c_i=0$：\textbf{残差与特征脸子空间垂直}，
+即重建已经拿走了子空间里的一切，剩下的是子空间“管不着”的部分。
+
+\subsection{误差有多大：毕达哥拉斯给出解析答案}
+
+正交性使勾股定理成立：
+\[
+\norm{\mathbf{x}}^2=\norm{\mathbf{c}}^2+\norm{\mathbf{r}}^2
+\qquad\text{其中}\quad
+\norm{\mathbf{c}}^2=\sum_{i\le k}c_i^2 .
+\]
+对整个训练集求和（利用 $\sum_j\norm{\mathbf{x}_j}^2=\operatorname{trace}(\mat{X}\mT\mat{X})=\sum_i\lambda_i$，
+以及 $\sum_j\sum_{i\le k}c_{ij}^2=\sum_{i\le k}\lambda_i$）：
+\[
+\text{平均每张图的残差平方和}
+=\frac1n\sum_{j}\norm{\mathbf{r}_j}^2
+=\frac{1}{n}\sum_{i>k}\lambda_i .
+\qquad(\text{每像素 MSE 再除以 }d=4096)
+\]
+\textbf{重建误差 = 被扔掉的那些方向的方差之和。}
+这条解析曲线应与实验实测 MSE 曲线重合；不重合说明特征向量或中心化有错——
+它比“重建图看起来挺像”严格得多，建议作为报告的硬校验。
+
+另一个引用级结论（Eckart--Young 定理，作为引用依据使用）：
+在一切秩 $\le k$ 的逼近中，向特征脸子空间的正交投影使
+$\norm{\mat{X}-\mat{X}_k}_F$ 最小，且最小值的平方恰为 $\sum_{i>k}\lambda_i$。
+这就是“PCA 是最优线性降维”的准确含义。
+
+\subsection{累计解释方差}
+
+\[
+R(k)=\frac{\sum_{i\le k}\lambda_i}{\sum_{i\le 279}\lambda_i}
+\qquad\text{达到 }90\%\text{ 或 }95\%\text{ 的 }k\text{ 用插值从曲线上定位。}
+\]
+它回答的问题：\textbf{要保留九成五的“差异信息”，最少需要几张特征脸？}
+人脸数据的典型答案是几十张——这正是第 1 节直觉“人的差异活在少数维度里”的定量版本。

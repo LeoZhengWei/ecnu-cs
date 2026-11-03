@@ -1,0 +1,18 @@
+% !TEX root = ../eigenfaces_algorithm.tex
+%=====================================================
+\section{验证清单：怎么证明算法没写错}
+
+\begin{enumerate}
+  \item \textbf{正交归一}：$\norm{\mat{V}_k\mT\mat{V}_k-\mat{I}_k}_F$ 应在 $10^{-10}$ 量级
+  （\texttt{eigh} 基准约 $10^{-15}$）。漂移大说明再正交化没做到位。
+  \item \textbf{投影性质}：取随机向量 $\mathbf{z}$，验证
+  $\norm{\mat{P}(\mat{P}\mathbf{z})-\mat{P}\mathbf{z}}/\norm{\mat{P}\mathbf{z}}\approx 0$
+  与 $|\mathbf{z}\mT\mat{P}\mathbf{z}-(\mat{P}\mathbf{z})\mT(\mat{P}\mathbf{z})|\approx 0$。
+  用随机向量检验即可，\textbf{不要真的构造 $4096\times4096$ 的 $\mat{P}$}。
+  \item \textbf{秩}：$\operatorname{trace}\mat{P}=\sum_i\norm{\mathbf{v}_i}^2$ 应精确等于 $k$。
+  \item \textbf{特征残差}：$\norm{\mat{G}\mathbf{u}_i-\lambda_i\mathbf{u}_i}$ 与
+  $\norm{\mat{C}\mathbf{v}_i-\frac{\lambda_i}{n-1}\mathbf{v}_i}$。
+  \item \textbf{满秩重建}：$k=279$ 时 $\norm{\mat{X}-\mat{V}_k\mat{V}_k\mT\mat{X}}_F/\norm{\mat{X}}_F$
+  应达机器精度量级——这是“Gram $\to\mathbf{u}\to\mathbf{v}\to$ 投影”整条链路无误的最强证据。
+  \item \textbf{MSE 对解析曲线}：实测重建 MSE 应与 $\sum_{i>k}\lambda_i/(n\,d)$ 重合（第 9.4 节）。
+\end{enumerate}

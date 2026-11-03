@@ -1,0 +1,98 @@
+% !TEX root = ../eigenfaces_algorithm.tex
+%=====================================================
+\section{幂迭代：不分解矩阵，只“反复拉伸”}
+
+\subsection{核心直觉：反复乘 $\mat{G}$，大方向自己会冒头}
+
+取任意向量 $\mathbf{u}_0$，反复做“乘 $\mat{G}$ 再归一化”：
+\[
+\mathbf{u}_1=\frac{\mat{G}\mathbf{u}_0}{\norm{\mat{G}\mathbf{u}_0}},\qquad
+\mathbf{u}_2=\frac{\mat{G}\mathbf{u}_1}{\norm{\mat{G}\mathbf{u}_1}},\qquad\dots
+\]
+为什么会收敛到最大特征向量？把 $\mathbf{u}_0$ 在（正交的）特征基上展开：
+\[
+\mathbf{u}_0=c_1\mathbf{u}_1^{(\star)}+c_2\mathbf{u}_2^{(\star)}+\cdots ,
+\]
+（记号：$\mathbf{u}_i^{(\star)}$ 是真实特征向量，区别于迭代中的 $\mathbf{u}_k$。）
+乘 $k$ 次后，每个分量被各自的特征值放大 $\lambda_i^k$ 倍：
+\[
+\mat{G}^k\mathbf{u}_0
+=\lambda_1^k\Big(c_1\mathbf{u}_1^{(\star)}
++\sum_{i\ge 2}c_i\Big(\frac{\lambda_i}{\lambda_1}\Big)^{\!k}\mathbf{u}_i^{(\star)}\Big).
+\]
+因为 $0\le\lambda_i/\lambda_1<1$，除最大方向外的所有成分按公比 $\lambda_i/\lambda_1$
+\textbf{几何衰减}，最后只剩 $\mathbf{u}_1^{(\star)}$。
+归一化只负责防止数值溢出（$\lambda_1^k$ 会爆表或归零），不影响方向。
+
+\subsection{一个能手算的 $2\times 2$ 例子}
+
+取 $\mat{G}=\begin{pmatrix}6.5&2.5\\2.5&6.5\end{pmatrix}$，
+其特征值为 $\lambda_1=9$（方向 $(1,1)/\sqrt2$）、$\lambda_2=4$（方向 $(1,-1)/\sqrt2$）。
+从 $\mathbf{u}_0=(1,0)$ 出发，两个方向的初始成分相等，
+每迭代一步，“错误方向”与“正确方向”的成分比恰好乘上 $\lambda_2/\lambda_1=4/9$。
+令 $\theta_k$ 为第 $k$ 步迭代向量与真实主方向的夹角，则 $\sin\theta_k\approx(4/9)^k$：
+
+\begin{center}
+\begin{tabular}{ccccccc}
+\toprule
+$k$ & 1 & 2 & 3 & 4 & 5 & 10\\
+\midrule
+$(4/9)^k$ & 0.444 & 0.198 & 0.088 & 0.039 & 0.017 & $3.0\times10^{-4}$\\
+$\theta_k$（度）& $26.4^\circ$ & $11.4^\circ$ & $5.0^\circ$ & $2.2^\circ$ & $1.0^\circ$ & $0.017^\circ$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{intuition}
+每乘一次 $\mat{G}$，正确方向被放大 9 倍、错误方向只放大 4 倍，
+两者的差距像滚雪球一样拉大——5 步之后错误方向就只剩 $1.7\%$。
+幂迭代没有任何魔法，它就是\textbf{让矩阵自己一次次投票}，票多的方向赢。
+\end{intuition}
+
+\subsection{收敛速度的定量结论}
+
+由上面的展开立得（$\theta_k$ 为迭代向量与 $\mathbf{u}_1^{(\star)}$ 的夹角）：
+\[
+\sin\theta_k \lesssim \frac{c_2}{c_1}\Big(\frac{\lambda_2}{\lambda_1}\Big)^{k}
+\qquad\Longrightarrow\qquad
+\text{达到精度 }\varepsilon\text{ 需要 }k\approx\frac{\ln(\varepsilon\, c_1/c_2)}{\ln(\lambda_2/\lambda_1)} .
+\]
+两个直接推论：
+\begin{itemize}
+  \item \textbf{谱间隙 $\lambda_1-\lambda_2$ 越大收敛越快}；$\lambda_2/\lambda_1\to 1$ 时迭代次数爆炸——
+  这正是本题“前 50 个用幂迭代、50 以后交给 \texttt{eigh}”的定量原因（尾部特征值密密麻麻挤在一起，比值趋近 1）。
+  \item 初始向量几乎垂直于 $\mathbf{u}_1^{(\star)}$（$c_1\approx 0$）时会“慢启动”。
+  随机高维向量恰好垂直的概率为零，但 $c_1$ 偏小会让前几步看起来停滞——
+  这解释了换随机种子时迭代次数的小幅波动。
+\end{itemize}
+
+\subsection{算法步骤（完整版）}
+
+求 $\mat{G}\in\R^{n\times n}$ 的最大特征对：
+\begin{enumerate}
+  \item 初始化：$\mathbf{u}_0\sim\mathcal{N}(\mathbf{0},\mat{I}_n)$，归一化 $\mathbf{u}_0\leftarrow\mathbf{u}_0/\norm{\mathbf{u}_0}$；固定随机种子保证可复现。
+  \item 循环：
+  \[
+  \mathbf{w}\leftarrow \mat{G}\,\mathbf{u}_k,\qquad
+  \mathbf{u}_{k+1}\leftarrow \frac{\mathbf{w}}{\norm{\mathbf{w}}_2}.
+  \]
+  \item 每步用 \textbf{Rayleigh 商}估计特征值：
+  \[
+  \hat\lambda_k=\mathbf{u}_k\mT\mat{G}\,\mathbf{u}_k .
+  \]
+  \item 停机准则：相对残差
+  \[
+  \frac{\norm{\mat{G}\mathbf{u}_k-\hat\lambda_k\mathbf{u}_k}_2}{\hat\lambda_k}<\varepsilon
+  \quad(\text{建议 }10^{-8}\sim10^{-10}).
+  \]
+\end{enumerate}
+
+\begin{why}
+为什么特征值用 Rayleigh 商而不是 $\norm{\mat{G}\mathbf{u}_k}$？
+Rayleigh 商在特征向量附近是\textbf{二阶精确}的：若方向误差为 $\delta$，
+则 $|\hat\lambda-\lambda_1|=O(\delta^2)$——把 $\mathbf{u}_k=c_1\mathbf{u}_1^{(\star)}+\delta\,\mathbf{z}$
+（$\mathbf{z}\perp\mathbf{u}_1^{(\star)}$）代入即可验证。
+而 $\norm{\mat{G}\mathbf{u}_k}$ 只有一阶精度。所以 Rayleigh 商收敛“快人一步”，
+代价是它太乐观：$\hat\lambda$ 看起来不动了，方向可能还差 $\sqrt\varepsilon$。
+因此停机必须看\textbf{残差}而不是看 $\Delta\hat\lambda$。
+\end{why}

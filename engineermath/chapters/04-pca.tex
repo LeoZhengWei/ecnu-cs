@@ -1,0 +1,54 @@
+% !TEX root = ../eigenfaces_algorithm.tex
+%=====================================================
+\section{PCA：找“差异最大”的那几个方向}
+
+\subsection{目标函数：方差 = 信息}
+
+我们想找单位向量 $\mathbf{u}$（$\norm{\mathbf{u}}=1$），
+把所有残差脸投影到它上面后，投影值尽可能“散”。投影值是 $t_j=\inner{\mathbf{u}}{\mathbf{x}_j}=\mathbf{x}_j\mT\mathbf{u}$，
+其平方和（中心化后均值自动为零，这就是方差的两倍尺度，差常数因子不影响结果）为
+\[
+\sum_{j=1}^{n} t_j^2
+=\sum_j \mathbf{u}\mT\mathbf{x}_j\,\mathbf{x}_j\mT\mathbf{u}
+=\mathbf{u}\mT\Big(\underbrace{\mat{X}\mT\mat{X}}_{d\times d}\Big)\mathbf{u}.
+\]
+
+\begin{intuition}
+为什么“方差大 = 信息多”？想象一个班里所有人身高完全相同——身高这个维度方差为零，
+告诉你身高也猜不出是谁。反过来，一个维度上方差很大，说明这个维度上人与人有明显差异，
+\textbf{差异正是识别所需要的信息}。PCA 的哲学就是：把方差大的维度挑出来，
+把方差小（近乎人人都一样）的维度扔掉。
+\end{intuition}
+
+\subsection{化成特征值问题（三行推导）}
+
+带约束的最大化问题：
+\[
+\max_{\mathbf{u}}\ \mathbf{u}\mT\mat{X}\mT\mat{X}\,\mathbf{u}
+\qquad\text{s.t.}\qquad \mathbf{u}\mT\mathbf{u}=1 .
+\]
+用 Lagrange 乘子法，令
+\[
+L(\mathbf{u},\lambda)=\mathbf{u}\mT\mat{X}\mT\mat{X}\mathbf{u}-\lambda(\mathbf{u}\mT\mathbf{u}-1),
+\]
+对 $\mathbf{u}$ 求导置零（利用 $\nabla_{\mathbf{u}}\,\mathbf{u}\mT\mat{C}\mathbf{u}=2\mat{C}\mathbf{u}$，$\mat{C}$ 对称）：
+\[
+2\,\mat{X}\mT\mat{X}\,\mathbf{u}-2\lambda\mathbf{u}=\mathbf{0}
+\quad\Longrightarrow\quad
+\boxed{\ \mat{X}\mT\mat{X}\,\mathbf{u}=\lambda\mathbf{u}\ }.
+\]
+结论漂亮得过分：
+\begin{itemize}
+  \item 让方差最大的方向，\textbf{恰好是} $\mat{X}\mT\mat{X}$ 的特征向量；
+  \item 把它代回目标函数：$\mathbf{u}\mT(\lambda\mathbf{u})=\lambda$，
+        \textbf{最大方差值恰好就是那个特征值}。
+\end{itemize}
+所以“按特征值从大到小排”，前 $k$ 个特征向量就是信息量最大的 $k$ 个方向。
+这些 4096 维的特征向量 reshaped 回 $64\times 64$ 去看，就是传说中的
+\textbf{特征脸（eigenfaces）}：前几张常像“整体明暗/光照方向”，后面几张像五官与纹理的细碎模式。
+
+\begin{intuition}
+把 $\mat{X}\mT\mat{X}$ 想成“像素与像素之间的相关性报告”。
+它是对称阵，由谱定理知道它有一套互相垂直的拉伸方向。
+PCA 做的事，说穿了就是\textbf{问这份报告：“你力气最大的拉伸方向是哪几个？”}
+\end{intuition}

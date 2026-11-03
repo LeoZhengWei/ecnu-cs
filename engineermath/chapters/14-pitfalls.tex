@@ -1,0 +1,23 @@
+% !TEX root = ../eigenfaces_algorithm.tex
+%=====================================================
+\section{常见坑清单}
+
+\begin{center}
+\begin{tabular}{p{0.44\textwidth}p{0.46\textwidth}}
+\toprule
+\textbf{错误做法} & \textbf{后果} \\
+\midrule
+用测试集算均值 / 中心化 & 信息泄漏，测试坐标系与训练基不一致 \\
+重建后忘记加回 $\bar{\mathbf{a}}$ & 重建图整体发暗、无法与原图比较 \\
+特征向量忘记除以 $\sqrt{\lambda}$ & 非单位基，坐标整体缩放，1-NN 距离被扭曲 \\
+收缩时不做再正交化 & 第 5 个之后全部“退化回第一主方向” \\
+\texttt{eigh} 升序 vs 幂迭代降序直接比对 & 全部错位 \\
+比对特征向量不处理 $\pm$ 符号 & 误差恒为 $\sqrt{2}$，无法判断好坏 \\
+只用 $|\Delta\hat\lambda|$ 判停 & 方向未收敛就退出（Rayleigh 商二阶乐观）\\
+把 $\lambda$ 当成方差 & 绝对值差 $n-1=279$ 倍（比值不受影响）\\
+像素 $0\sim255$ 与 $0\sim1$ 混用 & MSE 差 $65025$ 倍 \\
+$k>279$ & $\lambda=0$，除以 $\sqrt{\lambda}$ 得 NaN \\
+特征脸逐图各自归一化显示 & 视觉上全部“一样亮”，误导解读 \\
+\bottomrule
+\end{tabular}
+\end{center}

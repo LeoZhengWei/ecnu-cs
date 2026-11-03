@@ -1,0 +1,48 @@
+% !TEX root = ../eigenfaces_algorithm.tex
+%=====================================================
+\section{预备知识：三件趁手的工具}
+
+后面的推导只依赖三件事，这里一次性复习。
+
+\subsection{内积：衡量“相似程度”的尺子}
+
+两个向量的内积
+\[
+\inner{\mathbf{x}}{\mathbf{y}}=\mathbf{x}\mT\mathbf{y}
+=\sum_i x_i y_i=\norm{\mathbf{x}}\,\norm{\mathbf{y}}\cos\theta ,
+\]
+其中 $\theta$ 是两向量的夹角。三个重要特例：
+\begin{itemize}
+  \item $\inner{\mathbf{x}}{\mathbf{y}}=0$：两个方向互相\textbf{垂直}（正交），彼此毫无共同成分；
+  \item $\norm{\mathbf{x}}=1$（单位向量）时，$\inner{\mathbf{x}}{\mathbf{y}}$ 就是 $\mathbf{y}$ 在 $\mathbf{x}$ 方向上的\textbf{投影长度}，也就是“$\mathbf{y}$ 里含有多少 $\mathbf{x}$ 的成分”；
+  \item $\norm{\mathbf{x}}=\norm{\mathbf{y}}=1$ 时，内积就是夹角余弦：$1$ 表示同向，$0$ 表示垂直。
+\end{itemize}
+
+\subsection{矩阵乘向量：拉伸机器}
+
+$\mat{A}\mathbf{x}$ 的效果是把 $\mathbf{x}$ 旋转 + 拉伸。一般情况下方向会变；
+但存在一些特殊方向，乘完之后\textbf{方向不变，只被拉长了 $\lambda$ 倍}：
+\[
+\mat{A}\mathbf{v}=\lambda \mathbf{v}.
+\]
+$\mathbf{v}$ 叫特征向量，$\lambda$ 叫特征值。$\lambda$ 的大小表示
+“$\mat{A}$ 在这个方向上的拉伸力度”。
+
+\subsection{对称矩阵的谱定理（本课程的母定理）}
+
+若 $\mat{A}=\mat{A}\mT$ 实对称，则
+\[
+\text{所有特征值都是实数，且可以取到一组互相\textbf{正交}的单位特征向量。}
+\]
+即存在正交矩阵 $\mat{V}=[\mathbf{v}_1,\dots,\mathbf{v}_d]$（$\mat{V}\mT\mat{V}=\mat{I}$）使
+\[
+\mat{A}=\mat{V}\mat{\Lambda}\mat{V}\mT,\qquad
+\mat{\Lambda}=\operatorname{diag}(\lambda_1\ge\lambda_2\ge\dots\ge\lambda_d).
+\]
+
+\begin{intuition}
+对称矩阵没有“旋转”这种花活，它只会在若干个互相垂直的方向上各自拉伸。
+这组互相垂直的拉伸方向（特征向量）配上拉伸倍数（特征值），
+就是矩阵的完整“体检报告”。正交性还送我们一份大礼：
+$\mat{V}^{-1}=\mat{V}\mT$，逆变换不需要解方程，转置一下就行。
+\end{intuition}

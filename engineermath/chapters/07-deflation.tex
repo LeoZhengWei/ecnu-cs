@@ -1,0 +1,61 @@
+% !TEX root = ../eigenfaces_algorithm.tex
+%=====================================================
+\section{收缩（Hotelling Deflation）：抹掉第一名，再选第二名}
+
+\subsection{问题与做法}
+
+幂迭代只给最大特征对。要第二个，就把已经找到的方向\textbf{从矩阵里抹掉}：
+\[
+\mat{G}_1=\mat{G}-\lambda_1\mathbf{u}_1\mathbf{u}_1\mT,
+\qquad\text{然后对 }\mat{G}_1\text{ 重新跑幂迭代，得到 }(\lambda_2,\mathbf{u}_2).
+\]
+依此类推：$\mat{G}_2=\mat{G}_1-\lambda_2\mathbf{u}_2\mathbf{u}_2\mT$，……，直到攒够 $k$ 对。
+
+\subsection{为什么这样抹是干净的（两行验证）}
+
+新矩阵 $\mat{G}_1$ 仍对称。验证它在两个方向上的行为：
+\begin{itemize}
+  \item 沿 $\mathbf{u}_1$：$\mat{G}_1\mathbf{u}_1=\mat{G}\mathbf{u}_1-\lambda_1\mathbf{u}_1(\mathbf{u}_1\mT\mathbf{u}_1)=\lambda_1\mathbf{u}_1-\lambda_1\mathbf{u}_1=\mathbf{0}$——该方向特征值变为 $0$；
+  \item 沿任何 $\mathbf{w}\perp\mathbf{u}_1$：$\mat{G}_1\mathbf{w}=\mat{G}\mathbf{w}-\lambda_1\mathbf{u}_1(\mathbf{u}_1\mT\mathbf{w})=\mat{G}\mathbf{w}$——完全不动。
+\end{itemize}
+所以 $\mat{G}_1$ 的谱就是“把 $\lambda_1$ 换成 $0$，其余不变”，
+它的最大特征对恰是 $(\lambda_2,\mathbf{u}_2)$。\textbf{收缩 = 精准阉割一个方向，其余谱原封不动。}
+
+\subsection{必须加的保险：逐步再正交化}
+
+\begin{intuition}
+理论上抹干净了，实际中抹不干净。计算机是浮点机器：
+$\lambda_1\mathbf{u}_1\mathbf{u}_1\mT$ 这一项带着 $10^{-16}$ 量级的舍入误差残留。
+下一次做 matvec 时这点残留被乘上 $\mat{G}$，放大 $\lambda_1/\lambda_i$ 倍——
+对于尾部小特征值，这个放大倍数是天文数字。若干轮之后，
+迭代向量会被“吸”回 $\mathbf{u}_1$，求出的“$\mathbf{u}_2$”其实还是第一名。
+\end{intuition}
+
+保险做法（正交化版幂迭代）：每次 matvec 之后，先把结果对已求出的所有方向投影剔除，再归一化：
+\[
+\mathbf{w}\leftarrow\mat{G}\mathbf{u}_k;\qquad
+\mathbf{w}\leftarrow\mathbf{w}-\sum_{j\le i-1}\inner{\mathbf{u}_j}{\mathbf{w}}\,\mathbf{u}_j
+\quad(\text{做两遍更稳});\qquad
+\mathbf{u}_k\leftarrow\mathbf{w}/\norm{\mathbf{w}} .
+\]
+这与隐式收缩 $(\mat{I}-\mat{Q}\mat{Q}\mT)\mat{G}$ 数学等价，但数值上稳得多。
+另外每轮的初始向量要重新随机取（上一轮的 $\mathbf{u}$ 正好躺在被抹掉的方向上，复用它没有意义）。
+
+\subsection{误差累积：为什么只算前 50 个}
+
+两个互补的机理，写报告时值得完整叙述：
+
+\begin{enumerate}
+  \item \textbf{除以间隙}：特征向量对扰动的敏感度 $\approx\ \norm{\text{扰动}}/(\lambda_i-\lambda_{i+1})$。
+  头部间隙巨大（$90/95\%$ 方差集中在前几十个），尾部间隙趋于 0——
+  同样的舍入扰动，在尾部被放大成巨大的方向误差。
+  \item \textbf{噪声地板}：$i$ 次收缩后累积的算子误差 $\sim i\cdot\varepsilon_{\text{mach}}\cdot\lambda_1$。
+  当 $\lambda_i$ 降到这个量级以下，幂迭代会在噪声里打转，返回的方向是噪声方向而非真实特征方向。
+\end{enumerate}
+
+于是实验里会观察到一个自洽的现象：$|\lambda_{i+1}/\lambda_i|\to 1$（间隙消失）
+与第 $i$ 对的迭代次数暴涨、方向误差抬升\textbf{同步发生}。
+“$k\le 50$ 用幂迭代 + 收缩，$k>50$ 用 \texttt{eigh}”不是偷懒，
+而是算法在尾部已经到达可分辨极限。
+\texttt{eigh} 用的是完全不同的正交三角化技术（$O(n^3)$ 对 280 阶矩阵瞬间完成），
+它一次给出全部特征对且精度均匀，正好补上尾部的洞。
