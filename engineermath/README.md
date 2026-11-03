@@ -22,6 +22,7 @@
 
 ```bash
 curl -fsSL "https://yihui.org/tinytex/install-bin-unix.sh" | sh
+# 自定义安装目录
 export PATH="$HOME/.local/bin:$PATH"
 
 tlmgr option repository https://mirrors.tuna.tsinghua.edu.cn/CTAN/systems/texlive/tlnet
