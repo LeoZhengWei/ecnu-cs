@@ -1,0 +1,2784 @@
+%!TEX program = xelatex
+% ============================================================
+%  LASSO 求解器全面解析
+%  编译方式：XeLaTeX（因为用了 ctex 中文支持）
+%  在 Overleaf 上：Menu -> Compiler -> XeLaTeX
+% ============================================================
+\documentclass[11pt,a4paper,UTF8]{ctexart}
+
+\usepackage[margin=2.5cm,top=2.6cm,bottom=2.6cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools,bm}
+\usepackage{booktabs,array,longtable,multirow}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily\footnotesize,breaklines=true,frame=single,
+        columns=fullflexible,keepspaces=true,showstringspaces=false,
+        numbers=left,numberstyle=\tiny,xleftmargin=2em}
+\usepackage[colorlinks=true,linkcolor=blue!45!black,urlcolor=blue!45!black,
+            citecolor=blue!45!black]{hyperref}
+
+\setlist[itemize]{leftmargin=1.6em,itemsep=2pt,topsep=3pt}
+\setlist[enumerate]{leftmargin=1.9em,itemsep=2pt,topsep=3pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small 第 14 题：LASSO 求解器比较}
+\fancyhead[R]{\small\leftmark}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ---------------- 定理环境 ----------------
+\theoremstyle{plain}
+\newtheorem{theorem}{定理}[section]
+\newtheorem{lemma}[theorem]{引理}
+\newtheorem{proposition}[theorem]{命题}
+\newtheorem{corollary}[theorem]{推论}
+\newtheorem{claim}[theorem]{断言}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{定义}
+\newtheorem{example}[theorem]{例}
+\newtheorem{exercise}{习题}[section]
+\newtheorem{algorithmbox}[theorem]{算法}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{注}
+\newtheorem{intuition}[theorem]{直观理解}
+
+% ---------------- 数学宏 ----------------
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\norm}[1]{\left\lVert #1 \right\rVert}
+\newcommand{\abs}[1]{\left\lvert #1 \right\rvert}
+\newcommand{\inner}[2]{\left\langle #1,\, #2 \right\rangle}
+\newcommand{\prox}{\operatorname{prox}}
+\newcommand{\dist}{\operatorname{dist}}
+\newcommand{\diag}{\operatorname{diag}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\spn}{\operatorname{span}}
+\newcommand{\supp}{\operatorname{supp}}
+\newcommand{\dom}{\operatorname{dom}}
+\newcommand{\tr}{\operatorname{tr}}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator{\sign}{sign}
+\DeclareMathOperator{\card}{card}
+\newcommand{\T}{^{\top}}
+\newcommand{\tp}{^{\top}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\dd}{\mathrm{d}}
+
+% 关键点提示框（用最简单的 quote + 粗体，保证任何 TeX 发行版都能编译）
+\newenvironment{keypoint}[1]
+  {\par\medskip\noindent\begin{minipage}{\linewidth}%
+   \hrule\smallskip\noindent\textbf{【必须记住：#1】}\par\nopagebreak\smallskip}
+  {\smallskip\hrule\end{minipage}\medskip}
+
+\newenvironment{why}[1]
+  {\par\smallskip\noindent\textit{为什么这一步成立（#1）：}\par\nopagebreak}
+  {\par\smallskip}
+
+\allowdisplaybreaks
+
+\title{\bfseries LASSO 求解器全面解析\\[4pt]
+\large 次梯度法、ISTA（近端梯度法）与最优性证书\\[2pt]
+\normalsize —— 从零开始、一步一步、包含全部证明}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{center}
+\begin{minipage}{0.86\linewidth}
+\small
+\textbf{这份文档对应你截图里的第 14 号任务：}
+
+\begin{center}
+\begin{tabular}{@{}p{0.30\linewidth}p{0.22\linewidth}p{0.12\linewidth}p{0.12\linewidth}p{0.10\linewidth}@{}}
+\toprule
+\textbf{专题} & \textbf{对应讲义} & \textbf{难度} & \textbf{类型} & \textbf{题量}\\
+\midrule
+LASSO 求解器比较：ISTA、次梯度法与最优性证书 & 10.25 近端梯度/次梯度/LASSO；10.4 特征值 & 进阶 & 基准 & 3\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{这份文档的目标：}把你从「知道 LASSO 是个带 $\ell_1$ 惩罚的最小二乘」带到
+「能自己写出 ISTA 的收敛性证明、能自己造出一个最优性证书、能说清楚为什么
+次梯度法比 ISTA 慢、能解释特征值在这三件事里分别扮演什么角色」。
+
+\medskip
+\textbf{阅读方式：}不要跳。每一节都是下一节的地基。每个定理我写完整证明，
+并在证明后单独用一段话解释「这条定理在讲人话是什么意思」。如果你只想要结论，
+每节末尾的【必须记住】框里就是结论。第 9 章有手算例子，务必自己算一遍。
+\end{minipage}
+\end{center}
+
+\vspace{1em}
+
+\tableofcontents
+\newpage
+
+% ============================================================
+\section*{第 0 章\quad 读前须知：这张表到底在说什么}
+\addcontentsline{toc}{section}{第 0 章\quad 读前须知：这张表到底在说什么}
+% ============================================================
+
+\subsection*{0.1\quad 一句话概括}
+
+我们要解这个优化问题（它就是 LASSO）：
+\begin{equation}
+\min_{x\in\R^p}\ F(x) \;:=\; \underbrace{\tfrac12\norm{Ax-b}_2^2}_{\text{数据拟合项 } f(x)}
+\;+\;\underbrace{\lambda\norm{x}_1}_{\text{稀疏惩罚项 } g(x)},
+\label{eq:lasso}
+\end{equation}
+其中 $A\in\R^{n\times p}$ 是设计矩阵（$n$ 个样本、$p$ 个特征），$b\in\R^n$ 是观测值，
+$\lambda>0$ 是正则化参数，$\norm{x}_1=\sum_{i=1}^p\abs{x_i}$。
+
+问题 \eqref{eq:lasso} 有两个特点，恰恰是一对矛盾：
+
+\begin{itemize}
+\item $f(x)=\tfrac12\norm{Ax-b}_2^2$ 是\textbf{光滑}的（处处可微，梯度是 $A\top(Ax-b)$）；
+\item $g(x)=\lambda\norm{x}_1$ 是\textbf{不光滑}的（在原点是尖的，没有梯度，只有次梯度）。
+\end{itemize}
+
+于是「怎么解它」就变成了三种思路的比赛，这就是你截图里说的\textbf{求解器比较}：
+
+\begin{enumerate}
+\item \textbf{次梯度法（subgradient method）}：既然不可微，那就用「次梯度」代替梯度。
+      最笨、最通用，但收敛慢，速率只有 $O(1/\sqrt{k})$。
+\item \textbf{近端梯度法（ISTA）}：分开处理——光滑的部分走梯度，不光滑的部分走「近端算子」。
+      速率 $O(1/k)$，比次梯度法好一个数量级。
+\item \textbf{最优性证书（optimality certificate）}：不是算法，而是「验算工具」。
+      它能让你在不解完全部问题的情况下，证明「我现在这个解已经是最优的」，
+      或者给出「我离最优还有多远」的严格上界（对偶间隙）。
+\end{enumerate}
+
+而 \textbf{10.4 特征值} 那一节，是以上三件事共用的「尺子」：
+\begin{itemize}
+\item 它决定光滑项 $f$ 的 Lipschitz 常数 $L=\lambda_{\max}(A\top A)$，从而决定 ISTA 的步长 $1/L$；
+\item 它的最小值 $\lambda_{\min}(A\top A)$ 决定问题的条件数，从而决定收敛快慢；
+\item 它的「限制版本」（restricted eigenvalue）决定 LASSO 能不能把真实支撑集找回来。
+\end{itemize}
+
+\begin{keypoint}{整份文档的路线图}
+第 1 章补线性代数与微积分（范数、对偶范数、特征值、Lipschitz 光滑、强凸）$\to$
+第 2 章补凸分析（凸函数、次梯度、最优性条件 $0\in\partial f(x^\star)$）$\to$
+第 3 章把 LASSO 的对偶问题严格推出来 $\to$
+第 4 章讲最优性证书（怎么「验算」一个解）$\to$
+第 5 章次梯度法及其 $O(1/\sqrt{k})$ 证明 $\to$
+第 6 章近端算子、软阈值、ISTA 及其 $O(1/k)$ 证明 $\to$
+第 7 章特征值在以上每一处的作用 $\to$
+第 8 章三者横向比较 $\to$ 第 9 章手算例子 $\to$ 第 10 章习题。
+\end{keypoint}
+
+\subsection*{0.2\quad 记号表（看不懂就回来查）}
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.19\linewidth}p{0.71\linewidth}@{}}
+\toprule
+记号 & 含义 \\
+\midrule
+
+$x,y\in\R^p$ & 列向量。$x_i$ 是第 $i$ 个分量。\\
+$\inner{x}{y}=x\top y=\sum_i x_iy_i$ & 内积。\\
+$\norm{x}_2=\sqrt{\inner{x}{x}}$ & 欧氏范数（$\ell_2$ 范数）。\\
+$\norm{x}_1=\sum_i\abs{x_i}$ & $\ell_1$ 范数。它是 $\ell_2$ 的「稀疏版」，会逼出零分量。\\
+$\norm{x}_\infty=\max_i\abs{x_i}$ & $\ell_\infty$ 范数（最大范数）。\\
+$\norm{x}_{\ast}$ & 对偶范数，定义见定义 \ref{def:dualnorm}。\\
+$\norm{A}_2$ & 谱范数 $=\sqrt{\lambda_{\max}(A\top A)}$。\\
+$\lambda_{\max}(M),\lambda_{\min}(M)$ & 对称矩阵 $M$ 的最大、最小特征值。\\
+$\sign(t)$ & 符号函数：$t>0$ 时为 $1$，$t<0$ 时为 $-1$，$t=0$ 时为 $0$。\\
+$\partial f(x)$ & $f$ 在 $x$ 处的次微分（所有次梯度构成的集合）。\\
+$\prox_{\alpha g}(v)$ & 近端算子，定义见定义 \ref{def:prox}。\\
+$S_\tau(v)$ & 软阈值算子，定义见定义 \ref{def:soft}。\\
+$F^\star,\ x^\star$ & 最优值、最优解集合中的某个点。\\
+$\card(S)$ 或 $\abs{S}$ & 集合 $S$ 的元素个数。\\
+$\supp(x)=\{i:x_i\neq 0\}$ & $x$ 的支撑集（非零分量的下标集合）。\\
+$\mu,\ L$ & 强凸参数与光滑参数，见第 1.5、1.6 节。\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ============================================================
+\section{预备知识：把用到的每一件工具都摊开}
+% ============================================================
+
+这一章的内容你大概都「见过」，但可能从没「用过」。我的写法是：
+每个定义后面立刻跟一个能算的小例子，每个引理后面跟完整证明，
+且证明只允许用前面已经出现过的东西。
+
+\subsection{向量、范数、内积}
+
+\begin{definition}[范数]
+函数 $\norm{\cdot}:\R^p\to\R$ 称为范数，若对任意 $x,y$ 和标量 $\alpha$：
+(i) $\norm{x}\ge 0$，且 $\norm{x}=0\iff x=0$（正定性）；
+(ii) $\norm{\alpha x}=\abs{\alpha}\norm{x}$（齐次性）；
+(iii) $\norm{x+y}\le\norm{x}+\norm{y}$（三角不等式）。
+\end{definition}
+
+\begin{definition}[$\ell_p$ 范数]\label{def:lp}
+对 $p\ge 1$，
+\[
+\norm{x}_p=\Bigl(\sum_{i=1}^p\abs{x_i}^p\Bigr)^{1/p},
+\qquad
+\norm{x}_\infty=\max_{1\le i\le p}\abs{x_i}.
+\]
+\end{definition}
+
+\begin{example}
+取 $x=(3,-4,0)\in\R^3$。则
+$\norm{x}_1=\abs{3}+\abs{-4}+\abs{0}=7$；
+$\norm{x}_2=\sqrt{9+16+0}=5$；
+$\norm{x}_\infty=\max\{3,4,0\}=4$。
+可以看到 $\norm{x}_\infty\le\norm{x}_2\le\norm{x}_1$，这不是巧合，
+一般有 $\norm{x}_\infty\le\norm{x}_2\le\norm{x}_1\le\sqrt{p}\,\norm{x}_2$。
+\end{example}
+
+\begin{intuition}[为什么 $\ell_1$ 会「制造稀疏」]
+把「$\norm{x}_1\le r$」和「$\norm{x}_2\le r$」画在二维平面上：
+前者是一个菱形（四个角在坐标轴上），后者是一个圆。
+当我们把一个和数据拟合有关的等高线（椭圆）向外扩张、第一次碰到这个集合时，
+碰到圆的概率很高是某个「斜的」位置，两个坐标都不为零；
+而碰到菱形时，极大概率是\textbf{角点}——角点意味着有一个坐标恰好是 $0$。
+这就是 $\ell_1$ 正则化产生稀疏解的几何来源。第 3.3 节会把它算成严格的数学。
+\end{intuition}
+
+\subsection{对偶范数：后面次梯度处处要用}
+
+\begin{definition}[对偶范数]\label{def:dualnorm}
+给定范数 $\norm{\cdot}$，它的对偶范数定义为
+\[
+\norm{z}_{\ast}=\sup_{\norm{x}\le 1}\ \inner{z}{x}.
+\]
+\end{definition}
+
+\begin{lemma}[Hölder 不等式]\label{lem:holder}
+对任意 $x,z$，成立 $\abs{\inner{z}{x}}\le\norm{z}_{\ast}\,\norm{x}$。
+\end{lemma}
+
+\begin{proof}
+若 $x=0$ 则两边都是 $0$。设 $x\neq 0$，令 $u=x/\norm{x}$，则 $\norm{u}=1$，于是
+\[
+\inner{z}{x}=\norm{x}\inner{z}{u}\le\norm{x}\sup_{\norm{u}\le 1}\inner{z}{u}=\norm{x}\norm{z}_{\ast}.
+\]
+把 $z$ 换成 $-z$ 得 $-\inner{z}{x}\le\norm{x}\norm{z}_\ast$，两者合并即 $\abs{\inner{z}{x}}\le\norm{x}\norm{z}_\ast$。
+\end{proof}
+
+\begin{lemma}[$\ell_2$ 的对偶还是 $\ell_2$]\label{lem:dual2}
+$\norm{z}_{\ast}=\norm{z}_2$ 当 $\norm{\cdot}=\norm{\cdot}_2$。
+\end{lemma}
+
+\begin{proof}
+\textbf{上界：}由 Cauchy--Schwarz，$\inner{z}{x}\le\norm{z}_2\norm{x}_2\le\norm{z}_2$（当 $\norm{x}_2\le1$）。
+故 $\norm{z}_\ast\le\norm{z}_2$。
+
+\textbf{下界：}若 $z\neq0$，取 $x=z/\norm{z}_2$，则 $\norm{x}_2=1$ 且
+$\inner{z}{x}=\norm{z}_2$，故 $\sup\ge\norm{z}_2$。若 $z=0$ 结论显然。
+\end{proof}
+
+\begin{lemma}[$\ell_1$ 的对偶是 $\ell_\infty$]\label{lem:dual1}
+$\sup_{\norm{x}_1\le 1}\inner{z}{x}=\norm{z}_\infty$。
+\end{lemma}
+
+\begin{proof}
+\textbf{上界：}$\inner{z}{x}=\sum_i z_ix_i\le\sum_i\abs{z_i}\abs{x_i}
+\le\bigl(\max_i\abs{z_i}\bigr)\sum_i\abs{x_i}=\norm{z}_\infty\norm{x}_1\le\norm{z}_\infty$。
+
+\textbf{下界：}设 $j$ 是使 $\abs{z_j}$ 最大的下标。若 $z_j\neq0$，取 $x=\sign(z_j)e_j$
+（$e_j$ 是第 $j$ 个单位向量），则 $\norm{x}_1=1$ 且 $\inner{z}{x}=\abs{z_j}=\norm{z}_\infty$。
+\end{proof}
+
+\begin{lemma}[$\ell_\infty$ 的对偶是 $\ell_1$]\label{lem:dualinf}
+$\sup_{\norm{x}_\infty\le 1}\inner{z}{x}=\norm{z}_1$。
+\end{lemma}
+
+\begin{proof}
+上界：$\inner{z}{x}\le\sum_i\abs{z_i}\abs{x_i}\le\sum_i\abs{z_i}=\norm{z}_1$。
+下界：取 $x_i=\sign(z_i)$，则 $\norm{x}_\infty\le 1$ 且 $\inner{z}{x}=\sum_i\abs{z_i}=\norm{z}_1$。
+\end{proof}
+
+\begin{keypoint}{对偶范数}
+$\norm{\cdot}_2$ 的对偶是它自己；$\norm{\cdot}_1$ 的对偶是 $\norm{\cdot}_\infty$；反之亦然。
+这三个事实在第 5 章写次梯度、第 4 章写对偶问题时会被反复调用。
+\end{keypoint}
+
+\subsection{对称矩阵、特征值、谱范数}
+
+\begin{definition}[特征值与谱分解]
+设 $M\in\R^{p\times p}$ 对称（$M=M\top$）。若存在 $\lambda\in\R$ 和非零 $v$ 使 $Mv=\lambda v$，
+称 $\lambda$ 为特征值、$v$ 为特征向量。\textbf{谱定理}保证：对称矩阵可以写成
+\[
+M=V\Lambda V\top=\sum_{i=1}^p\lambda_i v_iv_i\top,
+\]
+其中 $V=[v_1,\dots,v_p]$ 是正交矩阵（$V\top V=VV\top=I$），
+$\Lambda=\diag(\lambda_1,\dots,\lambda_p)$，且 $\lambda_i$ 全为实数。
+\end{definition}
+
+\begin{lemma}[$A\top A$ 的特征值非负]\label{lem:psd}
+对任意 $A\in\R^{n\times p}$，矩阵 $M=A\top A$ 对称且所有特征值 $\ge0$。
+\end{lemma}
+
+\begin{proof}
+对称性：$M\top=(A\top A)\top=A\top A=M$。
+设 $Mv=\lambda v$ 且 $\norm{v}_2=1$。则
+\[
+\lambda=\lambda\inner{v}{v}=\inner{v}{Mv}=\inner{v}{A\top Av}=\inner{Av}{Av}=\norm{Av}_2^2\ge0 .
+\]
+\end{proof}
+
+\begin{lemma}[Rayleigh 商的变分刻画]\label{lem:rayleigh}
+设 $M$ 对称，则
+\[
+\lambda_{\max}(M)=\max_{\norm{x}_2=1}\inner{x}{Mx},\qquad
+\lambda_{\min}(M)=\min_{\norm{x}_2=1}\inner{x}{Mx}.
+\]
+\end{lemma}
+
+\begin{proof}
+取谱分解 $M=\sum_i\lambda_iv_iv_i\top$。任意单位向量 $x$ 可写成 $x=\sum_i c_iv_i$，
+其中 $c_i=\inner{v_i}{x}$ 且 $\sum_ic_i^2=\norm{x}_2^2=1$。于是
+\[
+\inner{x}{Mx}=\sum_i\lambda_i\inner{x}{v_i}\inner{v_i}{x}=\sum_i\lambda_ic_i^2 .
+\]
+这是 $\lambda_i$ 的加权平均（权重 $c_i^2\ge0$ 且和为 $1$），故它介于 $\lambda_{\min}$ 与
+$\lambda_{\max}$ 之间；取 $x=v_{\max}$ 或 $x=v_{\min}$ 即取到两端。
+\end{proof}
+
+\begin{lemma}[谱范数]\label{lem:specnorm}
+对任意 $x\in\R^p$，$\norm{A\top Ax}_2\le\lambda_{\max}(A\top A)\norm{x}_2$，
+且存在非零 $x$ 使等号成立。因此算子范数
+$\max_{\norm{x}_2\le1}\norm{Ax}_2=\sqrt{\lambda_{\max}(A\top A)}$。
+\end{lemma}
+
+\begin{proof}
+先证第一个不等式。写 $M=A\top A=\sum_i\lambda_iv_iv_i\top$，$x=\sum_ic_iv_i$，则
+\[
+Mx=\sum_i\lambda_ic_iv_i,\qquad
+\norm{Mx}_2^2=\sum_i\lambda_i^2c_i^2\le\lambda_{\max}^2\sum_ic_i^2=\lambda_{\max}^2\norm{x}_2^2 .
+\]
+开方即得。等号在 $x=v_{\max}$ 时成立（此时 $Mx=\lambda_{\max}x$）。
+
+再证第二个等式：$\norm{Ax}_2^2=\inner{Ax}{Ax}=\inner{x}{A\top Ax}\le\lambda_{\max}(A\top A)\norm{x}_2^2$
+（用了引理 \ref{lem:rayleigh}），而 $x=v_{\max}$ 取到等号。
+\end{proof}
+
+\begin{definition}[条件数]
+若 $A\top A$ 可逆（等价于 $A$ 列满秩），定义条件数
+\[
+\kappa \;=\;\frac{\lambda_{\max}(A\top A)}{\lambda_{\min}(A\top A)}\;\ge 1 .
+\]
+$\kappa$ 越接近 $1$，问题越「圆」，迭代法收敛越快；$\kappa$ 很大时问题「扁」，
+梯度类方法会来回震荡（第 6.11 与 7.3 节会看到这一点）。
+\end{definition}
+
+\subsection{二次函数的精确展开}
+
+\begin{lemma}[二次展开恒等式]\label{lem:quad}
+设 $f(x)=\tfrac12\norm{Ax-b}_2^2$，则 $\nabla f(x)=A\top(Ax-b)$，且对任意 $x,y$，
+\begin{equation}
+f(y)=f(x)+\inner{\nabla f(x)}{y-x}+\tfrac12\norm{A(y-x)}_2^2 .
+\label{eq:quadexp}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+记 $r=Ax-b$。先算梯度。展开
+\[
+f(x)=\tfrac12\inner{Ax-b}{Ax-b}=\tfrac12 x\top A\top Ax-x\top A\top b+\tfrac12 b\top b .
+\]
+对 $x$ 求梯度（用 $\nabla_x(x\top Mx)=2Mx$ 对对称 $M$ 成立，以及 $\nabla_x(c\top x)=c$）：
+$\nabla f(x)=A\top Ax-A\top b=A\top(Ax-b)$。
+
+再证展开式。令 $h=y-x$，则 $Ay-b=A(x+h)-b=r+Ah$，于是
+\[
+f(y)=\tfrac12\norm{r+Ah}_2^2
+=\tfrac12\norm{r}_2^2+\inner{r}{Ah}+\tfrac12\norm{Ah}_2^2
+=f(x)+\inner{A\top r}{h}+\tfrac12\norm{Ah}_2^2 .
+\]
+把 $A\top r=\nabla f(x)$、$h=y-x$ 代入即得 \eqref{eq:quadexp}。
+
+注意 \eqref{eq:quadexp} 是\textbf{等式而不是近似}，这正是二次函数好处理的原因：
+它的二阶信息（Hessian $A\top A$）是常数矩阵。
+\end{proof}
+
+\subsection{光滑性：Lipschitz 连续的梯度}
+
+\begin{definition}[$L$-光滑]\label{def:smooth}
+若 $f$ 可微且存在 $L>0$ 使
+\[
+\norm{\nabla f(x)-\nabla f(y)}_2\le L\norm{x-y}_2\qquad\forall x,y,
+\]
+称 $f$ 是 $L$-光滑的（gradient Lipschitz）。最小的这样的 $L$ 记为 $L_f$。
+\end{definition}
+
+\begin{lemma}[LASSO 的光滑项是 $L$-光滑的]\label{lem:lipschitz}
+设 $f(x)=\tfrac12\norm{Ax-b}_2^2$，则 $f$ 是 $L$-光滑的，其中
+\[
+L=\lambda_{\max}(A\top A)=\norm{A}_2^2 .
+\]
+\end{lemma}
+
+\begin{proof}
+由引理 \ref{lem:quad}，$\nabla f(x)=A\top(Ax-b)$，故
+\[
+\norm{\nabla f(x)-\nabla f(y)}_2=\norm{A\top A(x-y)}_2\le\lambda_{\max}(A\top A)\norm{x-y}_2 ,
+\]
+最后一步是引理 \ref{lem:specnorm}。取 $x-y$ 为 $A\top A$ 最大特征值对应的特征向量时等号成立，
+所以最小常数确实是 $\lambda_{\max}(A\top A)$。
+\end{proof}
+
+\begin{keypoint}{$L$ 的来历}
+$L$ 就是 Hessian $A\top A$ 的最大特征值，也就是 $\norm{A}_2^2$。
+它衡量「梯度的变化有多剧烈」，第 6 章 ISTA 的步长就要取 $1/L$。
+如果取了比 $1/L$ 大的步长，算法会发散；这一点在引理 \ref{lem:descent} 里会看得非常清楚。
+\end{keypoint}
+
+\subsection{强凸性：把「碗」变成「尖碗」}
+
+\begin{definition}[$\mu$-强凸]\label{def:strongcvx}
+若 $f$ 可微且存在 $\mu>0$ 使
+\[
+f(y)\ge f(x)+\inner{\nabla f(x)}{y-x}+\frac{\mu}{2}\norm{y-x}_2^2\qquad\forall x,y,
+\]
+称 $f$ 为 $\mu$-强凸。
+\end{definition}
+
+\begin{lemma}\label{lem:strongquad}
+$f(x)=\tfrac12\norm{Ax-b}_2^2$ 是 $\mu$-强凸的，$\mu=\lambda_{\min}(A\top A)$。
+特别地，$A$ 列满秩时 $\mu>0$。
+\end{lemma}
+
+\begin{proof}
+由 \eqref{eq:quadexp}，
+$f(y)=f(x)+\inner{\nabla f(x)}{y-x}+\tfrac12\norm{A(y-x)}_2^2$，
+而 $\norm{A(y-x)}_2^2=\inner{y-x}{A\top A(y-x)}\ge\lambda_{\min}(A\top A)\norm{y-x}_2^2$
+（引理 \ref{lem:rayleigh}）。代入即得结论。
+\end{proof}
+
+\begin{remark}
+$A\top A$ 的零空间非平凡（例如 $p>n$ 时必然如此）时 $\lambda_{\min}=0$，
+$f$ 不是强凸的。但这不意味着 LASSO 没有唯一解——$\ell_1$ 惩罚项常常把唯一性「补」回来。
+\end{remark}
+
+% ============================================================
+\section{凸分析基础：凸函数、次梯度、最优性条件}
+% ============================================================
+
+\subsection{凸函数与一阶条件}
+
+\begin{definition}[凸集与凸函数]
+集合 $C\subseteq\R^p$ 是凸的，若 $\forall x,y\in C,\ t\in[0,1]$ 有 $tx+(1-t)y\in C$。
+函数 $f:\R^p\to\R\cup\{+\infty\}$ 是凸的，若 $\dom f=\{x:f(x)<+\infty\}$ 是凸集且
+\[
+f(tx+(1-t)y)\le t f(x)+(1-t)f(y),\qquad\forall x,y\in\dom f,\ t\in[0,1].
+\]
+\end{definition}
+
+\begin{lemma}[一阶判别法]\label{lem:firstorder}
+设 $f$ 可微。则 $f$ 凸 $\iff$
+\[
+f(y)\ge f(x)+\inner{\nabla f(x)}{y-x}\qquad\forall x,y.
+\]
+\end{lemma}
+
+\begin{proof}
+($\Leftarrow$) 对 $t\in(0,1)$，由假设
+$f(x+t(y-x))\le$ 直接代入；我们要证的是凸性，取定义中的点
+$z_t=tx+(1-t)y$，利用一阶不等式两次：
+$f(x)\ge f(z_t)+\inner{\nabla f(z_t)}{x-z_t}$，
+$f(y)\ge f(z_t)+\inner{\nabla f(z_t)}{y-z_t}$。
+分别乘 $t$ 与 $(1-t)$ 相加，再用 $t(x-z_t)+(1-t)(y-z_t)=0$ 得
+$tf(x)+(1-t)f(y)\ge f(z_t)$，即凸性。
+
+($\Rightarrow$) 设 $f$ 凸，$t\in(0,1)$。由凸性
+$f(x+t(y-x))\le(1-t)f(x)+tf(y)$，移项除以 $t$：
+\[
+f(y)\ge f(x)+\frac{f(x+t(y-x))-f(x)}{t}.
+\]
+令 $t\downarrow0$，右端差商收敛到方向导数 $\inner{\nabla f(x)}{y-x}$。
+\end{proof}
+
+\begin{remark}
+几何上，\ref{lem:firstorder} 说的是「凸函数的图像永远在它的任一切平面之上」。
+这是凸优化一切好性质的源头：切平面给出的是\textbf{全局}下界，而不只是局部下界。
+\end{remark}
+
+\subsection{次梯度：不可微点的「替代梯度」}
+
+$\ell_1$ 范数在 $x_i=0$ 处不可微。怎么办？用「所有可能的斜率」组成的集合来代替梯度。
+
+\begin{definition}[次梯度与次微分]\label{def:subgrad}
+设 $f$ 凸。称 $g\in\R^p$ 是 $f$ 在 $x$ 处的\textbf{次梯度}，若
+\begin{equation}
+f(y)\ge f(x)+\inner{g}{y-x}\qquad\forall y\in\R^p .
+\label{eq:subgraddef}
+\end{equation}
+$f$ 在 $x$ 处所有次梯度的集合记为 $\partial f(x)$，称\textbf{次微分}。
+若 $\partial f(x)\neq\varnothing$，称 $f$ 在 $x$ 处次可微。
+\end{definition}
+
+\begin{remark}
+比较 \eqref{eq:subgraddef} 与引理 \ref{lem:firstorder}：可微时 $\partial f(x)=\{\nabla f(x)\}$。
+所以次梯度就是「过点 $(x,f(x))$ 且整体位于图像下方」的直线的斜率。
+不可微点处这种直线可能有很多条，于是 $\partial f(x)$ 是一个集合。
+\end{remark}
+
+\begin{example}[一维绝对值]\label{ex:abs}
+设 $f(x)=\abs{x}$。求 $\partial f(x)$。
+\end{example}
+
+\begin{proof}[解答]
+分三种情况。
+
+\textbf{(i) $x>0$：}$f$ 在 $x$ 附近等于 $x$，故 $\partial f(x)=\{1\}$。
+
+\textbf{(ii) $x<0$：}$f$ 在 $x$ 附近等于 $-x$，故 $\partial f(x)=\{-1\}$。
+
+\textbf{(iii) $x=0$：}此时 $f(0)=0$，条件 \eqref{eq:subgraddef} 变成
+\begin{equation}
+\abs{y}\ge g\,y\qquad\forall y\in\R .
+\label{eq:abscond0}
+\end{equation}
+取 $y=1$ 得 $g\le1$；取 $y=-1$ 得 $1\ge-g$ 即 $g\ge-1$。所以 $g\in[-1,1]$ 是必要条件。
+反之若 $g\in[-1,1]$，则 $y\ge0$ 时 $gy\le y=\abs{y}$，$y<0$ 时 $gy\le -y=\abs{y}$，
+故 \eqref{eq:abscond0} 成立。
+
+综上
+\[
+\partial\abs{x}=
+\begin{cases}
+\{1\}, & x>0,\\
+[-1,1], & x=0,\\
+\{-1\}, & x<0 .
+\end{cases}
+\]
+注意在 $x=0$ 处次微分是一个\textbf{区间}，且它恰好包含 $0$——这很重要：
+「$0\in\partial f(x)$」正是极小值条件（定理 \ref{thm:fermat}）。
+\end{proof}
+
+\begin{example}[$\ell_1$ 范数的次微分]\label{ex:l1sub}
+设 $g_0(x)=\norm{x}_1=\sum_i\abs{x_i}$。则
+\[
+\partial\norm{x}_1=\{v\in\R^p:\ v_i=\sign(x_i)\ \text{若 }x_i\neq0;\ \ \abs{v_i}\le1\ \text{若 }x_i=0\}.
+\]
+\end{example}
+
+\begin{proof}
+\textbf{($\subseteq$)} 设 $v\in\partial\norm{\cdot}_1(x)$，即 $\norm{y}_1\ge\norm{x}_1+\inner{v}{y-x}$ 对一切 $y$。
+
+固定 $i$。取 $y=x+t e_i$（只改第 $i$ 个坐标，$t\in\R$）。则
+$\norm{y}_1-\norm{x}_1=\abs{x_i+t}-\abs{x_i}$，不等式变为
+\[
+\abs{x_i+t}-\abs{x_i}\ \ge\ v_it\qquad\forall t\in\R .
+\]
+若 $x_i>0$：取 $t>0$ 足够小，左端 $=t$，得 $v_i\le1$；取 $t<0$ 足够小，左端 $=-t$，得 $-t\ge v_it$
+即 $v_i\ge1$（因为 $t<0$，两边除以 $t$ 反向）。故 $v_i=1=\sign(x_i)$。
+$x_i<0$ 同理得 $v_i=-1$。$x_i=0$ 时不等式为 $\abs{t}\ge v_it\ \forall t$，
+取 $t=\pm1$ 得 $\abs{v_i}\le1$。
+
+\textbf{($\supseteq$)} 设 $v$ 满足右端条件。对任意 $y$，
+\[
+\inner{v}{y-x}=\sum_{i:x_i\neq0}\sign(x_i)(y_i-x_i)+\sum_{i:x_i=0}v_iy_i
+\le\sum_{i:x_i\neq0}\bigl(\abs{y_i}-\abs{x_i}\bigr)+\sum_{i:x_i=0}\abs{y_i}
+=\norm{y}_1-\norm{x}_1,
+\]
+其中第一个不等号：$x_i\neq0$ 时 $\sign(x_i)(y_i-x_i)\le\abs{y_i}-\abs{x_i}$（验证：若 $x_i>0$，
+左 $=y_i-x_i\le\abs{y_i}-x_i$）；$x_i=0$ 时 $v_iy_i\le\abs{v_i}\abs{y_i}\le\abs{y_i}$。
+故 $v$ 是次梯度。
+\end{proof}
+
+\begin{example}[$\ell_2$ 范数的次微分]
+$g_0(x)=\norm{x}_2$ 在 $x\neq0$ 处可微，$\partial g_0(x)=\{x/\norm{x}_2\}$；
+在 $x=0$ 处 $\partial g_0(0)=\{v:\norm{v}_2\le1\}$。
+\end{example}
+
+\begin{proof}[$x=0$ 的情形]
+条件为 $\norm{y}_2\ge\inner{v}{y}\ \forall y$。若 $\norm{v}_2>1$，取 $y=v/\norm{v}_2$ 得
+$1\ge\norm{v}_2$，矛盾。故 $\norm{v}_2\le1$。反之若 $\norm{v}_2\le1$，
+由 Cauchy--Schwarz $\inner{v}{y}\le\norm{v}_2\norm{y}_2\le\norm{y}_2$。
+\end{proof}
+
+\begin{lemma}[次微分的可加性]\label{lem:sumsub}
+若 $f_1,\dots,f_m$ 凸，则 $\partial\bigl(\sum_k f_k\bigr)(x)\supseteq\sum_k\partial f_k(x)$；
+若进一步所有 $f_k$ 除一个外都在 $x$ 处连续（或所有 $\dom f_k$ 的相对内部相交），
+则等号成立。
+\end{lemma}
+
+\begin{proof}[包含关系]
+设 $g_k\in\partial f_k(x)$。对任意 $y$，
+$f_k(y)\ge f_k(x)+\inner{g_k}{y-x}$，对 $k$ 求和得
+$\sum_kf_k(y)\ge\sum_kf_k(x)+\inner{\sum_kg_k}{y-x}$，故 $\sum_kg_k\in\partial(\sum_kf_k)(x)$。
+等号情形（Moreau--Rockafellar 定理）超出本文范围，但在 LASSO 中恒成立，
+因为 $f(x)=\tfrac12\norm{Ax-b}^2$ 在全空间连续可微。
+\end{proof}
+
+于是对 LASSO 的目标 $F=f+\lambda\norm{\cdot}_1$ 有
+\begin{equation}
+\partial F(x)=\bigl\{A\top(Ax-b)+\lambda v\ :\ v\in\partial\norm{x}_1\bigr\}.
+\label{eq:lassoSub}
+\end{equation}
+
+\subsection{Fermat 规则：$0\in\partial f(x^\star)$ 等价于全局最小}
+
+\begin{theorem}[最优性条件]\label{thm:fermat}
+设 $f$ 凸。则 $x^\star$ 是 $f$ 的全局极小点 $\iff$ $0\in\partial f(x^\star)$。
+\end{theorem}
+
+\begin{proof}
+这条定理几乎没有证明，因为它本质上是一次\textbf{同义反复}：把定义 \eqref{eq:subgraddef} 中的
+$g$ 取成 $0$，两边就完全一样了。
+\[
+0\in\partial f(x^\star)
+\iff f(y)\ge f(x^\star)+\inner{0}{y-x^\star}\ \ \forall y
+\iff f(y)\ge f(x^\star)\ \ \forall y
+\iff x^\star\ \text{是全局极小点}.
+\]
+读一遍这个链条：第一步是定义，第二步是 $\inner{0}{\cdot}=0$，第三步是全局最小的定义。
+\end{proof}
+
+\begin{remark}[那凸性用在哪？]
+有意思的是，上面这个等价性\textbf{连凸性都不需要}：只要用 \eqref{eq:subgraddef} 定义次梯度，
+「$0$ 是次梯度」与「全局最小」就是同一句话。
+
+凸性真正的作用在于\textbf{保证 $\partial f(x)$ 足够大、且在不可微点也非空}。
+例 \ref{ex:abs} 里 $\partial\abs{0}=[-1,1]$：正因为这个区间包含了 $0$，
+$f(x)=\abs{x}$ 在最优点 $x^\star=0$ 处才满足 $0\in\partial f$。
+若把 $\ell_1$ 惩罚换成 $\ell_0$「数非零个数」，$\partial f(0)$ 里根本找不到 $0$，
+Fermat 规则就失效了——这就是 $\ell_0$ 问题难解（NP 难）而 $\ell_1$ 好解的根本原因。
+\end{remark}
+
+\begin{keypoint}{Fermat 规则}
+$x^\star$ 最优 $\iff$ $0\in\partial f(x^\star)$。这条式子看着平凡，
+但它把一个\textbf{无法直接检验}的条件（对所有 $y$ 比较函数值）换成了一个
+\textbf{可以逐分量检验}的代数条件（$0$ 是否落在某个集合里）。
+第 4 章的最优性证书就是把这件事做到极致：
+连「解」都不用求出来，只要构造出一个向量落进那个集合，就能证明最优。
+\end{keypoint}
+
+\subsection{把 Fermat 规则用在 LASSO 上（KKT 条件）}
+
+把 \eqref{eq:lassoSub} 与 $0\in\partial F(x^\star)$ 结合，
+并记残差 $r^\star=b-Ax^\star$，得到 LASSO 的\textbf{KKT 条件}：
+
+\begin{theorem}[LASSO 的 KKT 条件]\label{thm:kkt}
+$x^\star$ 是 \eqref{eq:lasso} 的最优解，当且仅当
+\begin{equation}
+\begin{cases}
+\bigl(A\top(b-Ax^\star)\bigr)_i=\lambda\,\sign(x_i^\star), & x_i^\star\neq0,\\[2pt]
+\bigl| \bigl(A\top(b-Ax^\star)\bigr)_i \bigr|\le\lambda, & x_i^\star=0 .
+\end{cases}
+\label{eq:kkt}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+由定理 \ref{thm:fermat}，最优 $\iff$ $0\in\partial F(x^\star)
+=A\top(Ax^\star-b)+\lambda\,\partial\norm{x^\star}_1$，
+即存在 $v\in\partial\norm{x^\star}_1$ 使
+\begin{equation}
+A\top(Ax^\star-b)+\lambda v=0
+\quad\Longleftrightarrow\quad
+v=\frac{A\top(b-Ax^\star)}{\lambda} .
+\label{eq:kktv}
+\end{equation}
+由例 \ref{ex:l1sub}，$v\in\partial\norm{x^\star}_1$ 等价于
+「$x_i^\star\neq0$ 时 $v_i=\sign(x_i^\star)$；$x_i^\star=0$ 时 $\abs{v_i}\le1$」。
+把 \eqref{eq:kktv} 逐分量写出来，正是 \eqref{eq:kkt}。
+\end{proof}
+
+\begin{intuition}[KKT 条件在讲什么人话]
+记 $c=A\top(b-Ax^\star)$，它叫\textbf{相关性}（correlation）：第 $i$ 个特征与残差的内积。
+\begin{itemize}
+\item 对「被选中的特征」（$x_i^\star\neq0$）：相关性的绝对值\textbf{刚好等于} $\lambda$，
+      且符号与 $x_i^\star$ 一致。也就是说，被选中的特征与残差「打成了平手」。
+\item 对「没被选中的特征」（$x_i^\star=0$）：相关性的绝对值\textbf{不超过} $\lambda$。
+      也就是说，它还不够格被选进来。
+\end{itemize}
+这解释了 LASSO 的选择行为：$\lambda$ 是进入模型的「门票价格」。
+$\lambda$ 越大，门票越贵，进入的特征越少，解越稀疏。
+\end{intuition}
+
+% ============================================================
+\section{LASSO 问题：三种形式、一维精确解、对偶问题}
+% ============================================================
+
+\subsection{问题的三种等价写法}
+
+\begin{definition}[LASSO]
+给定 $A\in\R^{n\times p}$、$b\in\R^n$、$\lambda>0$，
+\begin{equation}
+(\mathrm{P})\qquad \min_{x\in\R^p}\ F(x)=\tfrac12\norm{Ax-b}_2^2+\lambda\norm{x}_1 .
+\label{eq:P}
+\end{equation}
+\end{definition}
+
+同一个问题有三种常见写法，它们通过「拉格朗日乘子」互相转换：
+
+\begin{enumerate}
+\item \textbf{惩罚形式}（\eqref{eq:P}）：把约束塞进目标函数，用一个 $\lambda$ 控制权衡。
+\item \textbf{约束形式}（Mallows 形式）：
+\[
+(\mathrm{C})\qquad \min\ \tfrac12\norm{Ax-b}_2^2\quad\text{s.t.}\quad \norm{x}_1\le t .
+\]
+\item \textbf{界约束形式}：$\min\ \norm{x}_1$ s.t. $\norm{Ax-b}_2\le\eps$。
+\end{enumerate}
+
+\begin{proposition}[(P) 与 (C) 等价]\label{prop:equiv}
+设 $x^\star$ 是 \eqref{eq:P} 的解、$t=\norm{x^\star}_1$，则 $x^\star$ 也是 (C) 的解；
+反之 (C) 的解必是某个 $\lambda\ge0$ 下 (P) 的解。
+\end{proposition}
+
+\begin{proof}[证明思路]
+对 (C) 写拉格朗日函数 $L(x,\lambda)=\tfrac12\norm{Ax-b}_2^2+\lambda(\norm{x}_1-t)$，$\lambda\ge0$。
+(C) 的可行集 $\{x:\norm{x}_1\le t\}$ 在 $t>0$ 时含内点（取 $x=0$，只需 $0<t$），
+故 Slater 条件成立，强对偶与 KKT 条件的必要性都成立，于是 (C) 的解满足 (P) 的 KKT 条件。
+\end{proof}
+
+本节余下部分回答三个问题：
+\begin{enumerate}
+\item[(Q1)] 为什么 $\ell_1$ 惩罚会给出\textbf{恰好为零}的分量？（3.2、3.3 节）
+\item[(Q2)] 它的\textbf{对偶问题}长什么样？（3.4 节——这是第 4 章「证书」的基础）
+\item[(Q3)] 什么时候解恰好是 $x=0$？（3.5 节）
+\end{enumerate}
+
+\subsection{一维精确解：稀疏性从哪来}
+
+先看最简单的情形：$p=1$，$a=1$，
+\begin{equation}
+f(x)=\tfrac12(x-b)^2+\lambda\abs{x} .
+\label{eq:1d}
+\end{equation}
+
+\begin{theorem}[一维 LASSO 的闭式解]\label{thm:1d}
+设 $f(x)=\tfrac12(x-b)^2+\lambda\abs{x}$，$\lambda>0$。则
+\[
+x^\star=S_\lambda(b):=
+\begin{cases}
+b-\lambda, & b>\lambda,\\
+0, & \abs{b}\le\lambda,\\
+b+\lambda, & b<-\lambda,
+\end{cases}
+\qquad\text{等价地}\quad S_\lambda(b)=\sign(b)\max\{\abs{b}-\lambda,0\}.
+\]
+\end{theorem}
+
+\begin{proof}
+由定理 \ref{thm:fermat}，解满足 $0\in\partial f(x)$。由 \eqref{eq:1d} 与例 \ref{ex:abs}，
+\[
+\partial f(x)=(x-b)+\lambda\,\partial\abs{x}
+=\begin{cases}
+\{x-b+\lambda\}, & x>0,\\
+\{x-b-\lambda\}, & x<0,\\
+[-b-\lambda,\,-b+\lambda], & x=0 ,
+\end{cases}
+\]
+（最后一行：$x=0$ 时 $\lambda\partial\abs{0}=[-\lambda,\lambda]$，平移到 $-b$ 得区间。）
+
+\textbf{情形 $x>0$：} 需要 $x-b+\lambda=0$，即 $x=b-\lambda$，此解合法（$>0$）当且仅当 $b>\lambda$。
+
+\textbf{情形 $x<0$：} 需要 $x-b-\lambda=0$，即 $x=b+\lambda$，合法（$<0$）当且仅当 $b<-\lambda$。
+
+\textbf{情形 $x=0$：} 需要 $0\in[-b-\lambda,-b+\lambda]$，即 $\abs{b}\le\lambda$。
+
+三种情形互斥且穷尽（$b>\lambda$、$\abs b\le\lambda$、$b<-\lambda$），故解唯一，形式如所述。
+\end{proof}
+
+\begin{intuition}[软阈值：稀疏性的最小样本]
+$S_\lambda$ 做的事是：把 $b$ 朝 $0$ 拉近 $\lambda$，若拉过头就按在 $0$ 上。
+\begin{itemize}
+\item 若「信号」$\abs{b}\le\lambda$：直接归零；
+\item 若 $\abs{b}>\lambda$：保留，但\textbf{系统性低估}了 $\lambda$（LASSO 的偏差）。
+\end{itemize}
+对比岭回归 $\min\tfrac12(x-b)^2+\lambda x^2$ 的解 $x=b/(1+2\lambda)$：\textbf{永远不为零}，只是等比缩小。
+这就是「$\ell_1$ 稀疏、$\ell_2$ 不稀疏」最朴素的原因。
+\end{intuition}
+
+\begin{corollary}[一般的 $a\neq0$]
+对 $\tfrac12(ax-b)^2+\lambda\abs{x}$，解为
+$\displaystyle x^\star=\frac1aS_{\lambda/\abs a}(b)=S_{\lambda/a^2}\Bigl(\frac ba\Bigr)$。
+\end{corollary}
+
+\begin{proof}
+令 $z=ax$，则 $\abs x=\abs z/\abs a$，问题化为 $\min_z\tfrac12(z-b)^2+\frac{\lambda}{\abs a}\abs z$，
+由定理 \ref{thm:1d} 得 $z^\star=S_{\lambda/\abs a}(b)$。
+\end{proof}
+
+\subsection{多变量下为什么也是稀疏的}
+
+\begin{theorem}[$\ell_1$ 惩罚把「不够相关」的系数精确压成零]\label{thm:sparse}
+设 $x^\star$ 是 \eqref{eq:P} 的最优解，$c^\star=A\top(b-Ax^\star)$。则
+\[
+\abs{c_i^\star}<\lambda\ \Longrightarrow\ x_i^\star=0 .
+\]
+\end{theorem}
+
+\begin{proof}
+由 KKT 条件 \eqref{eq:kkt}，$x_i^\star\neq0$ 时必有 $\abs{c_i^\star}=\lambda$。取逆否命题即得。
+\end{proof}
+
+\begin{remark}
+反过来不成立：$x_i^\star=0$ 时相关性可以严格小于 $\lambda$，也可以恰好等于 $\lambda$（临界情形，
+此时该特征「在门口」，稍微减小 $\lambda$ 就会进来）。所以稀疏度由
+「相关性严格小于 $\lambda$ 的特征个数」刻画，$\lambda$ 越大越稀疏。
+\end{remark}
+
+\begin{intuition}[几何：椭球为什么先碰到菱形的角]
+$\ell_1$ 球 $\{x:\norm x_1\le t\}$ 的面是平的，角是尖的。
+把椭球 $\{\tfrac12\norm{Ax-b}^2\le c\}$ 由小到大膨胀：
+接触在「面」上要求椭球的法向量恰好平行于某个坐标轴方向（低概率事件），
+而接触在「角点」上只要求法向量落在该角的\textbf{法锥}里（一个正维数集合，高概率事件）。
+角点有 $p-1$ 个坐标为零。这就是高维下 $\ell_1$ 解通常很稀疏的几何来源。
+\end{intuition}
+
+\subsection{对偶问题：盒约束的二次规划}
+
+这一节是全文的技术核心之一。我们用 Fenchel 恒等式把「不可微问题」转成「光滑的盒约束问题」。
+
+回忆：对任意 $s\in\R^n$，
+\begin{equation}
+\tfrac12\norm{s}_2^2=\max_{v\in\R^n}\Bigl\{\inner{v}{s}-\tfrac12\norm{v}_2^2\Bigr\},
+\label{eq:fenchelquad}
+\end{equation}
+最大值在 $v=s$ 处取到（对 $v$ 求导得 $s-v=0$，且二阶导 $-I\prec0$ 保证是最大值）。
+
+\begin{theorem}[LASSO 的对偶]\label{thm:dual}
+定义\textbf{对偶目标}
+\[
+D(v)=\inner{b}{v}-\tfrac12\norm{v}_2^2,\qquad v\in\R^n .
+\]
+则 \eqref{eq:P} 的对偶问题是
+\begin{equation}
+(\mathrm{D})\qquad \max_{v\in\R^n}\ D(v)\qquad\text{s.t.}\qquad \norm{A\top v}_\infty\le\lambda ,
+\label{eq:dual}
+\end{equation}
+并且：
+\begin{enumerate}
+\item[(i)] \textbf{弱对偶}：对任意可行 $x$ 与任意对偶可行 $v$，有 $D(v)\le F(x)$；
+\item[(ii)] \textbf{强对偶}：若 $x^\star$ 是 (P) 的解，则 $v^\star=b-Ax^\star$ 是 (D) 的解，且
+      $D(v^\star)=F(x^\star)$。
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+\textbf{第一步：把 $\tfrac12\norm{\cdot}^2$ 写成最大化。}
+在 \eqref{eq:fenchelquad} 中取 $s=Ax-b$：
+\[
+F(x)=\max_{v}\Bigl\{\inner{v}{Ax-b}-\tfrac12\norm v^2\Bigr\}+\lambda\norm x_1
+=\max_{v}\Bigl\{\inner{A\top v}{x}-\inner{b}{v}-\tfrac12\norm v^2+\lambda\norm x_1\Bigr\}
+=:\max_v\Phi(x,v).
+\]
+注意 $\inner{v}{Ax-b}=\inner{A\top v}{x}-\inner{b}{v}$。
+
+\textbf{第二步：算 $\min_x\Phi$。}
+固定 $v$，令 $w=A\top v$。需要算
+\[
+m(w):=\inf_{x\in\R^p}\bigl\{\inner{w}{x}+\lambda\norm x_1\bigr\}.
+\]
+\textbf{断言：}$m(w)=0$ 若 $\norm w_\infty\le\lambda$；$m(w)=-\infty$ 若 $\norm w_\infty>\lambda$。
+
+若 $\norm w_\infty\le\lambda$：由引理 \ref{lem:holder}（$\ell_1$ 的对偶是 $\ell_\infty$）
+$\inner w x\ge-\norm w_\infty\norm x_1\ge-\lambda\norm x_1$，故 $\inner wx+\lambda\norm x_1\ge0$，
+而 $x=0$ 时取 $0$，故下确界为 $0$。
+
+若某 $j$ 满足 $\abs{w_j}>\lambda$：取 $x=-t\sign(w_j)e_j$（$t>0$），则
+$\inner wx+\lambda\norm x_1=-t\abs{w_j}+t\lambda=t(\lambda-\abs{w_j})\to-\infty$。断言证毕。
+
+于是
+\[
+\max_v\min_x\Phi(x,v)=\max_{\norm{A\top v}_\infty\le\lambda}\Bigl\{-\inner b v-\tfrac12\norm v^2\Bigr\}
+\overset{v\mapsto -v}{=}\max_{\norm{A\top v}_\infty\le\lambda}\Bigl\{\inner b v-\tfrac12\norm v^2\Bigr\},
+\]
+最后一步用了「约束 $\norm{A\top v}_\infty\le\lambda$ 在 $v\mapsto-v$ 下不变」。这就是 \eqref{eq:dual}。
+
+\textbf{第三步：弱对偶（不用 $\min\max$ 交换，直接算）。}
+设 $v$ 对偶可行，$s=Ax-b$。由 $b=Ax-s$，
+\[
+D(v)=\inner{Ax-s}{v}-\tfrac12\norm v^2=\inner{x}{A\top v}-\inner sv-\tfrac12\norm v^2
+\le\lambda\norm x_1-\inner sv-\tfrac12\norm v^2,
+\]
+其中用了 $\inner{x}{A\top v}\le\norm{A\top v}_\infty\norm x_1\le\lambda\norm x_1$。
+又因为 $\tfrac12\norm{s+v}^2=\tfrac12\norm s^2+\inner sv+\tfrac12\norm v^2\ge0$，
+即 $-\inner sv-\tfrac12\norm v^2\le\tfrac12\norm s^2$。于是
+\[
+D(v)\le\lambda\norm x_1+\tfrac12\norm{Ax-b}^2=F(x). \qquad\text{(弱对偶)}
+\]
+
+\textbf{第四步：强对偶（构造性）。}
+取 $x=x^\star$、$v^\star=b-Ax^\star$。由 KKT 条件 \eqref{eq:kkt}，
+$A\top v^\star=A\top(b-Ax^\star)=c^\star$ 满足 $\norm{c^\star}_\infty\le\lambda$，故 $v^\star$ 可行。
+在第三步的不等式中，两处不等号都变成等号：
+\begin{itemize}
+\item $\inner{x^\star}{c^\star}=\lambda\norm{x^\star}_1$（互补松弛，见 KKT 的 $x_i^\star\neq0$ 那一支，
+      且 $x_i^\star=0$ 时两边贡献都是 $0$）；
+\item $\tfrac12\norm{s^\star+v^\star}^2=\tfrac12\norm{(Ax^\star-b)+(b-Ax^\star)}^2=0$。
+\end{itemize}
+故 $D(v^\star)=F(x^\star)$。结合弱对偶，$v^\star$ 是 (D) 的最优解，且两问题最优值相等。
+\end{proof}
+
+\begin{lemma}[对偶间隙恒等式]\label{lem:gap}
+对任意 $x\in\R^p$ 与任意 $v\in\R^n$，
+\begin{equation}
+F(x)-D(v)=\tfrac12\norm{Ax-b+v}_2^2+\lambda\norm x_1-\inner{A\top v}{x}.
+\label{eq:gapid}
+\end{equation}
+特别地，若 $v$ 对偶可行（$\norm{A\top v}_\infty\le\lambda$），则
+\begin{equation}
+F(x)-D(v)\ \ge\ \tfrac12\norm{Ax-b+v}_2^2\ \ge\ 0 .
+\label{eq:gapnonneg}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+直接展开。记 $s=Ax-b$，则 $b=Ax-s$，
+\begin{align*}
+F(x)-D(v)
+&=\tfrac12\norm s^2+\lambda\norm x_1-\inner b v+\tfrac12\norm v^2\\
+&=\tfrac12\norm s^2-\inner{Ax-s}{v}+\tfrac12\norm v^2+\lambda\norm x_1\\
+&=\tfrac12\norm s^2+\inner sv+\tfrac12\norm v^2+\lambda\norm x_1-\inner x{A\top v}\\
+&=\tfrac12\norm{s+v}^2+\lambda\norm x_1-\inner{A\top v}{x}.
+\end{align*}
+非负性：$\inner{A\top v}{x}\le\norm{A\top v}_\infty\norm x_1\le\lambda\norm x_1$（引理 \ref{lem:holder}），
+故后两项之和 $\ge0$。
+\end{proof}
+
+\begin{keypoint}{对偶问题长什么样（务必记住这三点）}
+\[
+\max_{v}\ \inner b v-\tfrac12\norm v_2^2
+\qquad\text{s.t.}\qquad \abs{(A\top v)_i}\le\lambda,\quad i=1,\dots,p .
+\]
+\begin{enumerate}
+\item 目标仍是\textbf{二次}的（$\inner bv-\tfrac12\norm v^2$），约束是 $2p$ 条\textbf{线性}不等式
+      —— 一个盒约束二次规划，比原来的非光滑问题「规矩」得多。
+\item $v^\star=b-Ax^\star$ 就是\textbf{残差}。对偶可行性
+      $\norm{A\top v^\star}_\infty\le\lambda$ 说的正是「残差与每个特征的相关性不超过 $\lambda$」。
+\item 对偶变量维数是 $n$（样本数）。$p\gg n$ 时对偶问题更小，这是它被实际使用的理由之一。
+      另外这个形式与支持向量机的对偶问题长得一模一样，不是巧合（都是 $\ell_1$ 正则的对偶）。
+\end{enumerate}
+\end{keypoint}
+
+\begin{remark}[为什么 $v^\star$ 是残差，而不是「负残差」]
+符号完全由 \eqref{eq:fenchelquad} 里 $v$ 与 $s$ 同号这一约定决定。
+若你把对偶目标写成 $-\inner bv-\tfrac12\norm v^2$，最优解就变成 $v^\star=Ax^\star-b$。
+两种写法等价，但\textbf{混用会让对偶间隙差出 $2\norm{Ax-b}^2$}——这是初学最常见的错误之一。
+本讲义从头到尾只用 $D(v)=\inner bv-\tfrac12\norm v^2$ 这一套。
+\end{remark}
+
+\subsection{$\lambda$ 取多大时解恰好是 $0$}
+
+\begin{proposition}\label{prop:lambda0}
+$x^\star=0$ 是 \eqref{eq:P} 的最优解 $\iff$ $\lambda\ge\norm{A\top b}_\infty$。
+\end{proposition}
+
+\begin{proof}
+把 $x=0$ 代入 KKT 条件 \eqref{eq:kkt}：此时所有分量都是零，条件变为
+$\abs{(A\top(b-A\cdot0))_i}=\abs{(A\top b)_i}\le\lambda$，$i=1,\dots,p$，
+即 $\norm{A\top b}_\infty\le\lambda$。KKT 是充要条件（定理 \ref{thm:fermat} + 定理 \ref{thm:kkt}），
+故结论成立。
+\end{proof}
+
+\begin{corollary}[$\lambda$ 的实用上界]
+令 $\lambda_{\max}=\norm{A\top b}_\infty=\max_i\abs{\inner{a_i}{b}}$（$a_i$ 为 $A$ 的第 $i$ 列）。
+$\lambda\ge\lambda_{\max}$ 时解全零；$\lambda$ 从 $\lambda_{\max}$ 往下减，解开始「长出来」。
+所以数值实验通常取 $\lambda\in(0,\lambda_{\max}]$，常用网格 $\lambda=\lambda_{\max}10^{-k}$。
+\end{corollary}
+
+\subsection{正交设计：能写出闭式解的情形}
+
+\begin{theorem}[正交设计下的解]\label{thm:orth}
+设 $A\top A=I_p$。则 \eqref{eq:P} 的解为
+\[
+x_i^\star=S_\lambda\bigl((A\top b)_i\bigr),\qquad i=1,\dots,p,
+\]
+即「把 $b$ 投影到各特征上，再逐个做软阈值」。
+\end{theorem}
+
+\begin{proof}
+$A\top A=I$ 时 $\nabla f(x)=A\top(Ax-b)=x-A\top b$，故 $c=A\top(b-Ax)=A\top b-x$，即 $c_i=(A\top b)_i-x_i$。
+由 KKT：
+\begin{itemize}
+\item $x_i\neq0$ 时 $(A\top b)_i-x_i=\lambda\sign(x_i)$，即 $x_i=(A\top b)_i-\lambda\sign(x_i)$；
+\item $x_i=0$ 时 $\abs{(A\top b)_i}\le\lambda$。
+\end{itemize}
+这正是定理 \ref{thm:1d} 里一维问题的 KKT 条件（各坐标完全解耦），故 $x_i^\star=S_\lambda((A\top b)_i)$。
+\end{proof}
+
+\begin{remark}
+这个定理解释了 ISTA 的行为：若 $A\top A=I$，ISTA 的迭代是
+$x^{k+1}=S_\lambda(x^k-(x^k-A\top b))=S_\lambda(A\top b)$，\textbf{一步收敛}。
+所以「$A\top A$ 离 $I$ 有多远」直接决定 ISTA 有多快——第 6、7 章把它量化为条件数 $\kappa$。
+\end{remark}
+
+% ============================================================
+\section{最优性证书：不解问题也能证明最优}
+% ============================================================
+
+\subsection{「证书」这个想法从哪来}
+
+优化问题的困境是：你手上有一个候选解 $\bar x$，怎么知道它最优？
+直接办法是「与所有 $x$ 比一遍」，在 $\R^p$ 里做不到。
+
+\textbf{证书}（certificate）的思路：找一个\textbf{短小、可快速检验}的对象，
+它的存在性蕴含最优性。三个类比：
+\begin{itemize}
+\item 整数分解中，「$n=pq$」是「$n$ 不是素数」的证书（验算只需一次乘法）；
+\item 线性规划中，对偶可行解是最优性证书（弱对偶 + 互补松弛）；
+\item LASSO 中，证书是一个满足两条不等式的向量（定义 \ref{def:cert}）。
+\end{itemize}
+
+注意证书的\textbf{不对称性}：验证一个证书很便宜（$O(np)$ 算一次 $A\top(b-A\bar x)$），
+而找到一个证书可能很贵（要解原问题）。这与 NP 的「验证容易、求解难」是同一个结构。
+
+\subsection{定义与主定理}
+
+\begin{definition}[最优性证书]\label{def:cert}
+给定 $\lambda>0$ 与点 $\bar x\in\R^p$，令残差 $\bar r=b-A\bar x$、相关性 $\bar c=A\top\bar r$。若
+\begin{equation}
+\textbf{(C1)}\ \ \norm{\bar c}_\infty\le\lambda,
+\qquad\qquad
+\textbf{(C2)}\ \ \inner{\bar c}{\bar x}=\lambda\norm{\bar x}_1,
+\label{eq:cert}
+\end{equation}
+则称 $\bar x$ 是 \eqref{eq:P} 的一个\textbf{最优性证书}。
+(C1) 叫\textbf{对偶可行性}，(C2) 叫\textbf{互补松弛}。
+\end{definition}
+
+\begin{remark}
+(C2) 可以看成「Hölder 不等式取等」。由 $\inner{\bar c}{\bar x}\le\norm{\bar c}_\infty\norm{\bar x}_1\le\lambda\norm{\bar x}_1$，
+(C2) 正好是这条链的两端同时取等：
+\begin{itemize}
+\item 第一个不等号取等 $\iff$ $\bar c_i=\lambda\sign(\bar x_i)$ 对所有 $\bar x_i\neq0$ 成立；
+\item 第二个不等号取等 $\iff$ $\abs{\bar c_i}=\lambda$ 对所有 $\bar x_i\neq0$ 成立。
+\end{itemize}
+合起来就是「在支撑集上 $\bar c_i=\lambda\sign(\bar x_i)$」——正是 KKT 条件。
+\end{remark}
+
+\begin{theorem}[证书定理]\label{thm:cert}
+若 $\bar x$ 满足 \eqref{eq:cert}，则 $\bar x$ 是 \eqref{eq:P} 的全局最优解，且 $F(\bar x)=F^\star$。
+\end{theorem}
+
+\begin{proof}
+\textbf{第一步：造一个对偶可行点。}
+取 $v=b-A\bar x=\bar r$。由 (C1)，$\norm{A\top v}_\infty=\norm{\bar c}_\infty\le\lambda$，
+故 $v$ 对偶可行。
+
+\textbf{第二步：把 $x=\bar x$、$v=\bar r$ 代入对偶间隙恒等式（引理 \ref{lem:gap}）。}
+注意 $A\bar x-b+v=(A\bar x-b)+(b-A\bar x)=0$，第一项消失：
+\[
+F(\bar x)-D(\bar r)
+=\tfrac12\norm{0}_2^2+\lambda\norm{\bar x}_1-\inner{A\top\bar r}{\bar x}
+=\lambda\norm{\bar x}_1-\inner{\bar c}{\bar x}
+\overset{\text{(C2)}}{=}0 .
+\]
+
+\textbf{第三步：夹逼。}
+由弱对偶（定理 \ref{thm:dual}(i)），对任意可行 $x$ 有 $D(\bar r)\le F(x)$，于是
+\[
+F(\bar x)=D(\bar r)\ \le\ F(x)\qquad\forall x .
+\]
+故 $\bar x$ 全局最优，且 $F(\bar x)=F^\star=D(\bar r)$。
+\end{proof}
+
+\begin{keypoint}{证书定理在讲什么}
+两条\textbf{可以逐分量验算}的不等式，就足以证明全局最优。
+验算只需一次矩阵乘法 $A\top(b-A\bar x)$（$O(np)$ 次运算），
+不需要知道 $F^\star$，也不需要和其他解比较。
+这就是「证书」的全部力量：把\textbf{全局}性质压缩成\textbf{局部}代数条件。
+\end{keypoint}
+
+\subsection{证书 $\iff$ KKT 条件}
+
+\begin{proposition}\label{prop:certkkt}
+\eqref{eq:cert} 与定理 \ref{thm:kkt} 的 KKT 条件\textbf{完全等价}。
+\end{proposition}
+
+\begin{proof}
+\textbf{(KKT $\Rightarrow$ 证书)} 已在定理 \ref{thm:cert} 证明中用过：
+$x_i\neq0$ 时 $c_i=\lambda\sign(x_i)$ 给出 (C2)（$\inner cx=\sum_i x_ic_i=\lambda\sum_{x_i\neq0}\abs{x_i}=\lambda\norm x_1$）
+与 $\abs{c_i}=\lambda$；(C1) 就是 KKT 的第二支。
+
+\textbf{(证书 $\Rightarrow$ KKT)} 设 (C1)(C2) 成立。由 remark 中的分析，(C2) 蕴含对 $i\in\supp(\bar x)$
+有 $\bar c_i=\lambda\sign(\bar x_i)$；对 $i\notin\supp(\bar x)$ 无要求，而 (C1) 给出 $\abs{\bar c_i}\le\lambda$。
+这正是 \eqref{eq:kkt}。
+\end{proof}
+
+\begin{remark}
+既然等价，为什么还要单独讲「证书」？因为二者的\textbf{用法}不同：
+KKT 是用来\textbf{求解}的（写出一组方程，解出来），
+证书是用来\textbf{验证}的（拿到一个 $\bar x$，花 $O(np)$ 检查两条不等式）。
+在数值计算中，我们总是先跑一个算法得到 $\bar x$，再用证书判断「够了没有」。
+\end{remark}
+
+\subsection{次优界：连「差多少」都能严格给出}
+
+实践中更多的情况是：$\bar x$ 只是近似解，(C1)(C2) 都不严格成立。
+这时证书给出的不是「最优」，而是「\textbf{离最优最多差多少}」——一个严格的上界。
+
+\begin{theorem}[可计算的次优界]\label{thm:subopt}
+设 $\bar x\in\R^p$ 任意，$v\in\R^n$ 对偶可行（$\norm{A\top v}_\infty\le\lambda$）。则
+\begin{equation}
+0\ \le\ F(\bar x)-F^\star\ \le\ F(\bar x)-D(v)
+=\tfrac12\norm{A\bar x-b+v}_2^2+\lambda\norm{\bar x}_1-\inner{A\top v}{\bar x}.
+\label{eq:subopt}
+\end{equation}
+右边\textbf{只依赖 $\bar x$ 与 $v$}，可以直接算出数值。
+\end{theorem}
+
+\begin{proof}
+左边：$F^\star\le F(\bar x)$ 是显然的。
+右边：由弱对偶 $D(v)\le F^\star$（定理 \ref{thm:dual}(i)），故
+$F(\bar x)-F^\star\le F(\bar x)-D(v)$。等式部分是引理 \ref{lem:gap}。
+\end{proof}
+
+\begin{corollary}[把一个「几乎可行」的点变成可行点]\label{cor:scaling}
+设 $\bar x$ 任意，$\bar c=A\top(b-A\bar x)$。若 $\bar c\neq0$，令
+\[
+\theta=\min\Bigl\{1,\ \frac{\lambda}{\norm{\bar c}_\infty}\Bigr\}\in(0,1],
+\qquad v=\theta\,(b-A\bar x),
+\]
+则 $\norm{A\top v}_\infty=\theta\norm{\bar c}_\infty\le\lambda$，即 $v$ 对偶可行，于是
+\begin{equation}
+F(\bar x)-F^\star\ \le\ \tfrac12(1-\theta)^2\norm{b-A\bar x}_2^2+\lambda\norm{\bar x}_1-\theta\inner{\bar c}{\bar x}.
+\label{eq:scaledgap}
+\end{equation}
+\end{corollary}
+
+\begin{proof}
+$A\top v=\theta A\top(b-A\bar x)=\theta\bar c$，故 $\norm{A\top v}_\infty=\theta\norm{\bar c}_\infty\le\lambda$。
+又
+$A\bar x-b+v=-(b-A\bar x)+\theta(b-A\bar x)=(\theta-1)(b-A\bar x)$，
+代进 \eqref{eq:subopt} 即得 \eqref{eq:scaledgap}。
+\end{proof}
+
+\begin{intuition}[这个推论为什么在实用中极其重要]
+你跑 ISTA 跑到第 $k$ 步，得到 $x^k$。你\textbf{不知道} $F^\star$ 是多少，所以无法直接判断「还差多远」。
+但用 \eqref{eq:scaledgap} 你可以算出一个数 $U_k$，并且\textbf{严格知道} $F(x^k)-F^\star\le U_k$。
+于是一旦 $U_k<10^{-6}$，你就可以停下来并声称「我的解在绝对误差 $10^{-6}$ 内最优」——
+这是可辩护的结论，而不是「看起来收敛了」。
+
+这正是「最优性证书」区别于「看目标函数曲线是否变平」的地方：
+后者只是经验，前者是\textbf{数学保证}。
+\end{intuition}
+
+\subsection{唯一性：证书加强一点就够了}
+
+\begin{theorem}[唯一性]\label{thm:unique}
+设 $\bar x$ 满足证书 \eqref{eq:cert}，记 $S=\supp(\bar x)$。若进一步
+\begin{enumerate}
+\item[(a)] $A_S$（$A$ 中下标属于 $S$ 的列组成的矩阵）\textbf{列满秩}；
+\item[(b)] 对每个 $i\notin S$，\textbf{严格}不等式 $\abs{\bar c_i}<\lambda$ 成立，
+\end{enumerate}
+则 $\bar x$ 是 \eqref{eq:P} 的\textbf{唯一}最优解。
+\end{theorem}
+
+\begin{proof}
+设 $x'$ 也是最优解。对 $t\in[0,1]$ 令 $x_t=\bar x+t(x'-\bar x)$。由凸性，$x_t$ 也最优，于是
+\[
+F(x_t)\le(1-t)F(\bar x)+tF(x')=F(\bar x),
+\]
+又 $F(x_t)\ge F(\bar x)$（$\bar x$ 最优），故 $F(x_t)$ 关于 $t$ \textbf{恒等于} $F(\bar x)$。
+
+\textbf{第一步：证明 $x'$ 的支撑集含于 $S$。}
+对每个 $i\notin S$，定义 $\phi_i(t)=\bigl(A\top(b-Ax_t)\bigr)_i$。由于 $x_t$ 关于 $t$ 仿射、
+$A\top(b-Ax_t)$ 关于 $x_t$ 仿射，$\phi_i$ 是 $t$ 的\textbf{仿射函数}，且
+$\phi_i(0)=\bar c_i$，由 (b) 有 $\abs{\phi_i(0)}<\lambda$。由连续性，存在 $\delta_i>0$ 使
+$\abs{\phi_i(t)}<\lambda$ 对 $t\in[0,\delta_i)$ 成立。
+
+若对某 $t\in(0,\delta_i)$ 有 $(x_t)_i\neq0$，则 $x_t$ 最优（已证），由 KKT 必须有
+$\abs{\phi_i(t)}=\lambda$（因为 $x_t$ 最优时，非零坐标的相关性必须恰为 $\pm\lambda$），矛盾。
+故 $(x_t)_i=0$ 对所有 $t\in[0,\delta_i)$ 成立。仿射函数在一段区间上恒为零，则处处为零，
+特别地 $t=1$ 时 $x'_i=0$。于是 $\supp(x')\subseteq S$。
+
+\textbf{第二步：用严格凸性收尾。}
+考察 $h(t)=F(x_t)$。其中
+\[
+\tfrac12\norm{Ax_t-b}_2^2
+=\tfrac12\norm{A\bar x-b+tA(x'-\bar x)}_2^2
+\]
+是 $t$ 的二次函数，二次项系数为 $\norm{A(x'-\bar x)}_2^2\ge0$；$\lambda\norm{x_t}_1$ 关于 $t$ 凸。
+若 $\norm{A(x'-\bar x)}_2\neq0$，则第一项关于 $t$ \textbf{严格}凸，于是 $h$ 严格凸，
+从而 $h(1/2)<\tfrac12h(0)+\tfrac12h(1)=F(\bar x)$，与「$h$ 恒等于 $F(\bar x)$」矛盾。
+故 $A(x'-\bar x)=0$。
+
+\textbf{第三步：用列满秩收尾。}
+由第一步，$x'-\bar x$ 的支撑集含于 $S$，即 $x'-\bar x=A$ 的 $S$ 列的组合。$A(x'-\bar x)=0$ 即
+$A_S(x'-\bar x)_S=0$，由 (a) 列满秩得 $(x'-\bar x)_S=0$，故 $x'=\bar x$。
+\end{proof}
+
+\begin{remark}
+条件 (b) 常常被称为「\textbf{严格互补松弛}」。它之所以关键，是因为它给了 KKT 条件一点「余量」：
+在 $S^c$ 上 $\abs{\bar c_i}$ 离 $\lambda$ 还有距离，所以 $x'$ 稍微动一下也不会让某个零坐标「被激活」。
+没有这点余量，唯一性可能失效（例如某些对称构造的例子会有多个最优解，它们共享同一个最优值）。
+\end{remark}
+
+\subsection{从证书到「模型选择一致性」（进阶，可跳过）}
+
+设真实模型是 $b=Ax_{\mathrm{true}}+\eps$，$\supp(x_{\mathrm{true}})=S$。我们想知道：
+LASSO 的支撑集是否恰好等于 $S$？这需要两个条件：
+
+\begin{enumerate}
+\item \textbf{不可表示条件}（irrepresentable condition）：存在 $\gamma\in(0,1]$ 使
+\[
+\norm{A_{S^c}\tp A_S(A_S\tp A_S)^{-1}\sign(x_{\mathrm{true},S})}_\infty\le1-\gamma .
+\]
+它说的是：$S^c$ 中的列不能「模仿」$S$ 中列的符号模式。
+\item 噪声足够小 + $\lambda$ 取得合适（在某个区间内）。
+\end{enumerate}
+
+\begin{theorem}[定性陈述]
+在不可表示条件与适当的 $\lambda$ 选取下（无噪声时 $\lambda$ 属于某个开区间），
+LASSO 的解满足 $\supp(x^\star)=S$ 且 $\sign(x^\star_S)=\sign(x_{\mathrm{true},S})$。
+\end{theorem}
+
+\begin{proof}[证明思路]
+证书是构造出来的，不是解出来的：令 $S$ 为已知支撑集，先\textbf{假设} $x^\star$ 的支撑为 $S$。
+由 KKT 在 $S$ 上：$A_S\top(b-A_Sx_S^\star)=\lambda\sign(x^\star_S)$，解出
+\[
+x_S^\star=(A_S\top A_S)^{-1}\bigl(A_S\top b-\lambda\sign(x_S^\star)\bigr).
+\]
+然后在 $S^c$ 上验证 $\abs{c_i}\le\lambda$，即
+$\abs{A_{S^c}\tp(b-A_Sx_S^\star)}_\infty\le\lambda$。
+把 $b=Ax_{\mathrm{true}}+\eps=A_Sx_{\mathrm{true},S}+\eps$ 代入，得到
+\[
+A_{S^c}\tp\Bigl[(I-P_S)A_Sx_{\mathrm{true},S}+\eps\Bigr]+\lambda A_{S^c}\tp A_S(A_S\tp A_S)^{-1}\sign(x_S^\star),
+\]
+其中 $P_S=A_S(A_S\tp A_S)^{-1}A_S\top$ 是到 $\spn(A_S)$ 的投影。无噪声（$\eps=0$）时第一项为 $0$，
+剩下 $\lambda$ 乘以不可表示条件里的那个向量，故只要 $\norm{\cdot}_\infty\le1-\gamma<1$ 就通过验证。
+有噪声时第一项被 $\norm{A_{S^c}\tp\eps}_\infty$ 控制，需要 $\lambda$ 大于噪声水平的常数倍。
+完整的严格证明见参考文献中 Zhao--Yu (2006)、Wainwright (2009)。
+\end{proof}
+
+\begin{keypoint}{这一节的意义}
+「能不能把真实变量选出来」这个问题，被转化成了「某个\textbf{对偶可行性}（证书）是否成立」的问题。
+所以你截图里把「最优性证书」和「LASSO」放在同一专题下，是非常准确的：
+证书不只是算法终止的判据，它是整个稀疏恢复理论的\textbf{语言}。
+\end{keypoint}
+
+\subsection{手算一个证书（请自己算一遍）}
+
+\begin{example}\label{ex:cert}
+取
+\[
+A=\begin{pmatrix}1&1\\1&2\end{pmatrix},\qquad
+b=\begin{pmatrix}3.3\\1.7\end{pmatrix},\qquad
+\lambda=1,\qquad
+\bar x=\begin{pmatrix}2\\0\end{pmatrix}.
+\]
+验证 $\bar x$ 是最优解。
+\end{example}
+
+\begin{proof}[验证]
+\textbf{第一步：算残差与相关性。}
+\[
+A\bar x=\begin{pmatrix}1&1\\1&2\end{pmatrix}\begin{pmatrix}2\\0\end{pmatrix}=\begin{pmatrix}2\\2\end{pmatrix},
+\qquad
+\bar r=b-A\bar x=\begin{pmatrix}1.3\\-0.3\end{pmatrix},
+\]
+\[
+\bar c=A\top\bar r=\begin{pmatrix}1&1\\1&2\end{pmatrix}\begin{pmatrix}1.3\\-0.3\end{pmatrix}
+=\begin{pmatrix}1.3-0.3\\1.3-0.6\end{pmatrix}=\begin{pmatrix}1.0\\0.7\end{pmatrix}.
+\]
+
+\textbf{第二步：检验 (C1)。} $\norm{\bar c}_\infty=\max\{1.0,0.7\}=1.0\le\lambda=1$。$\checkmark$
+
+\textbf{第三步：检验 (C2)。} $\inner{\bar c}{\bar x}=1.0\times2+0.7\times0=2$，
+而 $\lambda\norm{\bar x}_1=1\times2=2$。相等。$\checkmark$
+
+由定理 \ref{thm:cert}，$\bar x=(2,0)\tp$ 是全局最优解，最优值
+\[
+F(\bar x)=\tfrac12(1.3^2+0.3^2)+1\cdot2=\tfrac12(1.78)+2=2.89 .
+\]
+\textbf{第四步：检查唯一性。}
+$S=\{1\}$，$A_S=\binom{1}{1}$ 列满秩；$2\notin S$ 处 $\abs{\bar c_2}=0.7<1=\lambda$ 严格成立。
+由定理 \ref{thm:unique}，这是\textbf{唯一}最优解。
+
+\textbf{第五步：顺便验算「正交公式」在这里失效。}
+$A\top b=(3.3+1.7,\ 3.3+3.4)\tp=(5.0,6.7)\tp$，
+按定理 \ref{thm:orth} 的公式（要求 $A\top A=I$，这里不满足）会得到
+$S_1((5.0,6.7))=(4.0,5.7)$，完全错误。这提醒你：\textbf{软阈值的直觉可以用，
+但闭式解只在正交设计下成立}。
+\end{proof}
+
+\begin{remark}
+把这个例子和 \eqref{eq:scaledgap} 结合起来，你就得到一个完整的「算法使用方法」：
+跑任意算法得到 $\bar x$ $\to$ 算 $\bar c$ $\to$ 若 $\norm{\bar c}_\infty\le\lambda$ 且互补松弛近似成立
+则用 \eqref{eq:scaledgap} 给出误差上界 $\to$ 上界足够小则停止。
+第 6 章的 ISTA 与第 5 章的次梯度法都可以套用这套流程。
+\end{remark}
+
+% ============================================================
+\section{次梯度法：最笨但最通用的办法}
+% ============================================================
+
+\subsection{算法}
+
+$F$ 不可微，但每个点都有次微分（第 2 章）。于是最自然的想法：
+\textbf{把梯度法的「梯度」换成「任意一个次梯度」}。
+
+\begin{algorithmbox}[次梯度法]
+\begin{enumerate}
+\item 取初始点 $x^0\in\R^p$，步长序列 $\alpha_k>0$。
+\item 对 $k=0,1,2,\dots$：
+\[
+\text{选 } g^k\in\partial F(x^k),\qquad
+x^{k+1}=x^k-\alpha_k g^k .
+\]
+\item 输出「历史最好点」$\hat x^K=\argmin_{0\le k\le K}F(x^k)$。
+\end{enumerate}
+\end{algorithmbox}
+
+\begin{remark}[第一个坑：次梯度法不是下降法]
+梯度法有 $F(x^{k+1})<F(x^k)$（步长合适时）。次梯度法\textbf{没有}这个性质：
+因为 $-g^k$ 只是「一个」次梯度方向，它不一定使函数值下降。
+例如 $F(x)=\abs{x}$ 在 $x=0$ 处，任取 $g\in[-1,1]$ 都可能把 $x$ 推向错误的一侧。
+
+所以第 3 步必须记录历史最优。这是次梯度法与梯度法在实现上的第一个本质差别。
+\end{remark}
+
+\subsection{核心引理：一步能靠近多少}
+
+\begin{lemma}[基本不等式]\label{lem:sgfund}
+设 $F$ 凸，$x^\star$ 是最优解，$g^k\in\partial F(x^k)$。则对任意 $\alpha_k>0$，
+\begin{equation}
+\norm{x^{k+1}-x^\star}_2^2
+\ \le\ \norm{x^k-x^\star}_2^2-2\alpha_k\bigl(F(x^k)-F^\star\bigr)+\alpha_k^2\norm{g^k}_2^2 .
+\label{eq:sgfund}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+展开平方：
+\begin{align*}
+\norm{x^{k+1}-x^\star}^2
+&=\norm{x^k-\alpha_kg^k-x^\star}^2\\
+&=\norm{x^k-x^\star}^2-2\alpha_k\inner{g^k}{x^k-x^\star}+\alpha_k^2\norm{g^k}^2 .
+\end{align*}
+由次梯度的定义 \eqref{eq:subgraddef}（取 $y=x^\star$、$x=x^k$）：
+\[
+F(x^\star)\ge F(x^k)+\inner{g^k}{x^\star-x^k}
+\quad\Longrightarrow\quad
+\inner{g^k}{x^k-x^\star}\ge F(x^k)-F^\star .
+\]
+把它代入上式，注意 $-2\alpha_k\inner{g^k}{x^k-x^\star}\le-2\alpha_k(F(x^k)-F^\star)$，即得 \eqref{eq:sgfund}。
+\end{proof}
+
+\begin{intuition}[怎么读这个不等式]
+把它改写成
+\[
+\underbrace{2\alpha_k\bigl(F(x^k)-F^\star\bigr)}_{\text{「离最优多远的代价」}}
+\ \le\
+\underbrace{\norm{x^k-x^\star}^2-\norm{x^{k+1}-x^\star}^2}_{\text{这一步靠近了多少}}
++\ \underbrace{\alpha_k^2\norm{g^k}^2}_{\text{走太远造成的抖动}} .
+\]
+左边是「函数值的次优性」，右边是「距离的减少」加「抖动的代价」。
+如果步长太大，抖动项压倒一切，靠近量反而变负——这就是为什么步长必须趋于零。
+\end{intuition}
+
+\subsection{收敛速率 $O(1/\sqrt{K})$}
+
+\begin{theorem}[固定步长的收敛速率]\label{thm:sgfixed}
+设 $\norm{g^k}_2\le G$ 对所有 $k$ 成立，$\alpha_k\equiv\alpha$，$R=\norm{x^0-x^\star}_2$。
+则对任意 $K\ge1$，
+\begin{equation}
+\min_{0\le k\le K-1}\bigl(F(x^k)-F^\star\bigr)
+\ \le\ \frac{R^2}{2\alpha K}+\frac{\alpha G^2}{2} .
+\label{eq:sgrate}
+\end{equation}
+取 $\alpha=R/(G\sqrt K)$ 得
+\[
+\min_{0\le k<K}\bigl(F(x^k)-F^\star\bigr)\ \le\ \frac{RG}{\sqrt K}.
+\]
+\end{theorem}
+
+\begin{proof}
+把 \eqref{eq:sgfund} 对 $k=0,\dots,K-1$ 求和，注意 $x^K$ 项相消：
+\[
+\norm{x^K-x^\star}^2
+\le\norm{x^0-x^\star}^2-2\alpha\sum_{k=0}^{K-1}\bigl(F(x^k)-F^\star\bigr)+\alpha^2\sum_{k=0}^{K-1}\norm{g^k}^2 .
+\]
+因为 $\norm{x^K-x^\star}^2\ge0$ 且 $\norm{g^k}\le G$，移项得
+\[
+2\alpha\sum_{k=0}^{K-1}\bigl(F(x^k)-F^\star\bigr)
+\ \le\ \norm{x^0-x^\star}^2+\alpha^2G^2K=R^2+\alpha^2G^2K .
+\]
+除以 $2\alpha K$：
+\[
+\frac1K\sum_{k=0}^{K-1}\bigl(F(x^k)-F^\star\bigr)\le\frac{R^2}{2\alpha K}+\frac{\alpha G^2}{2}.
+\]
+\textbf{关键一步}：平均值不超过某数 $\Rightarrow$ 至少有一项不超过它（否则每项都大于，平均就大于）。
+而 $\min\le$ 平均值，故 \eqref{eq:sgrate} 成立。
+
+代入 $\alpha=R/(G\sqrt K)$：
+$\frac{R^2}{2\cdot R/(G\sqrt K)\cdot K}=\frac{RG}{2\sqrt K}$，
+$\frac{\alpha G^2}{2}=\frac{RG}{2\sqrt K}$，相加得 $RG/\sqrt K$。
+\end{proof}
+
+\begin{remark}[注意这个定理「只能保证最小值」]
+\eqref{eq:sgrate} 保证的是「$\min_{k<K}$」小，而不是「$F(x^K)$」小。
+这不是证明技巧的问题：次梯度法\textbf{确实}会在最优点附近来回跳动，
+最后一步的函数值可以很差。实现上必须缓存历史最优。
+\end{remark}
+
+\begin{corollary}[递减步长]\label{cor:sgdim}
+取 $\alpha_k=c/\sqrt{k+1}$ 且 $\norm{g^k}\le G$。则存在常数 $C$（只依赖 $R,G,c$）使
+\[
+\min_{0\le k<K}\bigl(F(x^k)-F^\star\bigr)\ \le\ C\,\frac{1+\ln K}{\sqrt K}.
+\]
+最常用取值 $c=R/G$，此时 $C$ 为 $RG$ 的常数倍。
+\end{corollary}
+
+\begin{proof}[证明]
+由求和式
+\[
+\min_{k<K}\bigl(F(x^k)-F^\star\bigr)\ \le\ \frac{R^2+G^2\sum_{k<K}\alpha_k^2}{2\sum_{k<K}\alpha_k}.
+\]
+（与定理 \ref{thm:sgfixed} 的推导相同，只是不再假设 $\alpha$ 为常数：
+把 $2\alpha$ 换成 $2\sum_k\alpha_k$，把 $\alpha^2K$ 换成 $\sum_k\alpha_k^2$。）
+
+估计两个和：$\sum_{k=0}^{K-1}\frac{c}{\sqrt{k+1}}\ge c\int_0^{K}\frac{\dd t}{\sqrt{t+1}}=2c(\sqrt{K+1}-1)\ge c\sqrt K$
+（$K\ge4$ 时）；$\sum_{k=0}^{K-1}\frac{c^2}{k+1}\le c^2(1+\ln K)$。
+代入得
+\[
+\min_{k<K}(F(x^k)-F^\star)\le\frac{R^2+c^2G^2(1+\ln K)}{2c\sqrt K},
+\]
+取 $c=R/G$ 即得结论。
+\end{proof}
+
+\begin{remark}[两种步长的区别]
+固定步长 $\alpha=R/(G\sqrt K)$ 需要\textbf{预先知道} $K$ 和 $R$（$R$ 依赖未知的 $x^\star$），
+在实际中不可用；递减步长 $c/\sqrt{k+1}$ 不需要，但多一个 $\ln K$ 因子。
+第三种选择是 \textbf{Polyak 步长} $\alpha_k=\frac{F(x^k)-F^\star_{\text{估计}}}{\norm{g^k}^2}$，
+在知道 $F^\star$ 或它的估计时非常有效。这三种步长的取舍本身就是一道常见的考题。
+\end{remark}
+
+\subsection{把次梯度法用在 LASSO 上}
+
+由 \eqref{eq:lassoSub}，$F$ 的一个次梯度是
+\begin{equation}
+g^k=A\top(Ax^k-b)+\lambda v^k,\qquad
+v^k_i=
+\begin{cases}
+\sign(x^k_i), & x^k_i\neq0,\\
+\text{任取 }[-1,1]\text{ 中的值}, & x^k_i=0 .
+\end{cases}
+\label{eq:lassoSubgrad}
+\end{equation}
+
+\begin{example}[选次梯度的细节]
+最常用的取法是 $v^k_i=\sign(x^k_i)$（把 $\sign(0)$ 定义成 $0$），即
+$g^k=A\top(Ax^k-b)+\lambda\,\sign(x^k)$。这是一种合法选择，因为
+$\sign(0)=0\in[-1,1]$。另一种常见取法是「坐标下降式的循环选取」，每次只更新一个坐标。
+\end{example}
+
+\begin{remark}[一个真实的困难：$G$ 不受控]
+定理 \ref{thm:sgfixed} 要求 $\norm{g^k}\le G$ 对\textbf{所有} $k$ 成立。
+对 LASSO，$\norm{g^k}\le\norm{A}_2\norm{Ax^k-b}_2+\lambda\sqrt p$，它依赖 $x^k$。
+如果迭代点跑到很远，$G$ 就很大，步骤一（算法设计）里承诺的速率就不再成立。
+实践中要么先证明迭代有界（需要 $F$ 强制，即 $F(x)\to\infty$ 当 $\norm x\to\infty$——
+对 LASSO 确实成立，因为 $\lambda\norm x_1\to\infty$），要么用自适应步长。
+\end{remark}
+
+\begin{proposition}[LASSO 的 $F$ 强制]\label{prop:coercive}
+$\lambda>0$ 时 $F(x)\to+\infty$ 当 $\norm x_2\to\infty$。因此次梯度法的迭代点列有界，
+从而存在 $G$ 使 $\norm{g^k}\le G$。
+\end{proposition}
+
+\begin{proof}
+$\norm x_2\to\infty$ 时 $\norm x_1\to\infty$（因为 $\norm x_1\ge\norm x_2$），
+而 $\lambda\norm x_1\to\infty$，同时 $\tfrac12\norm{Ax-b}^2\ge0$，故 $F(x)\ge\lambda\norm x_2\to\infty$。
+有界性：由 \eqref{eq:sgfund} 得 $\norm{x^k-x^\star}\le\norm{x^0-x^\star}+\sum_j\alpha_j\norm{g^j}$，
+在 $\norm{g^j}\le G$ 的前提下这就给出界（对 $\alpha_k=c/\sqrt{k+1}$，$\sum\alpha_j=O(\sqrt k)$，
+界随 $k$ 增长，所以严格说有界性只能逐段论证）。完整处理需要更细的分析，这里不再展开。
+\end{proof}
+
+\subsection{为什么次梯度法天生慢}
+
+\begin{enumerate}
+\item \textbf{它只用了「一阶信息的一小部分」。} 在可微点，$F$ 的局部行为由 Hessian 描述；
+      次梯度法完全不看曲率，所以它无法「知道」自己离最优还有多远。
+\item \textbf{步长必须趋于零。} 由 \eqref{eq:sgfund}，若 $\alpha$ 固定为正，
+      则 $\alpha^2G^2$ 项使不等式无法给出收敛；这反映了一个事实：
+      固定的正步长会让迭代在最优点附近永远抖动（见第 8 章的对比）。
+\item \textbf{速率不可改进。} Nesterov 证明了：只允许访问「一个次梯度」的算法，
+      在最坏情形下不可能快于 $O(1/\sqrt K)$。也就是说，这不是我们不够聪明，
+      而是\textbf{信息不足}——只用一个次梯度，$1/\sqrt K$ 就是天花板。
+\item \textbf{在高精度要求下极其昂贵。} 要把误差降到 $\eps$，需要 $K=O(1/\eps^2)$ 步。
+      $\eps=10^{-6}$ 时需要 $10^{12}$ 步，完全不可行。而 ISTA 只需 $O(1/\eps)$ 步。
+\end{enumerate}
+
+\begin{remark}[两种方法的心智图像]
+\begin{itemize}
+\item 次梯度法只借了「方向」：它知道「往哪边走函数会小」，但不知道「走多远」，
+      也不知道自己离最优点有多近，于是只能靠不断缩小步长来逼近。
+\item 近端梯度法把「结构」也用上了：它把目标拆成「光滑部分 $f$ + 简单部分 $g$」，
+      光滑部分用梯度（带曲率信息），简单部分用近端算子\textbf{一步求到精确极小}。
+\end{itemize}
+一句话：次梯度法把不可微点当成「和别处一样」，近端梯度法把不可微点当成「特殊结构」。
+\end{remark}
+
+
+\begin{keypoint}{次梯度法}
+\begin{itemize}
+\item 算法：$x^{k+1}=x^k-\alpha_kg^k$，$g^k\in\partial F(x^k)$。
+\item 速率：$\min_{k<K}(F(x^k)-F^\star)\le RG/\sqrt K$，即 $O(1/\sqrt K)$。
+\item 优点：只需一个次梯度，适用于任何凸函数，包括完全不可微的。
+\item 缺点：不是下降法；需要衰减步长；达不到高精度。
+\end{itemize}
+\end{keypoint}
+
+% ============================================================
+\section{近端梯度法（ISTA）：把不可微部分「精确求解」}
+% ============================================================
+
+\subsection{核心思想：拆成两块，各用各的长处}
+
+LASSO 的目标 $F=f+g$ 有一个宝贵的结构：
+\[
+f(x)=\tfrac12\norm{Ax-b}_2^2\ \text{光滑（可微、梯度 Lipschitz）},
+\qquad
+g(x)=\lambda\norm x_1\ \text{简单（近端算子有闭式解）}.
+\]
+梯度法只能用一次函数信息，用不了 $g$ 的「简单性」；次梯度法把 $g$ 当成黑箱。
+近端梯度法的想法是：\textbf{光滑的部分走梯度，不光滑的部分走一个能精确求解的子问题}。
+
+具体地，在 $x^k$ 处把\textbf{光滑部分} $f$ 换成二次近似（这是梯度法的做法），
+\textbf{保留} $g$ 不动（这一步是关键），然后求这个近似问题的精确极小：
+\begin{equation}
+x^{k+1}=\argmin_{y\in\R^p}\Bigl\{\underbrace{f(x^k)+\inner{\nabla f(x^k)}{y-x^k}+\tfrac L2\norm{y-x^k}_2^2}_{\text{用二次函数代替 }f}
++\underbrace{g(y)}_{\text{原封不动}}\Bigr\}.
+\label{eq:pgstep}
+\end{equation}
+把与 $y$ 无关的项丢掉、提出公因子，\eqref{eq:pgstep} 等价于
+\begin{equation}
+x^{k+1}=\argmin_{y}\Bigl\{g(y)+\tfrac L2\norm{y-\Bigl(x^k-\tfrac1L\nabla f(x^k)\Bigr)}_2^2\Bigr\}.
+\label{eq:pgstep2}
+\end{equation}
+括号里那个「先沿梯度走一步 $x^k-\frac1L\nabla f(x^k)$，再解一个小问题」的结构，
+就是\textbf{近端算子}。
+
+\subsection{近端算子：定义与三个例子}
+
+\begin{definition}[近端算子]\label{def:prox}
+设 $g$ 凸、$\alpha>0$。定义
+\[
+\prox_{\alpha g}(v)=\argmin_{y\in\R^p}\Bigl\{g(y)+\frac{1}{2\alpha}\norm{y-v}_2^2\Bigr\}.
+\]
+\end{definition}
+
+\begin{lemma}[良定义：极小点存在且唯一]\label{lem:proxwell}
+若 $g$ 是凸函数（允许取 $+\infty$）且 $\prox$ 的内层问题有可行点，则 $\prox_{\alpha g}(v)$ 存在且唯一。
+\end{lemma}
+
+\begin{proof}
+内层目标 $\psi(y)=g(y)+\frac{1}{2\alpha}\norm{y-v}^2$ 是凸函数之和，故凸；
+且 $\frac{1}{2\alpha}\norm{y-v}^2$ 是 $\frac1\alpha$-强凸的，所以 $\psi$ 是 $\frac1\alpha$-强凸的。
+强凸函数在水平集上有界、下有界，且若有两个极小点 $y_1\neq y_2$，
+则 $\psi(\frac{y_1+y_2}{2})<\frac{\psi(y_1)+\psi(y_2)}{2}$，与极小性矛盾。故极小点唯一。
+存在性：$\psi(y)\to+\infty$ 当 $\norm y\to\infty$（由二次项强制），
+而 $\psi$ 下半连续，故在某个紧集上取到最小值。
+\end{proof}
+
+\begin{example}[二次函数的近端算子：等比收缩]
+$g(y)=\tfrac12\norm y_2^2$。则
+\[
+\prox_{\alpha g}(v)=\argmin_y\Bigl\{\tfrac12\norm y^2+\frac{1}{2\alpha}\norm{y-v}^2\Bigr\}
+=\frac{1}{1+\alpha}v .
+\]
+（求导：$y+\frac{1}{\alpha}(y-v)=0\Rightarrow y=\frac{v}{1+\alpha}$。）
+这说明 $\ell_2$ 惩罚的「近端」只是把向量\textbf{等比缩小},永远不会变成零——再次印证
+「$\ell_2$ 不产生稀疏」。
+\end{example}
+
+\begin{example}[指示函数的近端算子：投影]
+设 $C$ 是闭凸集，$g=\iota_C$（$\iota_C(y)=0$ 若 $y\in C$，否则 $+\infty$）。则
+\[
+\prox_{\alpha\iota_C}(v)=\argmin_{y\in C}\ \tfrac{1}{2\alpha}\norm{y-v}^2=\mathrm{Proj}_C(v),
+\]
+即欧氏投影。所以「带约束的梯度法」= 「投影梯度法」，是近端梯度法的特例。
+\end{example}
+
+\begin{definition}[软阈值算子]\label{def:soft}
+对 $\tau\ge0$，定义 $S_\tau:\R^p\to\R^p$ 为\textbf{逐分量}作用：
+\[
+\bigl(S_\tau(v)\bigr)_i=\sign(v_i)\max\{\abs{v_i}-\tau,0\},\qquad i=1,\dots,p .
+\]
+\end{definition}
+
+\begin{theorem}[$\ell_1$ 范数的近端算子就是软阈值]\label{thm:soft}
+$\prox_{\alpha\lambda\norm{\cdot}_1}(v)=S_{\alpha\lambda}(v)$。
+\end{theorem}
+
+\begin{proof}[推导一：用次微分（最机械、最可靠）]
+问题 $\min_y\ \tfrac12\norm{y-v}^2+\alpha\lambda\norm y_1$ 按坐标分解为 $p$ 个独立的一维问题：
+\[
+\min_{y_i}\ \tfrac12(y_i-v_i)^2+\alpha\lambda\abs{y_i}.
+\]
+由定理 \ref{thm:1d}（把那里的 $b$ 换成 $v_i$、$\lambda$ 换成 $\alpha\lambda$），解为
+$y_i^\star=S_{\alpha\lambda}(v_i)$。逐分量拼起来即得。
+\end{proof}
+
+\begin{proof}[推导二：直接写最优性条件，不引用任何定理]
+记 $\tau=\alpha\lambda$。最优性条件（定理 \ref{thm:fermat}）是
+\[
+0\in (y_i-v_i)+\tau\,\partial\abs{y_i},\qquad\text{即}\qquad v_i=y_i+\tau s_i,\ \ s_i\in\partial\abs{y_i}.
+\]
+\textbf{情形 $y_i>0$：} $s_i=1$，故 $v_i=y_i+\tau$，即 $y_i=v_i-\tau$。
+该解合法（要求 $y_i>0$）当且仅当 $v_i>\tau$。
+
+\textbf{情形 $y_i<0$：} $s_i=-1$，故 $v_i=y_i-\tau$，即 $y_i=v_i+\tau$，合法当且仅当 $v_i<-\tau$。
+
+\textbf{情形 $y_i=0$：} $v_i=\tau s_i$ 且 $s_i\in[-1,1]$，即 $\abs{v_i}\le\tau$。
+
+三种情形覆盖整个实轴且互不重叠，故解唯一，且正好可以写成
+$y_i=\sign(v_i)\max\{\abs{v_i}-\tau,0\}$。
+\end{proof}
+
+\begin{proof}[推导三：Moreau 分解（最优雅，能看出几何意义）]
+Moreau 分解说：对任意凸函数 $f$ 与 $\alpha>0$，
+\[
+v=\prox_{\alpha f}(v)+\alpha\,\prox_{f^\ast/\alpha}(v/\alpha),
+\]
+其中 $f^\ast$ 是 $f$ 的共轭函数。取 $f=\lambda\norm{\cdot}_1$，其共轭是
+$f^\ast(u)=\iota_{\{\norm u_\infty\le\lambda\}}(u)$（$\ell_1$ 的对偶范数是 $\ell_\infty$，
+共轭就是「对偶范数球的指示函数」）。于是
+\[
+\prox_{\alpha\lambda\norm{\cdot}_1}(v)
+=v-\alpha\,\mathrm{Proj}_{\{\norm u_\infty\le\lambda\}}(v/\alpha)
+=v-\mathrm{Proj}_{\{\norm u_\infty\le\alpha\lambda\}}(v),
+\]
+而「把向量的每个坐标截断到 $[-\tau,\tau]$」正是「向量减去向量的盒投影」，
+即 $v_i-\min\{\max\{v_i,-\tau\},\tau\}=S_\tau(v_i)$。证毕。
+
+\textbf{几何意义}：软阈值 $=$ 恒等映射 $-$ 到 $\ell_\infty$ 盒的投影。
+这也解释了为什么软阈值是「分段线性、有平台」的。
+\end{proof}
+
+\begin{keypoint}{记住这个}
+\[
+\boxed{\ \prox_{\alpha\lambda\norm{\cdot}_1}(v)=S_{\alpha\lambda}(v)\ }
+\]
+ISTA 的每一次迭代就是：\textbf{先沿负梯度走一步，再对每个坐标做一次软阈值}。
+一行代码：\texttt{x = soft\_threshold(x - (1/L)*A.T@(A@x-b), lam/L)}。
+\end{keypoint}
+
+\subsection{近端算子的两个重要性质}
+
+\begin{proposition}[非扩张性]\label{prop:proxnonexp}
+$\prox_{\alpha g}$ 是 $1$-Lipschitz 的（非扩张）：对任意 $u,v$，
+$\norm{\prox_{\alpha g}(u)-\prox_{\alpha g}(v)}_2\le\norm{u-v}_2$。
+\end{proposition}
+
+\begin{proof}
+记 $p=\prox_{\alpha g}(u)$，$q=\prox_{\alpha g}(v)$。由最优性条件（分别对 $p,q$ 写）：
+\[
+\frac{1}{\alpha}(u-p)\in\partial g(p),\qquad \frac1\alpha(v-q)\in\partial g(q).
+\]
+由次梯度定义，用第一个次梯度在点 $q$ 处、第二个在点 $p$ 处：
+\[
+g(q)\ge g(p)+\tfrac1\alpha\inner{u-p}{q-p},\qquad
+g(p)\ge g(q)+\tfrac1\alpha\inner{v-q}{p-q}.
+\]
+两式相加：
+\[
+0\ge\tfrac1\alpha\bigl(\inner{u-p}{q-p}-\inner{v-q}{q-p}\bigr)
+=\tfrac1\alpha\inner{u-p-v+q}{q-p}.
+\]
+即 $\inner{q-p}{q-p}\le\inner{v-u}{q-p}$。由 Cauchy--Schwarz，
+$\norm{q-p}^2\le\norm{v-u}\norm{q-p}$，若 $q\neq p$ 则约去 $\norm{q-p}$ 得 $\norm{q-p}\le\norm{v-u}$。
+\end{proof}
+
+\begin{proposition}[不动点刻画]\label{prop:proxfix}
+$x^\star$ 是 $\min f+g$ 的最优解 $\iff$ $x^\star=\prox_{g/L}\bigl(x^\star-\tfrac1L\nabla f(x^\star)\bigr)$
+（$L>0$ 任意）。
+\end{proposition}
+
+\begin{proof}
+$\prox_{g/L}(w)$ 由 $0\in\partial g(y)+L(y-w)$ 刻画。取 $w=x^\star-\frac1L\nabla f(x^\star)$、
+$y=x^\star$，条件变为
+\[
+0\in\partial g(x^\star)+L\Bigl(x^\star-x^\star+\tfrac1L\nabla f(x^\star)\Bigr)
+=\partial g(x^\star)+\nabla f(x^\star)=\partial F(x^\star),
+\]
+这正是最优性条件（定理 \ref{thm:fermat}）。
+\end{proof}
+
+\subsection{下降引理：为什么步长必须 $\le 1/L$}
+
+\begin{lemma}[下降引理]\label{lem:descent}
+设 $f$ 可微且 $\nabla f$ 是 $L$-Lipschitz 的。则对任意 $x,y$，
+\begin{equation}
+f(y)\le f(x)+\inner{\nabla f(x)}{y-x}+\frac L2\norm{y-x}_2^2 .
+\label{eq:descent}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+令 $h=y-x$，$\gamma(t)=x+th$，$t\in[0,1]$。由微积分基本定理
+\[
+f(y)-f(x)=\int_0^1\frac{\dd}{\dd t}f(x+th)\,\dd t=\int_0^1\inner{\nabla f(x+th)}{h}\,\dd t .
+\]
+两边减去 $\inner{\nabla f(x)}{h}$（注意 $\int_0^1\dd t=1$）：
+\[
+f(y)-f(x)-\inner{\nabla f(x)}{h}=\int_0^1\inner{\nabla f(x+th)-\nabla f(x)}{h}\,\dd t
+\le\int_0^1\norm{\nabla f(x+th)-\nabla f(x)}\norm h\,\dd t .
+\]
+由 $L$-Lipschitz：$\norm{\nabla f(x+th)-\nabla f(x)}\le L\norm{th}=Lt\norm h$。于是
+\[
+\text{左边}\le\int_0^1 Lt\norm h^2\,\dd t=\frac L2\norm h^2 .
+\]
+移项即得 \eqref{eq:descent}。
+\end{proof}
+
+\begin{remark}
+对 LASSO 的 $f$，\eqref{eq:descent} 其实是\textbf{等式}（引理 \ref{lem:quad}）：
+$f(y)=f(x)+\inner{\nabla f(x)}{y-x}+\frac12\norm{A(y-x)}^2$，
+而 $\frac12\norm{A(y-x)}^2\le\frac{\lambda_{\max}(A\top A)}{2}\norm{y-x}^2=\frac L2\norm{y-x}^2$。
+
+所以「下降引理」在 LASSO 里的意义是：\textbf{用 $L$ 当曲率的估计}。
+若步长 $\alpha>1/L$，二次近似会\textbf{低估}真实曲率，于是可能「走过头」而导致目标上升。
+这就是 ISTA 必须取 $\alpha=1/L$（或更小）的原因，也是第 7 章特征值出场的地方。
+\end{remark}
+
+\subsection{ISTA 算法}
+
+\begin{algorithmbox}[ISTA：迭代软阈值算法]
+\textbf{输入}：$A,b,\lambda$，初始点 $x^0$（常取 $0$），$L=\lambda_{\max}(A\top A)$。
+\begin{enumerate}
+\item 对 $k=0,1,2,\dots$：
+\[
+x^{k+1}=S_{\lambda/L}\Bigl(x^k-\tfrac1L A\top(Ax^k-b)\Bigr).
+\]
+\item 直到满足停止准则（例如对偶间隙 $<\eps$，或 $\norm{x^{k+1}-x^k}$ 很小）。
+\end{enumerate}
+\end{algorithmbox}
+
+把迭代写成「梯度步 + 软阈值」两步，更容易记：
+\[
+\underbrace{z^k=x^k-\tfrac1L A\top(Ax^k-b)}_{\text{梯度步（光滑部分）}}
+\qquad\longrightarrow\qquad
+\underbrace{x^{k+1}=S_{\lambda/L}(z^k)}_{\text{软阈值（不光滑部分）}}.
+\]
+
+\begin{proposition}[ISTA 就是近端梯度法]
+\eqref{eq:pgstep2} 中取 $g=\lambda\norm\cdot_1$、$\alpha=1/L$，由定理 \ref{thm:soft} 即得 ISTA 的迭代式。
+\end{proposition}
+
+\subsection{核心引理：近端梯度不等式}
+
+这是 ISTA 收敛性证明的``发动机''。它把「一步迭代」与「函数值的下降」精确地联系起来。
+
+\begin{lemma}[近端梯度不等式]\label{lem:pgineq}
+设 $f$ 可微、$\nabla f$ 是 $L$-Lipschitz 且 $f$ 是 $\mu$-强凸的（$\mu\ge0$），$g$ 凸，
+$F=f+g$。给定 $x$，令
+\[
+x^+=\prox_{g/L}\Bigl(x-\tfrac1L\nabla f(x)\Bigr).
+\]
+则对任意 $y\in\R^p$，
+\begin{equation}
+F(y)\ \ge\ F(x^+)+\frac L2\norm{y-x^+}_2^2-\frac{L-\mu}{2}\norm{y-x}_2^2 .
+\label{eq:pgineq}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+\textbf{第一步：$x^+$ 的最优性条件。}
+由定义，$x^+$ 是 $\min_y\{g(y)+\frac L2\norm{y-(x-\frac1L\nabla f(x))}^2\}$ 的极小点，
+故（定理 \ref{thm:fermat}，$g$ 可能不可微，用次微分）
+\begin{equation}
+0\in\partial g(x^+)+L\Bigl(x^+-x+\tfrac1L\nabla f(x)\Bigr)
+\quad\Longleftrightarrow\quad
+-\nabla f(x)-L(x^+-x)\in\partial g(x^+).
+\label{eq:pgopt}
+\end{equation}
+记 $p=x^+-x$，则 $-\nabla f(x)-Lp\in\partial g(x^+)$。
+
+\textbf{第二步：对 $g$ 用次梯度不等式。} 由 \eqref{eq:pgopt} 与定义 \eqref{eq:subgraddef}，
+对任意 $y$：
+\begin{equation}
+g(y)\ \ge\ g(x^+)+\inner{-\nabla f(x)-Lp}{y-x^+}.
+\label{eq:pgA}
+\end{equation}
+
+\textbf{第三步：对 $f$ 用强凸性。}
+\begin{equation}
+f(y)\ \ge\ f(x)+\inner{\nabla f(x)}{y-x}+\frac\mu2\norm{y-x}_2^2 .
+\label{eq:pgB}
+\end{equation}
+
+\textbf{第四步：对 $f(x^+)$ 用下降引理（上界）。}
+\begin{equation}
+f(x^+)\ \le\ f(x)+\inner{\nabla f(x)}{p}+\frac L2\norm p_2^2 .
+\label{eq:pgC}
+\end{equation}
+
+\textbf{第五步：合并。}
+\eqref{eq:pgA}+\eqref{eq:pgB} 给出 $F(y)$ 的下界，\eqref{eq:pgC} 给出 $F(x^+)$ 的上界。
+两式相减（并用 $F=f+g$）：
+\begin{align*}
+F(y)-F(x^+)
+&\ge \Bigl[f(x)+\inner{\nabla f(x)}{y-x}+\tfrac\mu2\norm{y-x}^2+g(x^+)+\inner{-\nabla f(x)-Lp}{y-x^+}\Bigr]\\
+&\qquad-\Bigl[f(x)+\inner{\nabla f(x)}{p}+\tfrac L2\norm p^2+g(x^+)\Bigr]\\
+&=\inner{\nabla f(x)}{y-x}-\inner{\nabla f(x)}{p}-\inner{\nabla f(x)}{y-x^+}
++\tfrac\mu2\norm{y-x}^2-L\inner{p}{y-x^+}-\tfrac L2\norm p^2 .
+\end{align*}
+前三个内积项之和为零（因为 $(y-x)-p-(y-x^+)=(y-x)-(x^+-x)-(y-x^+)=0$）。
+剩下
+\begin{equation}
+F(y)-F(x^+)\ \ge\ \frac\mu2\norm{y-x}^2-L\inner{p}{y-x^+}-\frac L2\norm p^2 .
+\label{eq:pgD}
+\end{equation}
+
+\textbf{第六步：用极化恒等式消去内积。}
+注意 $y-x=(y-x^+)+p$，故
+\[
+\norm{y-x}^2=\norm{y-x^+}^2+2\inner{p}{y-x^+}+\norm p^2
+\ \Longrightarrow\
+\inner{p}{y-x^+}=\frac{\norm{y-x}^2-\norm{y-x^+}^2-\norm p^2}{2}.
+\]
+代入 \eqref{eq:pgD}：
+\[
+F(y)-F(x^+)\ \ge\ \frac\mu2\norm{y-x}^2-\frac L2\bigl(\norm{y-x}^2-\norm{y-x^+}^2-\norm p^2\bigr)-\frac L2\norm p^2
+=\frac L2\norm{y-x^+}^2-\frac{L-\mu}{2}\norm{y-x}^2 .
+\]
+这就是 \eqref{eq:pgineq}。
+\end{proof}
+
+\begin{corollary}[单调下降]\label{cor:descent}
+在 \eqref{eq:pgineq} 中取 $y=x$：注意 $\norm{x-x}=0$，得
+\[
+F(x)\ \ge\ F(x^+)+\frac L2\norm{x^+-x}_2^2\ \ge\ F(x^+).
+\]
+所以 ISTA \textbf{是}下降法（这一点和次梯度法不同），并且
+$\frac L2\norm{x^{k+1}-x^k}^2\le F(x^k)-F(x^{k+1})$。
+\end{corollary}
+
+\begin{corollary}[不动点]
+\eqref{eq:pgineq} 中 $x^+=x$ $\iff$ $x$ 是最优解。
+\end{corollary}
+
+\subsection{收敛速率 $O(1/K)$：完整证明}
+
+\begin{theorem}[ISTA 的收敛速率]\label{thm:ista}
+设 $\nabla f$ 是 $L$-Lipschitz，$x^\star$ 是 $F=f+g$ 的任一最优解，$R=\norm{x^0-x^\star}_2$。
+ISTA 产生的序列满足
+\begin{equation}
+F(x^K)-F^\star\ \le\ \frac{L\,R^2}{2K},\qquad K=1,2,\dots
+\label{eq:istarate}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+\textbf{第一步：在 \eqref{eq:pgineq} 中取 $\mu=0$（不假设强凸），$x=x^k$、$x^+=x^{k+1}$、$y=x^\star$。}
+\[
+F^\star\ \ge\ F(x^{k+1})+\frac L2\norm{x^\star-x^{k+1}}^2-\frac L2\norm{x^\star-x^k}^2 .
+\]
+移项：
+\begin{equation}
+F(x^{k+1})-F^\star\ \le\ \frac L2\Bigl(\norm{x^k-x^\star}^2-\norm{x^{k+1}-x^\star}^2\Bigr).
+\label{eq:telescope}
+\end{equation}
+
+\textbf{第二步：望远镜求和。} 对 $k=0,\dots,K-1$ 把 \eqref{eq:telescope} 相加，中间项全部相消：
+\[
+\sum_{k=0}^{K-1}\bigl(F(x^{k+1})-F^\star\bigr)
+\ \le\ \frac L2\Bigl(\norm{x^0-x^\star}^2-\norm{x^K-x^\star}^2\Bigr)
+\ \le\ \frac L2R^2 .
+\]
+
+\textbf{第三步：用单调性把「求和」换成「最后一项」。}
+由推论 \ref{cor:descent}，$F(x^{k+1})\le F(x^k)$，故 $F(x^K)\le F(x^{k+1})$ 对 $k+1\le K$ 成立。
+于是左边和式 $\ge K\bigl(F(x^K)-F^\star\bigr)$。结合第二步：
+\[
+K\bigl(F(x^K)-F^\star\bigr)\le\frac L2R^2
+\quad\Longrightarrow\quad
+F(x^K)-F^\star\le\frac{LR^2}{2K}.
+\]
+\end{proof}
+
+\begin{intuition}[$O(1/K)$ 意味着什么]
+要把 $F(x^K)-F^\star$ 降到 $\eps$，需要 $K\approx LR^2/(2\eps)$ 步。
+$\eps=10^{-6}$ 时约 $10^6$ 步（同量级的常数），而次梯度法需要 $10^{12}$ 步。
+这就是「$1/K$ 与 $1/\sqrt K$ 差一个数量级」的实际含义。
+
+另外注意 \eqref{eq:istarate} 里 $L$ 在\textbf{分子}：$A\top A$ 的最大特征值越大（问题越「陡」），
+收敛越慢。这是特征值第一次显式进入算法的复杂度。
+\end{intuition}
+
+\subsection{强凸情形：线性收敛，速率由条件数决定}
+
+\begin{theorem}[线性收敛]\label{thm:istalin}
+设 $f$ 是 $\mu$-强凸且 $\nabla f$ 是 $L$-Lipschitz 的，$\mu>0$。则
+\begin{equation}
+F(x^K)-F^\star\ \le\ \Bigl(\frac{\kappa-1}{\kappa+1}\Bigr)^{K}\bigl(F(x^0)-F^\star\bigr),
+\qquad \kappa=\frac L\mu .
+\label{eq:istalin}
+\end{equation}
+等价地，要把误差降到 $\eps$ 需要 $K=O(\kappa\log(1/\eps))$ 步。
+\end{theorem}
+
+\begin{proof}
+\textbf{第一步：强凸性把函数值差距控制成距离平方。}
+$F$ 是 $\mu$-强凸的（$f$ 强凸 + $g$ 凸），且 $x^\star$ 是极小点，故（在 $x^\star$ 处写强凸定义，
+用 $0\in\partial F(x^\star)$ 即 $\inner{s}{x-x^\star}\ge0$）
+\begin{equation}
+F(x)-F^\star\ \ge\ \frac\mu2\norm{x-x^\star}_2^2
+\quad\Longrightarrow\quad
+\norm{x-x^\star}_2^2\ \le\ \frac2\mu\bigl(F(x)-F^\star\bigr).
+\label{eq:scq}
+\end{equation}
+
+\textbf{第二步：在 \eqref{eq:pgineq} 中取 $y=x^\star$。}
+\[
+F^\star\ \ge\ F(x^{k+1})+\frac L2\norm{x^\star-x^{k+1}}^2-\frac{L-\mu}{2}\norm{x^\star-x^k}^2 .
+\]
+移项并记 $\delta_k=F(x^k)-F^\star$：
+\[
+\delta_{k+1}\ \le\ \frac{L-\mu}{2}\norm{x^k-x^\star}^2-\frac L2\norm{x^{k+1}-x^\star}^2
+\le\frac{L-\mu}{2}\cdot\frac{2\delta_k}{\mu}-\frac L2\cdot\frac{2\delta_{k+1}}{\mu},
+\]
+最后一步对两个距离都用 \eqref{eq:scq}。
+于是
+\[
+\delta_{k+1}\le\frac{L-\mu}{\mu}\delta_k-\frac L\mu\delta_{k+1}
+\quad\Longrightarrow\quad
+\Bigl(1+\frac L\mu\Bigr)\delta_{k+1}\le\frac{L-\mu}{\mu}\delta_k
+\quad\Longrightarrow\quad
+\delta_{k+1}\le\frac{L-\mu}{L+\mu}\delta_k .
+\]
+化简系数：$\dfrac{L-\mu}{L+\mu}=\dfrac{\kappa-1}{\kappa+1}$（分子分母同除 $\mu$）。
+迭代 $K$ 次即得 \eqref{eq:istalin}。
+\end{proof}
+
+\begin{remark}[条件数的双重角色]
+$\kappa=\lambda_{\max}(A\top A)/\lambda_{\min}(A\top A)$ 同时出现在
+\textbf{速率} $(\kappa-1)/(\kappa+1)=1-2/(\kappa+1)$ 和\textbf{步长} $1/L$ 里。
+$\kappa=1$（$A\top A=I$）时速率是 $0$：一步收敛（这与定理 \ref{thm:orth} 一致）。
+$\kappa=10^4$ 时需要约 $\frac{\kappa}{2}\ln(1/\eps)\approx5000\ln(1/\eps)$ 步——慢得让人想换算法。
+这就是为什么实践中要\textbf{列标准化}（把每列除以它的 $\ell_2$ 范数），
+它能把 $\kappa$ 显著降低。
+\end{remark}
+
+\subsection{$L$ 未知时怎么办：回溯线搜索}
+
+$\lambda_{\max}(A\top A)$ 对很小的 $p$ 可以精确算，对大规模问题算起来也不便宜
+（虽然比解 LASSO 便宜得多）。若不想算，可以用\textbf{回溯}：
+
+\begin{algorithmbox}[带回溯的 ISTA]
+给定 $x^k$、当前估计 $L_{k}$。重复：
+\begin{enumerate}
+\item 令 $x^+=S_{\lambda/L_k}(x^k-\frac{1}{L_k}\nabla f(x^k))$；
+\item 若
+$f(x^+)\le f(x^k)+\inner{\nabla f(x^k)}{x^+-x^k}+\frac{L_k}{2}\norm{x^+-x^k}^2$
+（即 \eqref{eq:descent} 成立），接受并令 $L_{k+1}=L_k$；
+\item 否则令 $L_k\leftarrow2L_k$，回到第 1 步。
+\end{enumerate}
+\end{algorithmbox}
+
+\begin{proposition}
+回溯过程至多执行 $\lceil\log_2(L/L_0)\rceil$ 次就会接受，且被接受的 $L_k\le\max\{L_0,2L\}$。
+因此定理 \ref{thm:ista} 与 \ref{thm:istalin} 的结论只差一个常数因子 $2$。
+\end{proposition}
+
+\begin{proof}
+当 $L_k\ge L$ 时，由下降引理 \eqref{eq:descent}，
+$f(x^+)\le f(x^k)+\inner{\nabla f(x^k)}{x^+-x^k}+\frac L2\norm{x^+-x^k}^2\le$ 右端，
+故一定接受。而 $L_k$ 每次翻倍，故从 $L_0$ 出发至多 $\lceil\log_2(L/L_0)\rceil$ 次超过 $L$。
+\end{proof}
+
+\subsection{加速：FISTA 的 $O(1/K^2)$}
+
+ISTA 的 $O(1/K)$ 还不是最优。Nesterov 的加速技巧（在外推点上做近端梯度步 + 一个特定的动量系数）
+可以把速率提到 $O(1/K^2)$：
+
+\begin{algorithmbox}[FISTA]
+$y^1=x^0$，$t_1=1$。对 $k=1,2,\dots$：
+\[
+x^k=\prox_{g/L}\Bigl(y^k-\tfrac1L\nabla f(y^k)\Bigr),\qquad
+t_{k+1}=\frac{1+\sqrt{1+4t_k^2}}{2},\qquad
+y^{k+1}=x^k+\frac{t_k-1}{t_{k+1}}\bigl(x^k-x^{k-1}\bigr).
+\]
+\end{algorithmbox}
+
+\begin{theorem}[FISTA 的速率，陈述]
+在上述迭代下，
+\[
+F(x^K)-F^\star\ \le\ \frac{2L\norm{x^0-x^\star}^2}{(K+1)^2}.
+\]
+\end{theorem}
+
+\begin{proof}[证明思路（不展开细节）]
+关键是构造一个「估计序列」（estimate sequence）：找一个二次函数
+$\phi_k(x)=a_k\bigl(F(x^k)-F^\star\bigr)+\frac L2\norm{x-v^k}^2$ 满足
+$\phi_k(x)\le\min\{\phi_{k-1}(x),\,F(x)\}$ 对所有 $x$ 成立。
+取 $x=x^\star$ 得到 $a_k(F(x^k)-F^\star)\le\frac L2\norm{x^\star-v^k}^2$，
+而动量公式保证 $\norm{x^\star-v^k}^2\le\norm{x^0-x^\star}^2$ 且 $a_k\ge (k+1)^2/4$，
+代入即得结论。完整证明见 Beck--Teboulle (2009)。
+\end{proof}
+
+\begin{remark}[加速的代价]
+FISTA\textbf{不是}下降法：$F(x^k)$ 可能上升（因为它在「外推点」$y^k$ 处做梯度步）。
+所以必须跟踪最优值，且不能像 ISTA 那样用「目标函数不再下降」当停止准则。
+另外 FISTA 对 $L$ 的估计误差更敏感。这两点是实践中的常见坑。
+\end{remark}
+
+\subsection{和次梯度法正面比较}
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.24\linewidth}p{0.32\linewidth}p{0.32\linewidth}@{}}
+\toprule
+ & 次梯度法 & ISTA（近端梯度）\\
+\midrule
+每步用什么 & 一个次梯度 $g^k\in\partial F$ & $\nabla f$ + $\prox_{\lambda\norm\cdot_1}$ 的闭式解\\
+单步代价 & $O(np)$ & $O(np)$（一样）\\
+是否下降 & 否（需跟踪历史最优） & 是（$F(x^{k+1})\le F(x^k)$）\\
+步长 & 必须衰减到 $0$ & 固定 $1/L$\\
+误差 $\le\eps$ 所需步数 & $O(1/\eps^2)$ & $O(1/\eps)$（强凸时 $O(\kappa\log\frac1\eps)$）\\
+最坏速率 & $O(1/\sqrt K)$ & $O(1/K)$；FISTA $O(1/K^2)$\\
+适用前提 & 只需 $F$ 凸 & 需要「$f$ 光滑 + $g$ 的 prox 可算」的结构\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{keypoint}{ISTA 这一章要记住的四件事}
+\begin{enumerate}
+\item 近端算子 $\prox_{\alpha g}(v)=\argmin\{g(y)+\frac1{2\alpha}\norm{y-v}^2\}$；
+      对 $\ell_1$ 就是\textbf{软阈值} $S_{\alpha\lambda}$。
+\item ISTA $=$ 「梯度步 $+$ 软阈值」，步长必须是 $1/L$，$L=\lambda_{\max}(A\top A)$。
+\item 核心引理是近端梯度不等式 \eqref{eq:pgineq}，两个推论：单调下降、$O(1/K)$ 速率。
+\item 强凸时速率 $(\kappa-1)/(\kappa+1)$，$\kappa=L/\mu$——特征值第二次显式登场。
+\end{enumerate}
+\end{keypoint}
+
+% ============================================================
+\section{特征值在这三件事里到底起什么作用}
+% ============================================================
+
+这一章把截图里「10.4 特征值」那一项接回到前面所有内容上。
+一句话预览：\textbf{特征值决定了步长能取多大、算法能跑多快、以及能不能把真实变量选出来}。
+
+\subsection{$L=\lambda_{\max}(A\top A)$：光滑项的曲率}
+
+\begin{lemma}[已经证过，这里回顾]
+$f(x)=\tfrac12\norm{Ax-b}^2$ 的梯度是 $A\top(Ax-b)$，它是 $L$-Lipschitz 的，
+且最小的 $L$ 恰为 $\lambda_{\max}(A\top A)$（引理 \ref{lem:lipschitz}）。
+\end{lemma}
+
+\begin{intuition}[「$L$ 是最优常数」是什么意思]
+$L$ 是梯度的最大变化率。在 $A\top A$ 的最大特征向量方向上，函数是「最陡」的抛物线；
+在其他方向上更平缓。取 $L$ 为最大特征值时，
+二次近似 \eqref{eq:pgstep} 在所有方向上都\textbf{不低于}真实函数（下降引理），
+所以是安全的；若取更小的 $L$，就一定有某个方向被低估，迭代可能发散——
+下面 7.2 节给出严格的反例分析。
+\end{intuition}
+
+\subsection{为什么步长必须小于 $2/L$：从特征值直接算}
+
+为了让「特征值 $\leftrightarrow$ 收敛性」的关系完全透明，考虑纯二次情形
+\[
+f(x)=\tfrac12\inner{x}{Mx}-\inner{c}{x},\qquad M=A\top A\ \text{对称半正定}.
+\]
+梯度法 $x^{k+1}=x^k-\alpha\nabla f(x^k)=x^k-\alpha(Mx^k-c)$。
+设 $x^\star$ 是最优解（$Mx^\star=c$，假设 $M$ 可逆），误差 $e^k=x^k-x^\star$ 满足
+\begin{equation}
+e^{k+1}=(I-\alpha M)e^k .
+\label{eq:errrec}
+\end{equation}
+
+\begin{theorem}\label{thm:stepsize}
+设 $M$ 对称正定，特征值 $0<\lambda_{\min}=\lambda_1\le\dots\le\lambda_p=\lambda_{\max}$。
+则 \eqref{eq:errrec} 对\textbf{任意}初始误差都收敛（$e^k\to0$）当且仅当
+\[
+0<\alpha<\frac{2}{\lambda_{\max}} .
+\]
+且在收敛的前提下，$\norm{e^k}_2\le\bigl(\max_i\abs{1-\alpha\lambda_i}\bigr)^k\norm{e^0}_2$。
+\end{theorem}
+
+\begin{proof}
+\textbf{第一步：对角化。} 由谱定理，$M=V\Lambda V\top$，$V$ 正交。令 $g^k=V\top e^k$，则
+\eqref{eq:errrec} 变成
+\[
+g^{k+1}=V\top(I-\alpha M)Ve^{k}= (I-\alpha\Lambda)g^k,
+\]
+即\textbf{逐坐标独立}：$g_i^{k+1}=(1-\alpha\lambda_i)g_i^k$，于是 $g_i^k=(1-\alpha\lambda_i)^kg_i^0$。
+
+\textbf{第二步：收敛的充要条件。}
+$\norm{e^k}_2=\norm{g^k}_2$（正交变换保范数）。全体初始误差都收敛，
+等价于「对每个 $i$，$(1-\alpha\lambda_i)^k\to0$」，即
+\[
+\abs{1-\alpha\lambda_i}<1\qquad\forall i
+\quad\Longleftrightarrow\quad
+-1<1-\alpha\lambda_i<1
+\quad\Longleftrightarrow\quad
+0<\alpha\lambda_i<2\quad\forall i .
+\]
+因为 $\lambda_i>0$，左边自动成立；右边对\textbf{最大的} $\lambda_i$ 最严格，故等价于
+$\alpha<2/\lambda_{\max}$。
+
+\textbf{第三步：速率。} 由 $g_i^k=(1-\alpha\lambda_i)^kg_i^0$，
+$\norm{g^k}^2=\sum_i(1-\alpha\lambda_i)^{2k}(g_i^0)^2\le\bigl(\max_i\abs{1-\alpha\lambda_i}\bigr)^{2k}\norm{g^0}^2$。
+\end{proof}
+
+\begin{corollary}[$1/L$ 为什么是「最优步长」]
+取 $\alpha=1/L=1/\lambda_{\max}$ 时，$\max_i\abs{1-\alpha\lambda_i}=\max\{1-\lambda_{\min}/L,\ 0\}=1-1/\kappa$，
+速率是 $1-1/\kappa$。取 $\alpha=2/(\lambda_{\max}+\lambda_{\min})$ 时
+$\max_i\abs{1-\alpha\lambda_i}=\frac{\kappa-1}{\kappa+1}$，这是\textbf{固定步长下最好的速率}。
+\end{corollary}
+
+\begin{proof}
+第一个等式：$1-\alpha\lambda_i=1-\lambda_i/L\in[1-1/\kappa,0]$，绝对值最大在上界处或下端取到，
+即 $\max\{1-1/\kappa,\ 1-\lambda_{\min}/L\}$ 与 $0$ 比较，得 $1-1/\kappa$。
+
+第二个：令 $\alpha=2/(\lambda_1+\lambda_p)$，则 $\alpha\lambda_i\in[2\lambda_1/(\lambda_1+\lambda_p),2\lambda_p/(\lambda_1+\lambda_p)]$，
+两端点关于 $1$ 对称，故 $\max\abs{1-\alpha\lambda_i}=1-\frac{2\lambda_1}{\lambda_1+\lambda_p}=\frac{\lambda_p-\lambda_1}{\lambda_p+\lambda_1}=\frac{\kappa-1}{\kappa+1}$。
+（这与定理 \ref{thm:istalin} 里的速率常数一致，不是巧合。）
+\end{proof}
+
+\begin{keypoint}{特征值的第一个作用：决定步长的安全上限}
+$\alpha<2/\lambda_{\max}$ 才收敛；ISTA 取 $\alpha=1/L=1/\lambda_{\max}$ 更保守，
+因为它还要保证下降引理成立（从而保证对\textbf{非二次}的 $g$ 也安全）。
+\end{keypoint}
+
+\subsection{怎么算 $\lambda_{\max}$：幂迭代}
+
+$p$ 很大时精确求特征值要 $O(p^3)$，太贵。但只求最大的那个很容易：
+
+\begin{algorithmbox}[幂迭代（power iteration）]
+取 $w^0\neq0$。对 $k=0,1,\dots$：
+\[
+w^{k+1}=\frac{A\top Aw^k}{\norm{A\top Aw^k}_2},
+\qquad
+\rho_k=\inner{w^k}{A\top Aw^k}\quad(\text{Rayleigh 商，估计 }\lambda_{\max}).
+\]
+\end{algorithmbox}
+
+\begin{proposition}\label{prop:power}
+设 $A\top A$ 的最大特征值 $\lambda_1$ 是\textbf{单重}的，$w^0$ 在 $v_1$ 方向上的分量不为零。
+则 $\rho_k\to\lambda_1$，且误差按速率 $(\lambda_2/\lambda_1)^k$ 衰减（$\lambda_2$ 是第二大特征值）。
+\end{proposition}
+
+\begin{proof}
+把 $w^0=\sum_ic_iv_i$（$v_i$ 是标准正交特征向量）代入。注意
+$(A\top A)^kw^0=\sum_ic_i\lambda_i^kv_i$，归一化后
+\[
+w^k=\frac{\sum_ic_i\lambda_i^kv_i}{\norm{\sum_ic_i\lambda_i^kv_i}}
+=\frac{c_1v_1+\sum_{i\ge2}c_i(\lambda_i/\lambda_1)^kv_i}{\norm{\cdot}}\ \xrightarrow{k\to\infty}\ \frac{c_1v_1}{\abs{c_1}}=v_1 ,
+\]
+因为所有 $(\lambda_i/\lambda_1)^k\to0$（$c_1\neq0$）。于是
+$\rho_k=\inner{w^k}{(A\top A)w^k}\to\inner{v_1}{\lambda_1v_1}=\lambda_1$。
+误差项的量级是 $(\lambda_2/\lambda_1)^k$：这就是「第二大特征值与最大特征值之比」决定幂迭代速度。
+\end{proof}
+
+\begin{remark}
+实际上不需要那么高的精度：ISTA 只需要 $L$ 满足 $L\ge\lambda_{\max}$（取大一点只是慢一点，
+安全）。所以常用「幂迭代 20 步 + 乘 $1.01$」的保守估计，或者直接用回溯线搜索。
+\end{remark}
+
+\subsection{$\lambda_{\min}$ 与条件数：决定收敛快慢}
+
+\begin{itemize}
+\item $\mu=\lambda_{\min}(A\top A)$ 是强凸参数。
+\item $\kappa=L/\mu=\lambda_{\max}/\lambda_{\min}$ 是条件数。
+\item ISTA 的线性速率是 $(\kappa-1)/(\kappa+1)$；梯度法的最优固定步长速率也是它。
+\item $\kappa\to\infty$（$A$ 列不满秩，$p>n$ 时必然如此）时 $\mu=0$，线性速率失效，
+      只能退回到 $O(1/K)$（定理 \ref{thm:ista}）。
+\end{itemize}
+
+\begin{example}[列标准化为什么有用]
+设 $A$ 的两列 $a_1,a_2$ 长度差 100 倍且夹角很小。则 $A\top A=\begin{pmatrix}\norm{a_1}^2&\cdot\\\cdot&\norm{a_2}^2\end{pmatrix}$
+的两个特征值一个由 $\norm{a_1}^2$ 主导、一个很小，$\kappa$ 巨大。
+把每列除以其 $\ell_2$ 范数后，对角元都变成 $1$，特征值的差距只来自相关性，
+$\kappa$ 通常能降一到两个数量级。这是 LASSO 实现里的标准预处理步骤：
+\texttt{A = A / np.linalg.norm(A, axis=0)}。
+\end{example}
+
+\subsection{限制特征值条件：为什么 $\ell_1$ 恢复只需要「局部」曲率}
+
+$p>n$ 时 $\lambda_{\min}(A\top A)=0$，按上面的分析 ISTA 只能 $O(1/K)$。
+但实践中 LASSO 常常收敛得比最坏界快得多。原因在于：
+\textbf{解是稀疏的}，我们只需要 $A$ 在「稀疏方向」上有曲率。
+
+\begin{definition}[限制特征值条件，RE]
+设 $S\subseteq\{1,\dots,p\}$，$\card(S)=s$。称 $A$ 在 $S$ 上满足参数为 $\gamma>0$ 的
+\textbf{限制特征值条件}，若
+\[
+\norm{Ax}_2^2\ \ge\ \gamma\norm{x}_2^2
+\qquad\text{对所有满足}\quad \norm{x_{S^c}}_1\le 3\norm{x_S}_1\ \text{的}\ x .
+\]
+其中 $x_S$ 表示只保留 $S$ 中坐标的向量。
+\end{definition}
+
+\begin{intuition}[这个奇怪的 $3\norm{x_S}_1$ 从哪来]
+若 $x^\star$ 的支撑集是 $S$，令 $h=\hat x-x^\star$。可以证明（用 $\hat x$ 的最优性与
+$\lambda$ 的选取），$h$ 必然满足 $\norm{h_{S^c}}_1\le3\norm{h_S}_1$：误差在 $S$ 之外的部分
+被 $\ell_1$ 惩罚压住了。也就是说，\textbf{误差天然落在这个「锥」里}。
+所以我们不需要 $A$ 在整个空间上有曲率，只需要它在这个锥上有曲率。
+RE 条件把「全局最小特征值 $>0$」换成了「锥上的最小特征值 $>0$」，
+后者在 $p>n$ 时也可以成立。
+\end{intuition}
+
+\begin{theorem}[RE 下的恢复保证，陈述]\label{thm:re}
+设 $b=Ax^\star+\eps$，$\norm{\eps}_2\le\sigma$，$\card(\supp(x^\star))=s$。
+若 $A$ 在 $\supp(x^\star)$ 上满足参数 $\gamma$ 的 RE 条件，取 $\lambda\ge2\norm{A\top\eps}_\infty$。
+则 LASSO 的解 $\hat x$ 满足
+\[
+\norm{\hat x-x^\star}_2^2\ \le\ \frac{9\lambda^2s}{\gamma^2},
+\qquad
+\norm{\hat x-x^\star}_1\ \le\ \frac{12\lambda s}{\gamma}.
+\]
+若噪声是独立次高斯的，则 $\norm{A\top\eps}_\infty\lesssim\sigma\sqrt{\log p}$，
+取 $\lambda\asymp\sigma\sqrt{\log p}$ 得
+$\norm{\hat x-x^\star}_2^2\lesssim\frac{\sigma^2s\log p}{\gamma^2}$。
+\end{theorem}
+
+\begin{proof}[证明思路（三步）]
+\textbf{第一步：基本不等式。} 由 $\hat x$ 最优，$F(\hat x)\le F(x^\star)$，展开得
+\[
+\tfrac12\norm{A\hat x-b}^2+\lambda\norm{\hat x}_1\le\tfrac12\norm{Ax^\star-b}^2+\lambda\norm{x^\star}_1 .
+\]
+记 $h=\hat x-x^\star$，$A h=A\hat x-Ax^\star$。展开 $\norm{A\hat x-b}^2=\norm{Ah+\eps}^2$、
+$\norm{Ax^\star-b}^2=\norm{\eps}^2$，化简得
+\[
+\tfrac12\norm{Ah}^2\ \le\ -\inner{Ah}{\eps}+\lambda\bigl(\norm{x^\star}_1-\norm{\hat x}_1\bigr)
+\le\norm{Ah}\norm{\eps}+\lambda\norm{h}_1 ,
+\]
+最后一步用了 $|\inner{Ah}{\eps}|\le\norm{Ah}\norm{\eps}$ 与三角不等式
+$\norm{x^\star}_1-\norm{\hat x}_1\le\norm{h}_1$（反三角不等式）。
+
+\textbf{第二步：证明 $h$ 落在 RE 的锥里。} 把 $\norm{h}_1$ 拆成 $S$ 内和 $S$ 外，
+用 $\norm{\hat x_S}_1\le\norm{x^\star_S}_1-\inner{\sign(x^\star_S)}{h_S}$（若 $h_S$ 与 $\sign$ 反向）
+可得 $\norm{h_{S^c}}_1\le3\norm{h_S}_1$。这是纯代数，但需要分情况讨论，此处从略。
+
+\textbf{第三步：用 RE 把 $\norm{Ah}$ 换成 $\norm h$。}
+由 RE，$\norm{Ah}^2\ge\gamma\norm h^2$。代入第一步的不等式：
+\[
+\tfrac\gamma2\norm h^2\le\norm{Ah}\norm\eps+\lambda\norm h_1
+\le\norm{Ah}\norm\eps+\lambda\cdot4\sqrt s\norm{h_S}\le\norm{Ah}\norm\eps+4\lambda\sqrt s\norm h ,
+\]
+最后一式用 $\norm{h_S}_1\le\sqrt s\norm{h_S}_2\le\sqrt s\norm h_2$ 与 $\norm h_1\le2\norm{h_S}_1$。
+对 $\norm{Ah}\norm\eps$ 用 $2ab\le a^2+b^2$（Young 不等式）配平方，取
+$\lambda\ge2\norm{A\top\eps}_\infty$ 控制 $\eps$ 项，整理即得结论。完整推导见
+Bickel--Ritov--Tsybakov (2009)。
+\end{proof}
+
+\begin{remark}
+注意这个定理里 $\lambda$ 既是\textbf{惩罚参数}、又是\textbf{噪声水平的代理}。
+实践中常用的 $\lambda=2\norm{A\top\eps}_\infty$ 正是这个定理给出的量级，
+而 $\norm{A\top\eps}_\infty$ 可以由 $\sigma\sqrt{2\log p}$ 估计（高斯尾部界）。
+\end{remark}
+
+\subsection{小结：三种特征值量各管什么}
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.22\linewidth}p{0.34\linewidth}p{0.36\linewidth}@{}}
+\toprule
+量 & 出现在哪 & 决定什么 \\
+\midrule
+
+$\lambda_{\max}(A\top A)$ & $\mu=0$ 时的 $L$；步长 $1/L$ & 步长上限 $2/\lambda_{\max}$；$O(1/K)$ 界里的常数 $L$ \\
+$\lambda_{\min}(A\top A)$ & 强凸参数 $\mu$ & 能否线性收敛；线性速率中的 $\mu$ \\
+$\kappa=\lambda_{\max}/\lambda_{\min}$ & 速率 $(\kappa-1)/(\kappa+1)$ & 收敛快慢；列标准化的动机 \\
+$\gamma$（RE 条件） & 稀疏锥上的最小曲率 & 稀疏恢复的误差上界 $s\log p/(n\gamma^2)$ \\
+$\lambda_2/\lambda_1$ & 幂迭代 & 算 $L$ 的速度 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ============================================================
+\section{三者的横向比较：算法、算法、验算工具}
+% ============================================================
+
+\subsection{先分清三个角色}
+
+截图里把 ISTA、次梯度法、最优性证书放在一起「比较」，但它们其实不是同一类东西：
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.16\linewidth}p{0.22\linewidth}p{0.54\linewidth}@{}}
+\toprule
+名字 & 类别 & 它回答的问题\\
+\midrule
+次梯度法 & 一阶算法 & 给一个粗糙的解，代价低、保证弱、收敛慢\\
+ISTA & 一阶算法（利用结构）& 给一个相当精确的解，单步代价相同但速率好一个数量级\\
+最优性证书 & 验证工具（不是算法）& 给定一个候选解，判断它是否最优 / 离最优多远\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+所以「比较」的正确方式是：\textbf{两个算法比速率与代价，证书作为两者共用的终止与检验工具}。
+
+\subsection{理论复杂度}
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.18\linewidth}p{0.20\linewidth}p{0.18\linewidth}p{0.20\linewidth}p{0.16\linewidth}@{}}
+\toprule
+ & 次梯度法 & ISTA & FISTA & 证书\\
+\midrule
+
+单步代价 & $O(np)$ & $O(np)$ & $O(np)$ & $O(np)$\\
+需要什么 & 一个次梯度 & $\nabla f$ + $\prox_{\lambda\norm\cdot_1}$ & 同 ISTA & 解 $\bar x$\\
+需要 $L$ & 不需要 & 需要（或回溯） & 需要 & 不需要\\
+单调性 & 否 & 是 & 否 & ——\\
+非凸？& 不适用 & 不适用 & 不适用 & ——\\
+速率（凸）& $O(1/\sqrt K)$ & $O(LR^2/K)$ & $O(LR^2/K^2)$ & ——\\
+速率（强凸）& $O(1/K)$（需 Polyak 步长）& $O\bigl((\frac{\kappa-1}{\kappa+1})^K\bigr)$ & 加速版亦有线性速率 & ——\\
+达到 $\eps$ 的步数 & $O(1/\eps^2)$ & $O(1/\eps)$ & $O(1/\sqrt\eps)$ & 一步验证\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{一组真实数值（本文实测，可复现）}
+
+两个算例，$A$ 的列做了单位化，但列之间强相关（Toeplitz 相关结构 $\rho^{\abs{i-j}}$），
+$\lambda=0.1\lambda_{\max}$，噪声标准差 $0.01$。表中数字是 $F(x^k)-F^\star$。
+
+\textbf{算例 A}（$n=200$，$p=50$，$\rho=0.95$）：$L=24.71$，$\mu=1.03\times10^{-2}$，
+$\kappa\approx2392$，$F^\star=11.47569$。
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+迭代步数 $k$ & 100 & 1000 & 10000\\
+\midrule
+次梯度法（步长 $0.3/\sqrt k$，已调优）& $6.5\times10^{-1}$ & $2.0\times10^{-1}$ & $2.5\times10^{-2}$\\
+ISTA（步长 $1/L$）& $5.1\times10^{-1}$ & $2.5\times10^{-2}$ & $4.9\times10^{-13}$\\
+FISTA & $2.3\times10^{-3}$ & $1.6\times10^{-9}$ & $3.6\times10^{-15}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{算例 B}（$n=40$，$p=100$，$\rho=0.90$，$\mu=0$）：$L=16.69$，$\kappa=\infty$，
+$F^\star=4.53132$。
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+迭代步数 $k$ & 100 & 1000 & 10000\\
+\midrule
+次梯度法（步长 $0.3/\sqrt k$）& $5.9\times10^{-1}$ & $1.6\times10^{-1}$ & $2.3\times10^{-2}$\\
+ISTA & $2.5\times10^{-1}$ & $3.3\times10^{-4}$ & $8.9\times10^{-16}$\\
+FISTA & $1.8\times10^{-4}$ & $5.1\times10^{-11}$ & $8.9\times10^{-16}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{remark}[从数字里读出三件事]
+\begin{enumerate}
+\item \textbf{次梯度法在高精度区间几乎停滞。} $10^4$ 步后误差仍在 $10^{-2}$ 量级，
+      与 $O(1/\sqrt K)$ 完全吻合（$1/\sqrt{10^4}=10^{-2}$）。
+\item \textbf{ISTA 的误差下降比最坏界快。} 算例 A 里 $\kappa\approx2392$，
+      最坏线性界 $(\frac{\kappa-1}{\kappa+1})^k$ 要 $k\approx1.6\times10^4$ 才能到 $10^{-6}$，
+      实测 $10^3$ 步就到了 $10^{-2}$、$10^4$ 步到了机器精度。原因是 $F$ 在最优点附近的
+      \textbf{有效}强凸参数比全局 $\mu$ 大（局部曲率更好），且支撑集很快稳定下来。
+      这不影响结论：最坏界只是上界。
+\item \textbf{算例 B 里 $\kappa=\infty$（$p>n$），但 ISTA 依然收敛得快。}
+      这正是第 7.5 节「限制特征值」的实证：全局最小特征值是 $0$，
+      但在稀疏锥上曲率仍然足够。
+\end{enumerate}
+\end{remark}
+
+\subsection{证书在两者之间的位置}
+
+对同一组算例，用 \eqref{eq:subopt} 与推论 \ref{cor:scaling} 计算\textbf{证书给出的误差上界}：
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+算例 A，ISTA 第 $k$ 步 & 100 & 1000 & 10000\\
+\midrule
+真实误差 $F(x^k)-F^\star$ & $5.1\times10^{-1}$ & $2.5\times10^{-2}$ & $4.9\times10^{-13}$\\
+证书上界 $U_k$ & $1.05$ & $1.3\times10^{-1}$ & $6.4\times10^{-7}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{remark}
+上界始终 $\ge$ 真实误差（这是定理 \ref{thm:subopt} 保证的），但在高精度区间明显偏松
+（$6.4\times10^{-7}$ 对 $4.9\times10^{-13}$）。原因在 \eqref{eq:scaledgap} 的第一项：
+$\frac12(1-\theta)^2\norm{r}^2$，其中 $1-\theta$ 与「$\norm c_\infty$ 超出 $\lambda$ 的程度」成正比，
+它随迭代趋于零但慢于误差本身。
+
+实用建议：\textbf{用证书判断「是否够好」，用误差曲线判断「还能多好」}。
+如果要更紧的界，可以把对偶点 $v$ 再优化一次（例如对 $D(v)$ 做几步梯度上升），
+这在文献里叫「对偶外推」，能把上界收紧一两个数量级。
+\end{remark}
+
+\subsection{选择指南（考试与实战都能用）}
+
+\begin{enumerate}
+\item \textbf{目标是「快速拿一个不太差的解」}：用 ISTA（或 FISTA），
+      因为它每步都下降、实现三行代码、没有调参烦恼。
+\item \textbf{$A\top A$ 的条件数很大（强相关、未标准化）}：先做列标准化；
+      还不够就上 FISTA；再不够考虑坐标下降（CD）或 ADMM——
+      它们对强相关更鲁棒（但不在本题范围内）。
+\item \textbf{$p$ 极大、内存吃紧}：用坐标下降，每次只碰一列，$O(np)$ 内存即可。
+\item \textbf{需要「可辩护的精度声明」}：用证书算 $U_k$，报告 $F(\hat x)-F^\star\le U_k$。
+\item \textbf{需要「理论分析」而非数值}：次梯度法最好分析（一个不等式就够），
+      所以教材常先用它讲清「为什么不可微问题也能解」，再讲 ISTA 如何利用结构改进速率。
+\end{enumerate}
+
+\begin{keypoint}{一句话总结这张表}
+同一个 LASSO 问题，三种工具：
+\textbf{次梯度法}用「方向」换通用性（$O(1/\sqrt K)$）；
+\textbf{ISTA} 用「结构」换速度（$O(1/K)$，强凸时线性）；
+\textbf{证书}用「对偶」换可信度（一步验证最优性，或给出误差上界）。
+三者用的是同一套数学：凸性 $\to$ 次梯度 $\to$ KKT $\to$ 对偶 $\to$ 特征值定步长。
+\end{keypoint}
+
+% ============================================================
+\section{完整走一遍：一个 $2\times2$ 例子的所有数字}
+% ============================================================
+
+前面各章的东西，在这一个小例子上全部串起来。建议你拿纸笔跟着算一遍。
+
+\subsection{数据与准备工作}
+
+\[
+A=\begin{pmatrix}1&1\\1&2\end{pmatrix},\qquad b=\begin{pmatrix}3.3\\1.7\end{pmatrix},\qquad
+\lambda=1 .
+\]
+
+\textbf{第一步：算 $A\top A$ 的特征值（决定一切）。}
+\[
+A\top A=\begin{pmatrix}2&3\\3&5\end{pmatrix},\qquad
+\tr=7,\quad \det=10-9=1,
+\]
+\[
+\lambda_{\max}=\frac{7+\sqrt{49-4}}{2}=\frac{7+\sqrt{45}}{2}=6.8541,\qquad
+\lambda_{\min}=\frac{7-\sqrt{45}}{2}=0.14590 .
+\]
+于是
+\[
+L=6.8541,\qquad \mu=0.14590,\qquad \kappa=\frac L\mu=46.98,\qquad
+\text{步长}=\frac1L=0.14590,\qquad \frac{\lambda}{L}=0.14590 .
+\]
+（$\kappa=46.98$ 不算大，所以这个例子几十步就能收敛。若 $\kappa=10^4$，就要几千步。）
+
+\textbf{第二步：$\lambda$ 是否太大（会不会解全零）？}
+\[
+\lambda_{\max}^{\text{上界}}=\norm{A\top b}_\infty=\max\{3.3+1.7,\ 3.3+3.4\}=\max\{5.0,6.7\}=6.7 .
+\]
+我们取 $\lambda=1<6.7$，故解非零（命题 \ref{prop:lambda0}）。
+
+\subsection{ISTA 的三步迭代（手算）}
+
+初始 $x^0=(0,0)\tp$，$F(x^0)=\tfrac12\norm b^2=6.89$。
+
+\textbf{第 1 步。}
+\[
+\nabla f(x^0)=A\top(Ax^0-b)=-A\top b=(-5.0,\,-6.7)\tp ,
+\]
+\[
+z^0=x^0-\tfrac1L\nabla f(x^0)=\bigl(\tfrac{5.0}{6.8541},\tfrac{6.7}{6.8541}\bigr)=(0.72950,\,0.97752)\tp ,
+\]
+\[
+x^1=S_{0.14590}(z^0)=(0.58359,\,0.83162)\tp,\qquad F(x^1)=3.34094 .
+\]
+
+\textbf{第 2 步。} $Ax^1=(1.41521,\,2.24683)\tp$，$Ax^1-b=(-1.88479,\,0.54683)\tp$，
+\[
+A\top(Ax^1-b)=(-1.33796,\,-0.79113)\tp,
+\]
+\[
+z^1=x^1-\tfrac1L A\top(Ax^1-b)=(0.58359+0.19521,\ 0.83162+0.11542)=(0.77880,\,0.94704)\tp,
+\]
+\[
+x^2=S_{0.14590}(z^1)=(0.63290,\,0.80114)\tp,\qquad F(x^2)=3.31815 .
+\]
+
+\textbf{第 3 步。}
+\[
+x^3=(0.68116,\,0.77132)\tp,\qquad F(x^3)=3.29633 .
+\]
+
+可以看到：每一步 $F$ 都在下降（推论 \ref{cor:descent}），
+但解还在「两个坐标都不为零」的区域里慢慢往 $(2,0)$ 爬。
+到第 41 步 $F$ 与最优值的差首次降到 $10^{-2}$ 以下；第 48 步到 $10^{-4}$；第 54 步到 $10^{-6}$。
+
+\textbf{和理论界比一比。} 定理 \ref{thm:istalin} 给的速率是
+$\frac{\kappa-1}{\kappa+1}=\frac{45.98}{47.98}=0.95831$，从 $F(x^0)-F^\star=4.0$ 出发要到 $10^{-2}$ 需要
+\[
+k\ \ge\ \frac{\ln(10^{-2}/4.0)}{\ln 0.95831}=\frac{-5.99}{-0.04258}=141\ \text{步}.
+\]
+实测 41 步就够。这说明\textbf{最坏情形界偏保守}：真实的有效条件数比全局 $\kappa$ 小，
+而且支撑集稳定后问题在低维子空间上变成了良态问题。
+
+\subsection{用证书确认答案}
+
+解是 $\bar x=(2.0,\,0)\tp$。按定义 \ref{def:cert} 验算：
+\[
+A\bar x=(2,2)\tp,\qquad \bar r=b-A\bar x=(1.3,\,-0.3)\tp,
+\]
+\[
+\bar c=A\top\bar r=\bigl(1.3+(-0.3),\ 1.3+2(-0.3)\bigr)\tp=(1.0,\,0.7)\tp .
+\]
+\begin{itemize}
+\item (C1) $\norm{\bar c}_\infty=\max\{1.0,0.7\}=1.0\le\lambda=1$ \quad$\checkmark$
+\item (C2) $\inner{\bar c}{\bar x}=1.0\times2+0.7\times0=2$，$\lambda\norm{\bar x}_1=1\times2=2$，相等 \quad$\checkmark$
+\end{itemize}
+由定理 \ref{thm:cert}，$\bar x$ 全局最优。再由定理 \ref{thm:unique}
+（$A$ 的第一列 $\binom11$ 非零、$\abs{\bar c_2}=0.7<1$ 严格），$\bar x$ 是\textbf{唯一}最优解。
+
+\textbf{顺便核对对偶值。} 取 $v^\star=b-A\bar x=(1.3,-0.3)\tp$，
+\[
+D(v^\star)=\inner b{v^\star}-\tfrac12\norm{v^\star}^2=(3.3\times1.3+1.7\times(-0.3))-\tfrac12(1.69+0.09)
+=3.78-0.89=2.89 .
+\]
+而 $F(\bar x)=2.89$。两者相等，符合定理 \ref{thm:dual}(ii) 的强对偶。
+
+\subsection{可复现的代码}
+
+下面这段代码把本文的三个核心对象都实现了一遍（ISTA、证书、对偶间隙），
+可以直接跑，也可以拿它做第 10 章的编程题。
+
+\begin{lstlisting}[language=Python,basicstyle=\ttfamily\footnotesize]
+import numpy as np
+
+def soft(z, t):
+    return np.sign(z) * np.maximum(np.abs(z) - t, 0.0)
+
+def lasso_ista(A, b, lam, iters=1000, tol=1e-10):
+    L = np.linalg.eigvalsh(A.T @ A).max()      # L = lambda_max(A^T A)
+    x = np.zeros(A.shape[1])
+    for k in range(iters):
+        g = A.T @ (A @ x - b)                  # gradient of smooth part
+        x_new = soft(x - g / L, lam / L)       # gradient step + soft threshold
+        if np.linalg.norm(x_new - x) < tol:
+            x = x_new
+            break
+        x = x_new
+    return x, k + 1, L
+
+def certificate_gap(A, b, lam, x):
+    """Return (dual feasible v, certified bound on F(x) - F*)."""
+    r = b - A @ x
+    c = A.T @ r
+    theta = min(1.0, lam / max(np.abs(c).max(), 1e-15))
+    v = theta * r                              # scaled residual is dual feasible
+    F = 0.5 * np.sum((A @ x - b) ** 2) + lam * np.sum(np.abs(x))
+    D = np.dot(b, v) - 0.5 * np.sum(v ** 2)
+    return v, F - D                            # F - F* <= F - D(v)
+
+A = np.array([[1.0, 1.0], [1.0, 2.0]])
+b = np.array([3.3, 1.7])
+x, k, L = lasso_ista(A, b, lam=1.0)
+v, bound = certificate_gap(A, b, 1.0, x)
+print("L =", L, " iters =", k, " x =", x)
+print("||c||_inf =", np.abs(A.T @ (b - A @ x)).max())
+print("certified bound on F(x)-F* :", bound)
+\end{lstlisting}
+
+\begin{remark}
+注意 \texttt{certificate\_gap} 只用了一次矩阵乘法就给出了一个\textbf{严格}的误差上界。
+这正是第 4 章那套理论的全部实际价值：把「我觉得收敛了」变成「我证明误差小于 $10^{-9}$」。
+\end{remark}
+
+\subsection{做题检查清单}
+
+面对「LASSO 求解器比较」这类题，按下面顺序写，基本不会漏点：
+
+\begin{enumerate}
+\item 写出问题、指出 $f$ 光滑 / $g$ 不光滑的分解。
+\item 写出次微分 $\partial\norm{x}_1$，给出 KKT 条件（定理 \ref{thm:kkt}）。
+\item 推导对偶问题，写出对偶间隙恒等式（引理 \ref{lem:gap}）。
+\item 用证书定理 \ref{thm:cert} 说明「最优」如何被验证；给出唯一性条件。
+\item 次梯度法：算法、基本不等式、$O(1/\sqrt K)$ 证明。
+\item 近端算子：定义、$\ell_1$ 的闭式解（软阈值）、非扩张性。
+\item ISTA：算法、近端梯度不等式、$O(1/K)$ 证明、强凸时的 $(\kappa-1)/(\kappa+1)$。
+\item 特征值：$L=\lambda_{\max}$、步长上限 $2/L$、$\kappa$ 与收敛速度、RE 条件与恢复。
+\item 最后给一张比较表 + 一句「什么场景用哪个」。
+\end{enumerate}
+
+% ============================================================
+\section{习题（附答案与提示）}
+% ============================================================
+
+\begin{exercise}\label{exe:subdiff}
+求 $g_0(x)=\norm x_1$ 在 $x=(2,\,0,\,-1)\tp$ 处的次微分 $\partial g_0(x)$。
+\end{exercise}
+
+\begin{proof}[答案]
+$x_1=2>0$ 给出 $v_1=1$；$x_3=-1<0$ 给出 $v_3=-1$；$x_2=0$ 给出 $v_2\in[-1,1]$。故
+$\partial g_0(x)=\{(1,\,v_2,\,-1)\tp:\ v_2\in[-1,1]\}$。
+注意它是一个线段（凸集），维数为 $1$，等于「零坐标的个数」。
+\end{proof}
+
+\begin{exercise}\label{exe:lambda}
+设 $\lambda>\norm{A\top b}_\infty$。证明 $x^\star=0$ 是 \eqref{eq:P} 的\textbf{唯一}最优解。
+\end{exercise}
+
+\begin{proof}[提示与答案]
+$x^\star=0$ 最优由命题 \ref{prop:lambda0} 给出。证唯一性：反设 $x\neq0$ 也是最优解。
+由 KKT，$c=A\top(b-Ax)$ 满足 $\norm c_\infty\le\lambda$ 且对 $i\in\supp(x)$ 有 $c_i=\lambda\sign(x_i)$。
+于是
+\[
+\inner cx=\sum_{i\in\supp(x)}x_i\lambda\sign(x_i)=\lambda\norm x_1 .
+\]
+另一方面，直接展开：
+\[
+\inner cx=\inner{A\top b}{x}-\norm{Ax}_2^2\le\norm{A\top b}_\infty\norm x_1-\norm{Ax}_2^2<\lambda\norm x_1 ,
+\]
+因为 $\norm{A\top b}_\infty<\lambda$ 且 $x\neq0$。这与 $\inner cx=\lambda\norm x_1$ 矛盾。
+\end{proof}
+
+\begin{exercise}
+证明 $\prox_{\alpha g}(v)=v/(1+\alpha)$，其中 $g(y)=\tfrac12\norm y_2^2$；
+并求 $g=\iota_{B_\infty(\tau)}$（半径为 $\tau$ 的 $\ell_\infty$ 球）时的近端算子。
+\end{exercise}
+
+\begin{proof}[答案]
+第一个已由第 6.2 节的例子给出。
+第二个：$\prox_{\alpha\iota_C}(v)=\mathrm{Proj}_C(v)$，而到 $\ell_\infty$ 球的投影是「逐坐标截断」：
+$(\mathrm{Proj}_{B_\infty(\tau)}(v))_i=\max\{-\tau,\min\{\tau,v_i\}\}$。
+这正好是软阈值公式的「前一半」，也是 Moreau 分解推导软阈值的桥梁。
+\end{proof}
+
+\begin{exercise}
+证明对偶问题 \eqref{eq:dual} 的最优解\textbf{唯一}——即使原问题的最优解可能不唯一。
+\end{exercise}
+
+\begin{proof}[提示]
+对偶目标是 $\max_v\{\inner bv-\frac12\norm v^2\}$，等价于
+$\min_v\{\frac12\norm v^2-\inner bv\}$，这是 $1$-强凸的二次函数，其极小点唯一（$v=b$ 的投影）。
+约束集 $\{v:\norm{A\top v}_\infty\le\lambda\}$ 是闭凸集，故最优解唯一。
+\textbf{这个不对称很有意思}：原问题可能有无穷多个解（$\ell_1$ 的平坦部分），
+对偶问题却总有唯一解——这正是「用对偶间隙当停止准则」在数值上稳定的原因。
+\end{proof}
+
+\begin{exercise}
+设 $A\top A=I_p$（正交设计）。证明 ISTA 从任意初始点出发，\textbf{一步}到达最优解。
+\end{exercise}
+
+\begin{proof}[提示]
+$L=\lambda_{\max}(I)=1$，故 $x^{1}=S_{\lambda}(x^0-(x^0-A\top b))=S_\lambda(A\top b)$，
+与定理 \ref{thm:orth} 的闭式解一致。
+\end{proof}
+
+\begin{exercise}\label{exe:kappa}
+设 $A\top A=\diag(4,1)$，$\lambda>0$ 任意。
+\begin{enumerate}
+\item[(a)] 求 $L,\mu,\kappa$。
+\item[(b)] 用最优固定步长 $\alpha=2/(L+\mu)$ 时，误差每步缩小多少倍？几步后误差降到 $10^{-6}$？
+\item[(c)] 用 $\alpha=1/L$ 时呢？
+\end{enumerate}
+\end{exercise}
+
+\begin{proof}[答案]
+(a) $L=4$，$\mu=1$，$\kappa=4$。
+
+(b) 由推论（第 7.2 节）：速率 $=\frac{\kappa-1}{\kappa+1}=\frac35=0.6$。
+要 $0.6^k\le10^{-6}$，$k\ge\frac{\ln10^{-6}}{\ln0.6}=\frac{-13.82}{-0.5108}=27.06$，即 $28$ 步。
+
+(c) $\alpha=1/L=1/4$ 时，$\max_i\abs{1-\alpha\lambda_i}=\max\{1-1,\,1-1/4\}=0.75$。
+要 $0.75^k\le10^{-6}$：$k\ge\frac{-13.82}{-0.2877}=48.0$，即 $49$ 步。
+
+可见「最优步长」比「$1/L$」快近一倍——但在一般（非二次）问题里 $2/(L+\mu)$ 可能不合法，
+所以 ISTA 只用保守的 $1/L$。
+\end{proof}
+
+\begin{exercise}
+对 $f(x)=\abs x$ 用固定步长 $\alpha>0$ 的次梯度法，初始点 $x^0=\alpha$。
+证明迭代在 $0$ 与 $-\alpha$ 之间振荡，不收敛到最优解 $0$。
+\end{exercise}
+
+\begin{proof}[提示]
+$x^0=\alpha>0$，$g^0=1$，$x^1=\alpha-\alpha=0$。在 $x=0$ 处次微分是 $[-1,1]$，
+\textbf{任取}一个次梯度都是合法的；取 $g^1=1$ 得 $x^2=-\alpha$。
+在 $x=-\alpha$ 处 $g=-1$，得 $x^3=0$。如此循环：$0,-\alpha,0,-\alpha,\dots$
+函数值 $\abs{x^k}$ 在 $0$ 与 $\alpha$ 之间跳，不收敛到 $0$。
+这就是「步长必须衰减」的一个最干净的反例。
+\end{proof}
+
+\begin{exercise}[编程]
+实现 ISTA 与证书，在算例 A（$n=200,p=50,\rho=0.95$）上比较两种方法「使证书上界 $U_k<10^{-4}$」
+所需的步数。解释你看到的差距。
+\end{exercise}
+
+\begin{proof}[提示]
+次梯度法基本达不到（$10^5$ 步量级），ISTA 约 $10^3$ 步（见第 8.3 节的表）。
+差距的来源是速率 $O(1/\sqrt K)$ 对 $O(1/K)$：要把误差乘上 $10^{-4}$，
+前者需要 $(10^4)^2=10^8$ 量级的步数，后者只需要 $10^4$ 量级。
+\end{proof}
+
+% ============================================================
+\appendix
+\section{公式速查表}
+% ============================================================
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{0.25\linewidth}p{0.65\linewidth}@{}}
+\toprule
+对象 & 公式 \\
+\midrule
+
+问题 & $F(x)=\tfrac12\norm{Ax-b}^2+\lambda\norm x_1$\\
+梯度（光滑部分）& $\nabla f(x)=A\top(Ax-b)$\\
+$L$（光滑常数）& $L=\lambda_{\max}(A\top A)=\norm A_2^2$\\
+$\mu$（强凸常数）& $\mu=\lambda_{\min}(A\top A)$，条件数 $\kappa=L/\mu$\\
+次微分 & $\partial\norm x_1=\{v:v_i=\sign(x_i)\ (x_i\neq0),\ \abs{v_i}\le1\ (x_i=0)\}$\\
+KKT & $c_i=\lambda\sign(x_i)$ 若 $x_i\neq0$；$\abs{c_i}\le\lambda$ 若 $x_i=0$，其中 $c=A\top(b-Ax)$\\
+$\lambda$ 上界 & $\lambda\ge\norm{A\top b}_\infty\Rightarrow x^\star=0$\\
+对偶问题 & $\max_v\ \inner bv-\tfrac12\norm v^2$ s.t. $\norm{A\top v}_\infty\le\lambda$\\
+对偶间隙 & $F(x)-D(v)=\tfrac12\norm{Ax-b+v}^2+\lambda\norm x_1-\inner{A\top v}{x}\ \ge0$\\
+证书 & (C1) $\norm{A\top(b-Ax)}_\infty\le\lambda$；(C2) $\inner{A\top(b-Ax)}{x}=\lambda\norm x_1$\\
+软阈值 & $S_\tau(v)_i=\sign(v_i)\max\{\abs{v_i}-\tau,0\}$\\
+近端算子 & $\prox_{\alpha\lambda\norm\cdot_1}(v)=S_{\alpha\lambda}(v)$\\
+ISTA & $x^{k+1}=S_{\lambda/L}\bigl(x^k-\tfrac1LA\top(Ax^k-b)\bigr)$\\
+近端梯度不等式 & $F(y)\ge F(x^+)+\frac L2\norm{y-x^+}^2-\frac{L-\mu}{2}\norm{y-x}^2$\\
+次梯度法速率 & $\min_{k<K}(F(x^k)-F^\star)\le RG/\sqrt K$\\
+ISTA 速率 & $F(x^K)-F^\star\le\frac{LR^2}{2K}$；强凸时 $\le\bigl(\frac{\kappa-1}{\kappa+1}\bigr)^K(F(x^0)-F^\star)$\\
+FISTA 速率 & $F(x^K)-F^\star\le\frac{2LR^2}{(K+1)^2}$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ============================================================
+\section{参考文献与延伸阅读}
+% ============================================================
+
+\begin{enumerate}[label={[\arabic*]}]
+\item A. Beck, M. Teboulle. \emph{A fast iterative shrinkage-thresholding algorithm for linear
+      inverse problems}. SIAM J. Imaging Sciences, 2009.
+      —— FISTA 的原始论文，$O(1/K^2)$ 的证明在此。
+\item A. Beck. \emph{First-Order Methods in Optimization}. SIAM, 2017.
+      —— 近端梯度法最系统的教材，第 10 章讲 ISTA，第 8 章讲次梯度法。
+\item S. Boyd, L. Vandenberghe. \emph{Convex Optimization}. Cambridge, 2004.
+      —— 第 4、5 章（凸分析、对偶）是本文第 2—4 章的严格版本。
+\item R. Tibshirani. \emph{Regression shrinkage and selection via the lasso}. JRSS-B, 1996.
+      —— LASSO 的原始论文。
+\item P. Bickel, Y. Ritov, A. Tsybakov. \emph{Simultaneous analysis of Lasso and Dantzig
+      selector}. Annals of Statistics, 2009.
+      —— 限制特征值条件（RE）与第 7.5 节的误差界。
+\item P. Zhao, B. Yu. \emph{On model selection consistency of Lasso}. JMLR, 2006.
+      —— 不可表示条件与模型选择一致性。
+\item M. Wainwright. \emph{Sharp thresholds for high-dimensional and noisy sparsity recovery}.
+      IEEE Trans. Info. Theory, 2009.
+      —— 最优性证书在高维恢复理论中的系统使用。
+\item Y. Nesterov. \emph{Introductory Lectures on Convex Optimization}. Kluwer, 2004.
+      —— 次梯度法 $O(1/\sqrt K)$ 不可改进的下界，以及加速方法的理论。
+\end{enumerate}
+
+\vspace{2em}
+\begin{center}
+\rule{0.4\linewidth}{0.4pt}
+
+\small 如果这份讲义只能记住一句话：
+
+\medskip
+\textbf{凸性保证「局部信息能推出全局结论」，而特征值决定「这个推理有多快」。}
+
+\medskip
+\rule{0.4\linewidth}{0.4pt}
+\end{center}
+
+\end{document}

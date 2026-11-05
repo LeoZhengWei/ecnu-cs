@@ -17,6 +17,12 @@ def resolve_device():
         return torch.device("mps")
     return torch.device("cpu")
 
+def set_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
 
 class Trainer(object):
     def __init__(self,train_loader,model, opt):
