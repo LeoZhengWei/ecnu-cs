@@ -1,0 +1,168 @@
+args=Namespace(batch_size=4, epochs=40, lr=0.0002, lr_d=2e-05, lambda_adv=0.05, model='context', loss='joint', img_size=256, hole=96, overlap=7, jitter=24, base_unet=32, base_context=64, num_workers=2, seed=42, data_root='data', save_dir='runs', test_patient='31', val_patient='14')
+split train/val/test = 163/30/31  size=256  test_patient=31 val_patient=14
+Using cuda:0: NVIDIA GeForce RTX 5090
+G params=18452993 loss=joint
+D params=2764481
+epoch 0 step 0 rec 0.0277 adv 0.7045 d 0.7193
+epoch 0 step 20 rec 0.0297 adv 0.8295 d 0.6811
+epoch 0 step 40 rec 0.0393 adv 0.8114 d 0.7081
+epoch 0 rec 0.0359 adv 0.8174 val_PSNR 18.85 val_SSIM 0.9542 time 1.6s  *best
+epoch 1 step 0 rec 0.0155 adv 0.8506 d 0.6900
+epoch 1 step 20 rec 0.0220 adv 0.8034 d 0.6735
+epoch 1 step 40 rec 0.0484 adv 0.8807 d 0.6799
+epoch 1 rec 0.0259 adv 0.8435 val_PSNR 16.93 val_SSIM 0.9469 time 0.5s
+epoch 2 step 0 rec 0.0315 adv 0.8587 d 0.6509
+epoch 2 step 20 rec 0.0114 adv 0.8419 d 0.6860
+epoch 2 step 40 rec 0.0078 adv 0.8789 d 0.6928
+epoch 2 rec 0.0164 adv 0.8299 val_PSNR 16.61 val_SSIM 0.9454 time 0.5s
+epoch 3 step 0 rec 0.0131 adv 0.8788 d 0.6940
+epoch 3 step 20 rec 0.0071 adv 0.7900 d 0.6932
+epoch 3 step 40 rec 0.0200 adv 0.7825 d 0.6810
+epoch 3 rec 0.0104 adv 0.8092 val_PSNR 18.35 val_SSIM 0.9471 time 0.5s
+epoch 4 step 0 rec 0.0064 adv 0.8189 d 0.6855
+epoch 4 step 20 rec 0.0173 adv 0.7335 d 0.6916
+epoch 4 step 40 rec 0.0099 adv 0.8044 d 0.6856
+epoch 4 rec 0.0096 adv 0.8088 val_PSNR 18.32 val_SSIM 0.9419 time 0.5s
+epoch 5 step 0 rec 0.0079 adv 0.8403 d 0.6849
+epoch 5 step 20 rec 0.0024 adv 0.7839 d 0.6934
+epoch 5 step 40 rec 0.0042 adv 0.8483 d 0.6889
+epoch 5 rec 0.0078 adv 0.8095 val_PSNR 17.75 val_SSIM 0.9443 time 0.5s
+epoch 6 step 0 rec 0.0038 adv 0.8105 d 0.6872
+epoch 6 step 20 rec 0.0095 adv 0.8055 d 0.6794
+epoch 6 step 40 rec 0.0133 adv 0.8268 d 0.6796
+epoch 6 rec 0.0078 adv 0.8080 val_PSNR 18.79 val_SSIM 0.9431 time 0.5s
+epoch 7 step 0 rec 0.0037 adv 0.8417 d 0.6884
+epoch 7 step 20 rec 0.0064 adv 0.7965 d 0.6828
+epoch 7 step 40 rec 0.0109 adv 0.7730 d 0.6847
+epoch 7 rec 0.0080 adv 0.8089 val_PSNR 17.43 val_SSIM 0.9400 time 0.5s
+epoch 8 step 0 rec 0.0069 adv 0.8574 d 0.6861
+epoch 8 step 20 rec 0.0065 adv 0.8052 d 0.6777
+epoch 8 step 40 rec 0.0072 adv 0.7917 d 0.6842
+epoch 8 rec 0.0080 adv 0.8066 val_PSNR 18.66 val_SSIM 0.9418 time 0.5s
+epoch 9 step 0 rec 0.0089 adv 0.8005 d 0.6829
+epoch 9 step 20 rec 0.0097 adv 0.8029 d 0.6917
+epoch 9 step 40 rec 0.0055 adv 0.8407 d 0.6898
+epoch 9 rec 0.0079 adv 0.8112 val_PSNR 18.24 val_SSIM 0.9369 time 0.5s
+epoch 10 step 0 rec 0.0041 adv 0.7962 d 0.6911
+epoch 10 step 20 rec 0.0035 adv 0.8164 d 0.6865
+epoch 10 step 40 rec 0.0067 adv 0.8200 d 0.6756
+epoch 10 rec 0.0069 adv 0.8066 val_PSNR 17.92 val_SSIM 0.9392 time 0.5s
+epoch 11 step 0 rec 0.0137 adv 0.8279 d 0.6783
+epoch 11 step 20 rec 0.0030 adv 0.7766 d 0.6890
+epoch 11 step 40 rec 0.0087 adv 0.8161 d 0.6868
+epoch 11 rec 0.0072 adv 0.8063 val_PSNR 18.17 val_SSIM 0.9414 time 0.5s
+epoch 12 step 0 rec 0.0042 adv 0.8178 d 0.6834
+epoch 12 step 20 rec 0.0104 adv 0.8018 d 0.6839
+epoch 12 step 40 rec 0.0086 adv 0.8504 d 0.6788
+epoch 12 rec 0.0079 adv 0.8105 val_PSNR 18.09 val_SSIM 0.9451 time 0.5s
+epoch 13 step 0 rec 0.0137 adv 0.7920 d 0.6748
+epoch 13 step 20 rec 0.0046 adv 0.8119 d 0.6829
+epoch 13 step 40 rec 0.0033 adv 0.8113 d 0.6905
+epoch 13 rec 0.0064 adv 0.8077 val_PSNR 17.51 val_SSIM 0.9388 time 0.5s
+epoch 14 step 0 rec 0.0063 adv 0.7840 d 0.6897
+epoch 14 step 20 rec 0.0075 adv 0.7991 d 0.6878
+epoch 14 step 40 rec 0.0105 adv 0.8030 d 0.6743
+epoch 14 rec 0.0065 adv 0.8078 val_PSNR 18.41 val_SSIM 0.9386 time 0.5s
+epoch 15 step 0 rec 0.0087 adv 0.8076 d 0.6882
+epoch 15 step 20 rec 0.0041 adv 0.8245 d 0.6851
+epoch 15 step 40 rec 0.0127 adv 0.8186 d 0.6790
+epoch 15 rec 0.0072 adv 0.8056 val_PSNR 18.27 val_SSIM 0.9444 time 0.5s
+epoch 16 step 0 rec 0.0063 adv 0.8291 d 0.6839
+epoch 16 step 20 rec 0.0053 adv 0.8252 d 0.6890
+epoch 16 step 40 rec 0.0041 adv 0.8533 d 0.6974
+epoch 16 rec 0.0066 adv 0.8086 val_PSNR 18.18 val_SSIM 0.9389 time 0.5s
+epoch 17 step 0 rec 0.0129 adv 0.7142 d 0.6944
+epoch 17 step 20 rec 0.0053 adv 0.8093 d 0.6947
+epoch 17 step 40 rec 0.0037 adv 0.8137 d 0.6877
+epoch 17 rec 0.0063 adv 0.8038 val_PSNR 18.52 val_SSIM 0.9452 time 0.5s
+epoch 18 step 0 rec 0.0044 adv 0.7726 d 0.6842
+epoch 18 step 20 rec 0.0070 adv 0.8116 d 0.6845
+epoch 18 step 40 rec 0.0098 adv 0.7862 d 0.6863
+epoch 18 rec 0.0056 adv 0.8041 val_PSNR 18.92 val_SSIM 0.9390 time 0.5s  *best
+epoch 19 step 0 rec 0.0054 adv 0.8108 d 0.6852
+epoch 19 step 20 rec 0.0065 adv 0.7983 d 0.6932
+epoch 19 step 40 rec 0.0011 adv 0.8757 d 0.6972
+epoch 19 rec 0.0054 adv 0.8029 val_PSNR 19.27 val_SSIM 0.9414 time 0.5s  *best
+epoch 20 step 0 rec 0.0051 adv 0.7757 d 0.6863
+epoch 20 step 20 rec 0.0042 adv 0.8112 d 0.6866
+epoch 20 step 40 rec 0.0077 adv 0.8081 d 0.6805
+epoch 20 rec 0.0072 adv 0.8045 val_PSNR 18.19 val_SSIM 0.9437 time 0.5s
+epoch 21 step 0 rec 0.0059 adv 0.8077 d 0.6842
+epoch 21 step 20 rec 0.0055 adv 0.7895 d 0.6826
+epoch 21 step 40 rec 0.0040 adv 0.8166 d 0.6813
+epoch 21 rec 0.0058 adv 0.8055 val_PSNR 18.56 val_SSIM 0.9413 time 0.5s
+epoch 22 step 0 rec 0.0042 adv 0.7984 d 0.6847
+epoch 22 step 20 rec 0.0182 adv 0.8390 d 0.6753
+epoch 22 step 40 rec 0.0054 adv 0.8100 d 0.6854
+epoch 22 rec 0.0061 adv 0.8037 val_PSNR 18.23 val_SSIM 0.9382 time 0.5s
+epoch 23 step 0 rec 0.0031 adv 0.8174 d 0.6902
+epoch 23 step 20 rec 0.0067 adv 0.7752 d 0.6880
+epoch 23 step 40 rec 0.0035 adv 0.8108 d 0.6809
+epoch 23 rec 0.0053 adv 0.8051 val_PSNR 18.11 val_SSIM 0.9404 time 0.5s
+epoch 24 step 0 rec 0.0084 adv 0.7689 d 0.6867
+epoch 24 step 20 rec 0.0041 adv 0.8104 d 0.6881
+epoch 24 step 40 rec 0.0065 adv 0.7929 d 0.6885
+epoch 24 rec 0.0051 adv 0.8012 val_PSNR 18.33 val_SSIM 0.9385 time 0.5s
+epoch 25 step 0 rec 0.0030 adv 0.8183 d 0.6914
+epoch 25 step 20 rec 0.0011 adv 0.8322 d 0.6892
+epoch 25 step 40 rec 0.0023 adv 0.8243 d 0.6945
+epoch 25 rec 0.0047 adv 0.8036 val_PSNR 18.12 val_SSIM 0.9352 time 0.5s
+epoch 26 step 0 rec 0.0038 adv 0.7808 d 0.6866
+epoch 26 step 20 rec 0.0066 adv 0.7648 d 0.6912
+epoch 26 step 40 rec 0.0048 adv 0.8134 d 0.6844
+epoch 26 rec 0.0055 adv 0.8015 val_PSNR 18.48 val_SSIM 0.9333 time 0.5s
+epoch 27 step 0 rec 0.0065 adv 0.8169 d 0.6832
+epoch 27 step 20 rec 0.0039 adv 0.8345 d 0.6823
+epoch 27 step 40 rec 0.0077 adv 0.7736 d 0.6955
+epoch 27 rec 0.0050 adv 0.8004 val_PSNR 17.54 val_SSIM 0.9351 time 0.5s
+epoch 28 step 0 rec 0.0035 adv 0.8096 d 0.6884
+epoch 28 step 20 rec 0.0065 adv 0.7991 d 0.6816
+epoch 28 step 40 rec 0.0035 adv 0.8051 d 0.6865
+epoch 28 rec 0.0049 adv 0.8056 val_PSNR 17.70 val_SSIM 0.9309 time 0.5s
+epoch 29 step 0 rec 0.0090 adv 0.7576 d 0.6948
+epoch 29 step 20 rec 0.0052 adv 0.7859 d 0.6869
+epoch 29 step 40 rec 0.0036 adv 0.8037 d 0.6904
+epoch 29 rec 0.0044 adv 0.8018 val_PSNR 18.25 val_SSIM 0.9356 time 0.5s
+epoch 30 step 0 rec 0.0049 adv 0.7896 d 0.6882
+epoch 30 step 20 rec 0.0050 adv 0.8095 d 0.6882
+epoch 30 step 40 rec 0.0084 adv 0.7654 d 0.6900
+epoch 30 rec 0.0045 adv 0.7992 val_PSNR 17.44 val_SSIM 0.9331 time 0.5s
+epoch 31 step 0 rec 0.0040 adv 0.8231 d 0.6839
+epoch 31 step 20 rec 0.0056 adv 0.8002 d 0.6861
+epoch 31 step 40 rec 0.0029 adv 0.8241 d 0.6862
+epoch 31 rec 0.0045 adv 0.8038 val_PSNR 18.15 val_SSIM 0.9305 time 0.5s
+epoch 32 step 0 rec 0.0036 adv 0.7861 d 0.6892
+epoch 32 step 20 rec 0.0034 adv 0.7728 d 0.6904
+epoch 32 step 40 rec 0.0049 adv 0.7723 d 0.6879
+epoch 32 rec 0.0046 adv 0.8020 val_PSNR 18.50 val_SSIM 0.9359 time 0.5s
+epoch 33 step 0 rec 0.0034 adv 0.8397 d 0.6891
+epoch 33 step 20 rec 0.0022 adv 0.7954 d 0.6898
+epoch 33 step 40 rec 0.0031 adv 0.7673 d 0.6883
+epoch 33 rec 0.0043 adv 0.8022 val_PSNR 17.53 val_SSIM 0.9296 time 0.5s
+epoch 34 step 0 rec 0.0039 adv 0.7839 d 0.6864
+epoch 34 step 20 rec 0.0061 adv 0.7904 d 0.6880
+epoch 34 step 40 rec 0.0031 adv 0.7821 d 0.6900
+epoch 34 rec 0.0043 adv 0.8013 val_PSNR 18.14 val_SSIM 0.9375 time 0.5s
+epoch 35 step 0 rec 0.0028 adv 0.8008 d 0.6877
+epoch 35 step 20 rec 0.0066 adv 0.7927 d 0.6799
+epoch 35 step 40 rec 0.0038 adv 0.8084 d 0.6842
+epoch 35 rec 0.0048 adv 0.8043 val_PSNR 17.60 val_SSIM 0.9388 time 0.5s
+epoch 36 step 0 rec 0.0069 adv 0.7969 d 0.6868
+epoch 36 step 20 rec 0.0087 adv 0.7932 d 0.6846
+epoch 36 step 40 rec 0.0015 adv 0.8130 d 0.6865
+epoch 36 rec 0.0041 adv 0.8030 val_PSNR 17.97 val_SSIM 0.9352 time 0.5s
+epoch 37 step 0 rec 0.0058 adv 0.7658 d 0.6878
+epoch 37 step 20 rec 0.0062 adv 0.7764 d 0.6877
+epoch 37 step 40 rec 0.0035 adv 0.8289 d 0.6796
+epoch 37 rec 0.0041 adv 0.8035 val_PSNR 17.46 val_SSIM 0.9310 time 0.5s
+epoch 38 step 0 rec 0.0095 adv 0.7724 d 0.6881
+epoch 38 step 20 rec 0.0048 adv 0.8101 d 0.6814
+epoch 38 step 40 rec 0.0038 adv 0.8255 d 0.6859
+epoch 38 rec 0.0040 adv 0.8022 val_PSNR 18.11 val_SSIM 0.9338 time 0.5s
+epoch 39 step 0 rec 0.0054 adv 0.7843 d 0.6846
+epoch 39 step 20 rec 0.0045 adv 0.8078 d 0.6869
+epoch 39 step 40 rec 0.0077 adv 0.8111 d 0.6744
+epoch 39 rec 0.0041 adv 0.8024 val_PSNR 17.33 val_SSIM 0.9361 time 0.5s
+best val PSNR 19.27 -> runs/context_joint/best.pth
+===== test =====
+MAE=0.0812 MSE=0.01504 PSNR=19.89dB SSIM=0.9374 fullPSNR=28.41dB n=31

@@ -1,0 +1,23 @@
+{
+  "batch_size": 8,
+  "epochs": 70,
+  "warmup_epochs": 40,
+  "lr": 0.0002,
+  "lr_d": 2e-05,
+  "lambda_adv": 0.005,
+  "model": "context",
+  "loss": "joint",
+  "img_size": 256,
+  "hole": 128,
+  "overlap": 7,
+  "jitter": 16,
+  "base_unet": 32,
+  "base_context": 64,
+  "num_workers": 2,
+  "seed": 42,
+  "data_root": "data/facades",
+  "save_dir": "runs",
+  "n_test": 40,
+  "n_val": 30,
+  "g_params": 15388291
+}

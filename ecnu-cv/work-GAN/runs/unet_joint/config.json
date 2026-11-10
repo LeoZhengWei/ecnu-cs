@@ -1,0 +1,22 @@
+{
+  "batch_size": 4,
+  "epochs": 40,
+  "lr": 0.0002,
+  "lr_d": 2e-05,
+  "lambda_adv": 0.05,
+  "model": "unet",
+  "loss": "joint",
+  "img_size": 256,
+  "hole": 96,
+  "overlap": 7,
+  "jitter": 24,
+  "base_unet": 32,
+  "base_context": 64,
+  "num_workers": 2,
+  "seed": 42,
+  "data_root": "data",
+  "save_dir": "runs",
+  "test_patient": "31",
+  "val_patient": "14",
+  "g_params": 8109185
+}
