@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>语义分割课程实验报告</title>
+<style>
+  @page {
+    size: A4;
+    margin: 16mm 15mm 18mm 15mm;
+    @bottom-center {
+      content: counter(page);
+      font-family: "Noto Sans CJK SC", sans-serif;
+      font-size: 9pt;
+      color: #444;
+    }
+  }
+  @page land {
+    size: A4 landscape;
+    margin: 12mm 12mm 14mm 12mm;
+    @bottom-center {
+      content: counter(page);
+      font-family: "Noto Sans CJK SC", sans-serif;
+      font-size: 9pt;
+      color: #444;
+    }
+  }
+  html, body {
+    font-family: "Noto Sans CJK SC", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.48;
+    color: #1a1a1a;
+  }
+  h1 {
+    font-size: 18pt;
+    text-align: center;
+    margin: 0 0 4mm;
+    font-weight: 700;
+  }
+  .subtitle {
+    text-align: center;
+    color: #333;
+    margin: 0 0 8mm;
+    font-size: 10.5pt;
+  }
+  h2 {
+    font-size: 13pt;
+    margin: 6mm 0 2mm;
+    border-bottom: 0.4pt solid #222;
+    padding-bottom: 1mm;
+  }
+  h3 {
+    font-size: 11.5pt;
+    margin: 4mm 0 1.5mm;
+  }
+  p { margin: 1.6mm 0; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 2mm 0 3mm;
+    font-size: 8.7pt;
+    margin: 1.4mm 0 2mm;
+    page-break-inside: avoid;
+  }
+  th, td {
+    border: 0.4pt solid #b5b5b5;
+    padding: 0.7mm 1.4mm;
+    text-align: right;
+  }
+  th {
+    background: #f3f4f6;
+    font-weight: 700;
+    text-align: center;
+  }
+  td.left, th.left { text-align: left; }
+  td.best { font-weight: 700; }
+  code {
+    font-family: "Noto Sans Mono CJK SC", "DejaVu Sans Mono", monospace;
+    font-size: 9pt;
+    background: #f4f4f4;
+    padding: 0 1mm;
+  }
+  pre {
+    font-family: "Noto Sans Mono CJK SC", "DejaVu Sans Mono", monospace;
+    font-size: 8.5pt;
+    background: #f6f6f6;
+    padding: 2mm 3mm;
+    white-space: pre-wrap;
+  }
+  .formula {
+    text-align: center;
+    margin: 2mm 0;
+    font-size: 10.5pt;
+  }
+  .cap {
+    font-size: 9pt;
+    color: #222;
+    margin: 1mm 0 3mm;
+  }
+  img.chart { width: 92%; display: block; margin: 2mm auto; }
+  .land { page: land; }
+  .land h2 { margin-top: 0; }
+  .land img.wide { width: 86%; display: block; margin: 1mm auto 0; }
+  .keep { page-break-inside: avoid; }
+  ul { margin: 1mm 0 2mm; padding-left: 5mm; }
+  li { margin: 0.6mm 0; }
+</style>
+</head>
+<body>
+<h1>语义分割课程实验报告</h1>
+<p class="subtitle">CamVid 11 类语义分割：五种网络结构的训练与测试对比</p>
+
+<h2>1. 任务</h2>
+<p>在课程给出的残差 U-Net 上做 CamVid 多类语义分割。每个像素分成 11 类，相当于对像素做多类分类。本次在同一数据划分、同一损失和同一训练日程下比较五种结构，用验证集 mIoU 保存权重，再在未参与选模的测试集上比较分类能力。</p>
+<table>
+  <tr><th class="left">代码名</th><th class="left">结构</th><th class="left">和其余模型的差别</th></tr>
+  <tr><td class="left"><code>unet</code></td><td class="left">残差 U-Net</td><td class="left">四级跳跃连接，解码器拼接编码器特征</td></tr>
+  <tr><td class="left"><code>fcn</code></td><td class="left">无跳跃连接的编码器-解码器</td><td class="left">同一编码器，解码器只做转置卷积上采样</td></tr>
+  <tr><td class="left"><code>segnet</code></td><td class="left">SegNet</td><td class="left">用最大池化的位置索引做反池化</td></tr>
+  <tr><td class="left"><code>deeplab</code></td><td class="left">DeepLabV3+</td><td class="left">瓶颈处做空洞空间金字塔，再接一条低层特征</td></tr>
+  <tr><td class="left"><code>attunet</code></td><td class="left">Attention U-Net</td><td class="left">跳跃连接拼接前先乘空间注意力</td></tr>
+</table>
+<p>五种网络共用残差卷积块，通道都是 64、128、256、512、1024。差别集中在特征如何回到原分辨率，以及要不要多尺度上下文。</p>
+
+<h2>2. 数据集</h2>
+<p>使用 CamVid 驾驶场景数据集。图像来自车载摄像头，共 701 张 960×720 彩色图及标注。原始 32 类按 SegNet 的常用规则合并为 11 类。Void 的编号是 255，不进入损失，也不进入指标。</p>
+<table>
+  <tr><th class="left">合并后类别</th><th class="left">包含的原始类</th></tr>
+  <tr><td class="left">天空</td><td class="left">Sky</td></tr>
+  <tr><td class="left">建筑</td><td class="left">Building, Wall, Archway, Bridge, Tunnel</td></tr>
+  <tr><td class="left">杆柱</td><td class="left">Column_Pole, TrafficCone</td></tr>
+  <tr><td class="left">道路</td><td class="left">Road, LaneMkgsDriv, LaneMkgsNonDriv</td></tr>
+  <tr><td class="left">人行道</td><td class="left">Sidewalk, ParkingBlock, RoadShoulder</td></tr>
+  <tr><td class="left">树木</td><td class="left">Tree, VegetationMisc</td></tr>
+  <tr><td class="left">标志</td><td class="left">SignSymbol, Misc_Text, TrafficLight</td></tr>
+  <tr><td class="left">围栏</td><td class="left">Fence</td></tr>
+  <tr><td class="left">车辆</td><td class="left">Car, SUVPickupTruck, Truck_Bus, Train, OtherMoving</td></tr>
+  <tr><td class="left">行人</td><td class="left">Pedestrian, Child, CartLuggagePram, Animal</td></tr>
+  <tr><td class="left">骑行者</td><td class="left">Bicyclist, MotorcycleScooter</td></tr>
+</table>
+<p>划分：<code>valid.txt</code> 中的 101 张全部来自 0016E5 这一段行驶序列，作为测试集。其余 600 张按随机种子 42 打乱，90 张做验证集，用来保存验证 mIoU 最高的权重，510 张用于训练。</p>
+<p>图像从 960×720 双线性缩放到 320×240，标注用最近邻缩放。训练集使用水平翻转、±12° 旋转和亮度、对比度抖动。旋转在标注上留出的空白填 255。像素缩放到 [0, 1]，编码器没有使用 ImageNet 预训练。</p>
+<p>类别权重是 median frequency balancing，w<sub>c</sub> = median(f) / f<sub>c</sub>。道路最多，权重 0.192；骑行者最少，权重 20.306。</p>
+
+<h2>3. 网络结构</h2>
+<p>输入都是 3×240×320。四次 2×2 最大池化后，空间尺寸依次为 120×160、60×80、30×40，瓶颈为 15×20。输出是 11 个类别的 logits，预测时对通道做 argmax。实现位于 <code>model/net.py</code>。</p>
+
+<h3>3.1 残差 U-Net</h3>
+<p>编码器通道为 64、128、256、512，瓶颈为 1024。解码器用步长为 2 的转置卷积把分辨率放大一倍，再与编码器同尺度特征在通道维拼接，然后进入残差块。因为拼接，解码器每一级的输入通道是该级通道数的两倍。最后用 1×1 卷积得到 11 类 logits。可训练参数为 32,428,171。</p>
+<p>放大后的特征提供语义，同尺度的编码器特征保留池化前的边缘和位置。</p>
+
+<h3>3.2 无跳跃连接的编码器-解码器</h3>
+<p>编码器与残差 U-Net 相同。解码器不拼接编码器特征，只处理上一层转置卷积的结果，因此每一级解码器的输入通道不加倍。它逐级放大，两侧的差别集中在有没有跳跃连接。代码入口名称是 <code>fcn</code>。可训练参数为 28,597,451。</p>
+
+<h3>3.3 SegNet</h3>
+<p>SegNet 记住每次最大池化选中的位置，上采样时用 MaxUnpool2d 把激活放回这些位置，其余位置填 0，再做卷积。它不拼接编码器的特征值。瓶颈先把通道扩到 1024，反池化要求通道数和当初被池化的特征一致，所以先用 1×1 卷积压回 512，再按索引放大。可训练参数为 22,636,875，五种里最少。</p>
+<p>索引反池化把响应当时最强的位置还回去，适合杆柱这类细目标。被池化丢掉的其他位置没有编码器特征可补，边界主要靠后面的卷积重新长出来。</p>
+
+<h3>3.4 DeepLabV3+</h3>
+<p>编码器仍是同一套残差块。瓶颈接空洞空间金字塔（ASPP）：一条 1×1 卷积、三条膨胀率分别为 2、4、6 的 3×3 卷积，以及一张全局平均池化。五路特征拼在一起，再用 1×1 卷积压到 256 通道，并带 BatchNorm 和 Dropout（比率 0.1）。</p>
+<p>论文里的膨胀率 6、12、18 是为更大的特征图准备的。这里瓶颈只有 15×20，膨胀率 12 的感受野已经超出特征图，所以改成 2、4、6。图像级池化仍然提供整图上下文。</p>
+<p>解码器把 ASPP 输出双线性放大到 60×80，与第三次卷积后的低层特征拼接。低层特征先用 1×1 卷积压到 48 通道。融合后再放大到 240×320。低层特征只接这一次，位置在原图的 1/4 分辨率。可训练参数为 29,332,779。</p>
+<p>ASPP 和解码器里的 BatchNorm 是这一种网络独有的，其余四种没有归一化层。比较时把这一点算进 DeepLabV3+ 的结构设计。</p>
+
+<h3>3.5 Attention U-Net</h3>
+<p>骨架与残差 U-Net 相同。每一级跳跃连接在拼接之前经过注意力门：把编码器特征和解码器上采样特征各自做 1×1 卷积，相加后 ReLU，再映射成一张单通道图，sigmoid 之后乘在编码器特征上。权重接近 1 的位置被保留，接近 0 的位置被压低。可训练参数为 32,776,815，五种里最多。</p>
+
+<h2>4. 训练设置</h2>
+<p>五种模型使用同一套超参数，分别执行 <code>python main.py --model &lt;名称&gt;</code>。选模只用验证集。测试在训练结束后用 best.pth 计算。</p>
+<table>
+  <tr><th class="left">项目</th><th class="left">取值</th></tr>
+  <tr><td class="left">输入</td><td class="left">3×240×320，像素值在 [0, 1]</td></tr>
+  <tr><td class="left">输出</td><td class="left">11 类 logits</td></tr>
+  <tr><td class="left">优化器</td><td class="left">AdamW，学习率 3×10<sup>−4</sup>，权重衰减 1×10<sup>−4</sup></td></tr>
+  <tr><td class="left">学习率调度</td><td class="left">余弦退火，周期等于总轮数</td></tr>
+  <tr><td class="left">损失</td><td class="left">加权交叉熵，忽略编号 255</td></tr>
+  <tr><td class="left">梯度裁剪</td><td class="left">全局范数上限 1.0</td></tr>
+  <tr><td class="left">数值精度</td><td class="left">CUDA 上使用 bfloat16</td></tr>
+  <tr><td class="left">batch size / 轮数 / 种子</td><td class="left">8 / 40 / 42</td></tr>
+  <tr><td class="left">设备</td><td class="left">NVIDIA RTX 5090</td></tr>
+</table>
+<p class="formula">L = − Σ<sub>c=0..10</sub> w<sub>c</sub> y<sub>c</sub> log p<sub>c</sub></p>
+<p>y<sub>c</sub> 是该像素的 one-hot 标签，p<sub>c</sub> 是 softmax 后的概率，w<sub>c</sub> 是类别权重。</p>
+<p>验证集上 mIoU 最高的一轮：</p>
+<table>
+  <tr><th class="left">模型</th><th>轮次</th><th>验证损失</th><th>验证 mIoU</th><th>验证 PA</th></tr>
+  <tr><td class="left">残差 U-Net</td><td>33</td><td>0.8316</td><td>0.4500</td><td>0.7857</td></tr>
+  <tr><td class="left">无跳跃连接</td><td>33</td><td>0.8688</td><td>0.4425</td><td>0.7810</td></tr>
+  <tr><td class="left">SegNet</td><td>33</td><td>0.9086</td><td>0.4186</td><td>0.7473</td></tr>
+  <tr><td class="left">DeepLabV3+</td><td>33</td><td>0.5711</td><td class="best">0.5238</td><td class="best">0.8449</td></tr>
+  <tr><td class="left">Attention U-Net</td><td>37</td><td>0.7978</td><td>0.4449</td><td>0.7672</td></tr>
+</table>
+<p>权重保存在 <code>runs/&lt;模型名&gt;/best.pth</code>。DeepLabV3+ 在第 33 轮的验证 mIoU 为 0.5238。其余四个模型的验证 mIoU 集中在 0.42 到 0.45。</p>
+
+<h2>5. 指标</h2>
+<p>测试集上把全部有效像素累加成混淆矩阵 M。行是真实类别，列是预测类别。Void 不进入矩阵。TP<sub>i</sub> 是对角线，GT<sub>i</sub> 是第 i 行的和，Pred<sub>i</sub> 是第 i 列的和，N 是全部有效像素。</p>
+<table>
+  <tr><th class="left">指标</th><th class="left">计算</th><th class="left">作用</th></tr>
+  <tr><td class="left">Precision<sub>i</sub></td><td class="left">TP<sub>i</sub> / Pred<sub>i</sub></td><td class="left">预测为该类的像素里有多少是对的</td></tr>
+  <tr><td class="left">Recall<sub>i</sub></td><td class="left">TP<sub>i</sub> / GT<sub>i</sub></td><td class="left">该类真实像素里有多少被找回来</td></tr>
+  <tr><td class="left">IoU<sub>i</sub></td><td class="left">TP<sub>i</sub> / (GT<sub>i</sub> + Pred<sub>i</sub> − TP<sub>i</sub>)</td><td class="left">预测区域与真实区域的交并比</td></tr>
+  <tr><td class="left">Dice<sub>i</sub></td><td class="left">2 TP<sub>i</sub> / (GT<sub>i</sub> + Pred<sub>i</sub>)</td><td class="left">与 IoU 单调对应</td></tr>
+  <tr><td class="left">PA</td><td class="left">Σ TP<sub>i</sub> / N</td><td class="left">全部有效像素的准确率</td></tr>
+  <tr><td class="left">mPA</td><td class="left">各类召回率的平均</td><td class="left">每个类一票</td></tr>
+  <tr><td class="left">mIoU</td><td class="left">各类 IoU 的平均</td><td class="left">模型对比以它为准</td></tr>
+  <tr><td class="left">mDice</td><td class="left">各类 Dice 的平均</td><td class="left">与 mIoU 一起看重叠</td></tr>
+  <tr><td class="left">FWIoU</td><td class="left">Σ (GT<sub>i</sub> / N) · IoU<sub>i</sub></td><td class="left">按真实像素占比加权的 IoU</td></tr>
+</table>
+<p>本次测试集 11 类都有像素。PA 和 FWIoU 受道路、天空、建筑这类大区域支配。mIoU 对杆柱、行人、标志同样敏感，所以用 mIoU 给模型排名，再用精确率和召回率看某个类是漏检还是误检。</p>
+
+<h2>6. 测试集总指标</h2>
+<p>以下数字来自五个 best.pth 在 101 张测试图上的同一次评估，汇总文件是 <code>runs/figures/summary.json</code>。各模型自己的结果同时写在 <code>runs/&lt;模型名&gt;/test.metrics.json</code>。</p>
+<table>
+  <tr><th class="left">模型</th><th>参数量</th><th>PA</th><th>mPA</th><th>mIoU</th><th>FWIoU</th><th>mDice</th></tr>
+  <tr><td class="left">残差 U-Net</td><td>32.43M</td><td>0.7563</td><td>0.7089</td><td>0.4710</td><td>0.6686</td><td>0.5843</td></tr>
+  <tr><td class="left">无跳跃连接</td><td>28.60M</td><td>0.7376</td><td>0.6884</td><td>0.4608</td><td>0.6598</td><td>0.5623</td></tr>
+  <tr><td class="left">SegNet</td><td>22.64M</td><td>0.7238</td><td>0.6895</td><td>0.4491</td><td>0.6422</td><td>0.5584</td></tr>
+  <tr><td class="left">DeepLabV3+</td><td>29.33M</td><td class="best">0.8227</td><td class="best">0.7571</td><td class="best">0.5239</td><td class="best">0.7548</td><td class="best">0.6339</td></tr>
+  <tr><td class="left">Attention U-Net</td><td>32.78M</td><td>0.7285</td><td>0.6863</td><td>0.4555</td><td>0.6419</td><td>0.5659</td></tr>
+</table>
+<p>按 mIoU 从高到低：DeepLabV3+ 0.5239，残差 U-Net 0.4710，无跳跃连接 0.4608，Attention U-Net 0.4555，SegNet 0.4491。</p>
+<p>DeepLabV3+ 比残差 U-Net 高 0.0529 个 mIoU，像素准确率高 0.0664。它的参数量还少约 310 万。</p>
+<p>验证 mIoU 与测试 mIoU 的排序一致：DeepLabV3+ 验证 0.5238、测试 0.5239；残差 U-Net 验证 0.4500、测试 0.4710。测试集是同一段视频的连续帧，验证集来自其他序列，两边接近，说明优势在另一段路上同样存在。</p>
+
+<h2>7. 各类 IoU</h2>
+<table>
+  <tr><th class="left">类别</th><th>残差 U-Net</th><th>无跳跃连接</th><th>SegNet</th><th>DeepLabV3+</th><th>Attention U-Net</th></tr>
+  <tr><td class="left">天空</td><td>0.9381</td><td>0.9052</td><td>0.9179</td><td>0.9286</td><td class="best">0.9415</td></tr>
+  <tr><td class="left">建筑</td><td>0.4433</td><td>0.3432</td><td>0.3342</td><td class="best">0.5971</td><td>0.3644</td></tr>
+  <tr><td class="left">杆柱</td><td>0.0235</td><td>0.0093</td><td>0.0310</td><td class="best">0.0500</td><td>0.0223</td></tr>
+  <tr><td class="left">道路</td><td>0.8672</td><td>0.8649</td><td>0.8786</td><td class="best">0.9181</td><td>0.8626</td></tr>
+  <tr><td class="left">人行道</td><td>0.6744</td><td>0.7023</td><td>0.6965</td><td class="best">0.7699</td><td>0.6730</td></tr>
+  <tr><td class="left">树木</td><td>0.7244</td><td>0.8426</td><td>0.7361</td><td class="best">0.8552</td><td>0.6978</td></tr>
+  <tr><td class="left">标志</td><td>0.1242</td><td>0.0521</td><td>0.0788</td><td class="best">0.2006</td><td>0.1072</td></tr>
+  <tr><td class="left">围栏</td><td>0.3028</td><td>0.3081</td><td>0.2760</td><td class="best">0.3726</td><td>0.2970</td></tr>
+  <tr><td class="left">车辆</td><td>0.4735</td><td>0.4612</td><td>0.4352</td><td>0.3728</td><td class="best">0.5025</td></tr>
+  <tr><td class="left">行人</td><td>0.1594</td><td>0.1095</td><td>0.1439</td><td class="best">0.1978</td><td>0.1133</td></tr>
+  <tr><td class="left">骑行者</td><td>0.4506</td><td>0.4701</td><td>0.4115</td><td class="best">0.5002</td><td>0.4291</td></tr>
+</table>
+<p>11 类里 DeepLabV3+ 拿到 9 类的最高 IoU。天空和车辆的最高值属于 Attention U-Net，分别是 0.9415 和 0.5025。</p>
+<table>
+  <tr><th class="left">类别</th><th class="left">模型</th><th>IoU</th><th>Precision</th><th>Recall</th></tr>
+  <tr><td class="left">建筑</td><td class="left">残差 U-Net</td><td>0.4433</td><td>0.8454</td><td>0.4825</td></tr>
+  <tr><td class="left">建筑</td><td class="left">DeepLabV3+</td><td>0.5971</td><td>0.9722</td><td>0.6075</td></tr>
+  <tr><td class="left">建筑</td><td class="left">SegNet</td><td>0.3342</td><td>0.8348</td><td>0.3579</td></tr>
+  <tr><td class="left">车辆</td><td class="left">Attention U-Net</td><td>0.5025</td><td>0.7214</td><td>0.6235</td></tr>
+  <tr><td class="left">车辆</td><td class="left">残差 U-Net</td><td>0.4735</td><td>0.6428</td><td>0.6426</td></tr>
+  <tr><td class="left">车辆</td><td class="left">DeepLabV3+</td><td>0.3728</td><td>0.4716</td><td>0.6401</td></tr>
+  <tr><td class="left">行人</td><td class="left">DeepLabV3+</td><td>0.1978</td><td>0.2051</td><td>0.8472</td></tr>
+  <tr><td class="left">行人</td><td class="left">残差 U-Net</td><td>0.1594</td><td>0.1674</td><td>0.7698</td></tr>
+  <tr><td class="left">杆柱</td><td class="left">DeepLabV3+</td><td>0.0500</td><td>0.0593</td><td>0.2412</td></tr>
+  <tr><td class="left">杆柱</td><td class="left">SegNet</td><td>0.0310</td><td>0.0366</td><td>0.1676</td></tr>
+  <tr><td class="left">杆柱</td><td class="left">无跳跃连接</td><td>0.0093</td><td>0.0161</td><td>0.0214</td></tr>
+</table>
+<p>建筑是训练像素里第二多的类，也是五种模型拉开差距的主要位置。DeepLabV3+ 的建筑精确率 0.9722、召回率 0.6075：预测成建筑的区域很干净，召回也高于残差 U-Net 的 0.4825。SegNet 和无跳跃连接的建筑召回只有 0.36 左右，大块建筑被标成了别的类。</p>
+<p>车辆上 DeepLabV3+ 的召回率 0.6401，与残差 U-Net 的 0.6426 接近，精确率只有 0.4716。它把不少不是车的像素也标成了车，所以车辆 IoU 反而最低。Attention U-Net 的车辆精确率 0.7214，是五种里最干净的。</p>
+<p>行人都是高召回、低精确率。DeepLabV3+ 找回了 84.72% 的行人像素，但预测成行人的像素里只有 20.51% 是对的。类别权重把稀有类的损失放大之后，模型倾向于多标，IoU 仍然只有 0.1978。</p>
+<p>杆柱在五种模型里都低于 0.05。无跳跃连接的召回率只有 0.0214。SegNet 靠池化索引把召回提到 0.1676，DeepLabV3+ 提到 0.2412，精确率仍然只有 0.0593。四次下采样后特征图只剩 15×20，一根杆往往不到一个像素宽。</p>
+
+<div class="land">
+<h2>8. 测试集可视化</h2>
+<p>下图是测试集中隔开选取的四帧。测试集是同一段视频，相邻帧几乎一样，所以按序号 0、36、60、84 取样，对应文件 0016E5_07959、0016E5_08031、0016E5_08079、0016E5_08127。四帧分别含前方车辆与骑行者、路口车辆、近处骑行者与行人、弯道上的近处骑行者。</p>
+<img class="wide" src="runs/figures/qualitative_compare.png" alt="测试集四帧上五种模型的分割结果">
+<p class="cap">图 1　测试集四帧的分割结果。从左到右：原图、标注、残差 U-Net、无跳跃连接、SegNet、DeepLabV3+、Attention U-Net。灰色为天空，暗红为建筑，紫色为道路，蓝色为人行道，黄绿为树木，青色为骑行者，深紫色为车辆。</p>
+</div>
+<p>四帧里道路和天空在五种预测中都连成片，和总指标里这两类 IoU 高于 0.86 一致。建筑的差别最明显：DeepLabV3+ 的红色区域更整，另外四种在楼面和树冠交界处更容易碎成标志和树木的颜色。骑行者在四帧里都被标成青色块，轮廓比标注粗。杆柱在标注里是细竖线，五种预测都只剩下断续的短线。路口那一帧的白色车辆，Attention U-Net 和残差 U-Net 留下的车辆色块更集中，DeepLabV3+ 的车辆区域更容易散开，这和车辆 IoU 的排序一致。</p>
+<img class="chart" src="runs/figures/metrics_bar.png" alt="五种模型的测试 mIoU 与像素准确率">
+<p class="cap">图 2　五种模型在测试集上的 mIoU 与像素准确率。</p>
+
+<h2>9. 结果分析</h2>
+<p>大面积类别已经学到。DeepLabV3+ 的道路 IoU 为 0.9181，树木为 0.8552，人行道为 0.7699，天空为 0.9286。像素准确率 0.8227 高于只预测道路所能达到的水平：道路约占训练像素的 29.84%。mIoU 为 0.5239，低于 PA，因为 11 个类等权平均，杆柱、标志和行人把均值拉低。FWIoU 为 0.7548，更接近 PA，说明按面积看，大类的重叠是好的。</p>
+<p>DeepLabV3+ 的优势主要来自多尺度上下文。ASPP 在 15×20 的瓶颈上同时看局部膨胀卷积和整图平均，建筑、道路、树木、人行道、围栏、标志这些成片区域的标签更一致。它只从 1/4 分辨率接了一次低层特征，边界仍然粗，但已经够把建筑 IoU 从残差 U-Net 的 0.4433 提到 0.5971。这一头里还有 BatchNorm。归一化会让训练更稳，验证损失 0.5711 也低于残差 U-Net 的 0.8316。因此 0.0529 的 mIoU 差距里同时有空洞金字塔和归一化的作用。</p>
+<p>跳跃连接的作用可以从残差 U-Net 和无跳跃连接的差看出来。mIoU 只差 0.0102（0.4710 对 0.4608），PA 差 0.0187。差距集中在建筑、杆柱、标志和行人。无跳跃连接的树木 IoU 为 0.8426，高于残差 U-Net 的 0.7244，接近 DeepLabV3+。树木是成片纹理，少了高分辨率边缘之后，标签更不容易被楼面和标志切碎。</p>
+<p>SegNet 的 mIoU 最低，为 0.4491。它的道路 IoU 为 0.8786，高于残差 U-Net，杆柱也高于无跳跃连接。索引反池化能把强响应放回池化前的位置，所以细结构和路面边界还有保留。建筑 IoU 只有 0.3342，因为反池化不带回编码器的特征值，楼面这种需要高分辨率外观的区域补不回来。参数最少并没有换成更高的分类准确率。</p>
+<p>Attention U-Net 的测试 mIoU 为 0.4555，低于残差 U-Net 0.0155；验证 mIoU 为 0.4449，也低于残差 U-Net 的 0.4500。注意力门压低了一部分跳跃特征，天空和车辆更干净，这两类 IoU 都是五种里最高的。建筑召回率从 0.4825 降到 0.3960，树木 IoU 从 0.7244 降到 0.6978。在只有 510 张训练图、又没有预训练的情况下，门控把有用的边缘一起压掉了，整体分类能力下降。</p>
+<p>五种模型共同的失败是杆柱、标志和行人。标志 IoU 最高也只有 0.2006，行人最高 0.1978，杆柱最高 0.0500。这三类像素少、目标薄。加权交叉熵把召回拉高以后，精确率仍然很低，IoU 被误检拖住。要再提高这三类，需要更高的输入分辨率，或者专门的细目标结构。本次比较固定在 320×240。</p>
+
+<h2>10. 小结</h2>
+<p>实验在 CamVid 的 11 类语义分割上，用同一训练设置比较了残差 U-Net、无跳跃连接的编码器-解码器、SegNet、DeepLabV3+ 和 Attention U-Net。测试集上 DeepLabV3+ 的像素准确率为 0.8227，mIoU 为 0.5239，PA、mPA、mIoU、FWIoU、mDice 五项都是最高。11 类里它拿到 9 类的最高 IoU，包括建筑、道路、树木、人行道、标志、围栏、杆柱、行人和骑行者。残差 U-Net 排第二，mIoU 为 0.4710。去掉跳跃连接或改成池化索引上采样之后，mIoU 降到 0.4608 和 0.4491。注意力门控没有带来整体提升，mIoU 为 0.4555，只在天空和车辆上更好。道路和天空已经分得很稳，杆柱和行人的 IoU 仍然低。</p>
+</body>
+</html>
