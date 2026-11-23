@@ -1,0 +1,60 @@
+ENV ubuntu Mon Nov 23 10:25:45 AM CST 2026
+torch 2.14.1+cu130 device NVIDIA GeForce RTX 5090
+===== START efficientnet Mon Nov 23 10:25:46 AM CST 2026 =====
+===== DONE efficientnet Mon Nov 23 10:28:06 AM CST 2026 =====
+epoch 39, train_loss: 0.4910 time 2.4s val_loss 0.6080 val_mIoU 0.5128 val_PA 0.8315
+best val mIoU 0.5159 -> runs/efficientnet/best.pth
+===== test =====
+class                IoU    Prec  Recall      pixles
+Sky               0.9299  0.9701  0.9574  0.9637      713769
+Building          0.5496  0.9840  0.5546  0.7094     2016584
+Pole              0.0651  0.0870  0.2061  0.1223       43488
+Road              0.9253  0.9951  0.9296  0.9612     2240508
+Pavement          0.7769  0.8105  0.9494  0.8744      676050
+Tree              0.8699  0.9535  0.9085  0.9304     1270342
+SignSymbol        0.1234  0.1332  0.6267  0.2197       68967
+Fence             0.4604  0.4643  0.9817  0.6305      239349
+Car               0.4873  0.6733  0.6382  0.6553      191250
+Pedestrian        0.1198  0.1226  0.8390  0.2140       58360
+Bicyclist         0.4316  0.5173  0.7227  0.6030      171802
+PA=0.8143 mPA=0.7558 mIoU=0.5218 FWIoU=0.7505 mDice=0.6258
+===== START efficientnet_pt Mon Nov 23 10:28:06 AM CST 2026 =====
+===== DONE efficientnet_pt Mon Nov 23 10:30:26 AM CST 2026 =====
+epoch 39, train_loss: 0.2102 time 2.4s val_loss 0.3681 val_mIoU 0.6504 val_PA 0.9043
+best val mIoU 0.6534 -> runs/efficientnet_pt/best.pth
+===== test =====
+class                IoU    Prec  Recall      pixles
+Sky               0.9323  0.9760  0.9542  0.9650      713769
+Building          0.8215  0.9818  0.8342  0.9020     2016584
+Pole              0.1332  0.2039  0.2776  0.2351       43488
+Road              0.9468  0.9976  0.9489  0.9726     2240508
+Pavement          0.8536  0.8796  0.9665  0.9210      676050
+Tree              0.9019  0.9345  0.9627  0.9484     1270342
+SignSymbol        0.3149  0.3569  0.7280  0.4790       68967
+Fence             0.5931  0.6158  0.9413  0.7446      239349
+Car               0.6503  0.8494  0.7351  0.7881      191250
+Pedestrian        0.4281  0.4639  0.8470  0.5995       58360
+Bicyclist         0.6017  0.6251  0.9414  0.7513      171802
+PA=0.9109 mPA=0.8306 mIoU=0.6525 FWIoU=0.8567 mDice=0.7551
+===== COMPARE Mon Nov 23 10:30:26 AM CST 2026 =====
+骑行者               0.4291  0.5495  0.6621  0.6006      171802
+PA=0.7285 mPA=0.6863 mIoU=0.4555 FWIoU=0.6419 mDice=0.5659
+===== EfficientNet-B0 params=5655495 =====
+class                IoU    Prec  Recall      pixles
+天空                0.9299  0.9701  0.9574  0.9637      713769
+建筑                0.5496  0.9840  0.5545  0.7093     2016584
+杆柱                0.0652  0.0870  0.2061  0.1224       43488
+道路                0.9253  0.9951  0.9296  0.9612     2240508
+人行道               0.7769  0.8104  0.9494  0.8744      676050
+树木                0.8699  0.9535  0.9085  0.9304     1270342
+标志                0.1234  0.1332  0.6265  0.2196       68967
+围栏                0.4603  0.4642  0.9818  0.6304      239349
+车辆                0.4873  0.6734  0.6381  0.6553      191250
+行人                0.1198  0.1226  0.8388  0.2139       58360
+骑行者               0.4317  0.5173  0.7228  0.6030      171802
+PA=0.8143 mPA=0.7558 mIoU=0.5217 FWIoU=0.7505 mDice=0.6258
+figure=runs/figures/qualitative_compare.png
+metrics=runs/figures/metrics_bar.png
+summary=runs/figures/summary.json
+indices [0, 36, 60, 84]
+ALL_DONE Mon Nov 23 10:30:40 AM CST 2026

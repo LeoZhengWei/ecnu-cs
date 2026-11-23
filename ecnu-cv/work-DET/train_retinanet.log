@@ -1,0 +1,26 @@
+args: {'data_root': '/home/hjadmin/zw/ecnu/ecnu-cv/work-DET/datasets/voc2007/VOCdevkit', 'batch_size': 8, 'epochs': 12, 'lr': 0.001, 'lambda_reg': 1.0, 'score_thresh': 0.05, 'eval_every': 2, 'ckpt_dir': '/home/hjadmin/zw/ecnu/ecnu-cv/work-DET/checkpoints', 'out_json': '/home/hjadmin/zw/ecnu/ecnu-cv/work-DET/metrics.json', 'resume': ''}
+train=5011 test=4952
+Using cuda:1 batches/epoch 627
+/home/hjadmin/zw/ecnu/ecnu-cv/work-DET/model/training.py:61: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:820.)
+  running["cls"] += float(loss_dict.get("classification", 0))
+epoch 01 loss=0.3785 (cls=0.1798 reg=0.0000) lr=1.00e-03 87.3s
+epoch 02 loss=0.3127 (cls=0.1361 reg=0.0000) lr=1.00e-03 87.5s
+epoch 02  mAP@0.5=0.7673  (best 0.0000)
+epoch 03 loss=0.2779 (cls=0.1154 reg=0.0000) lr=1.00e-03 87.2s
+epoch 04 loss=0.2497 (cls=0.0986 reg=0.0000) lr=1.00e-03 87.5s
+epoch 04  mAP@0.5=0.7715  (best 0.7673)
+epoch 05 loss=0.2285 (cls=0.0862 reg=0.0000) lr=1.00e-03 87.3s
+epoch 06 loss=0.2120 (cls=0.0770 reg=0.0000) lr=1.00e-03 87.6s
+epoch 06  mAP@0.5=0.7658  (best 0.7715)
+epoch 07 loss=0.1968 (cls=0.0686 reg=0.0000) lr=1.00e-04 87.5s
+epoch 08 loss=0.1771 (cls=0.0584 reg=0.0000) lr=1.00e-04 87.6s
+epoch 08  mAP@0.5=0.7753  (best 0.7715)
+epoch 09 loss=0.1730 (cls=0.0565 reg=0.0000) lr=1.00e-04 87.6s
+epoch 10 loss=0.1706 (cls=0.0551 reg=0.0000) lr=1.00e-05 87.8s
+epoch 10  mAP@0.5=0.7736  (best 0.7753)
+epoch 11 loss=0.1678 (cls=0.0541 reg=0.0000) lr=1.00e-05 87.6s
+epoch 12 loss=0.1680 (cls=0.0542 reg=0.0000) lr=1.00e-05 87.7s
+epoch 12  mAP@0.5=0.7738  (best 0.7753)
+BEST_mAP=0.7753
+SAVED /home/hjadmin/zw/ecnu/ecnu-cv/work-DET/metrics.json

@@ -17,3 +17,13 @@ __pycache__/
 .venv/
 venv/
 *.png
+
+# 数据集与大体积分发包（保留在本地，不入库）
+datasets/
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+
+# 本地备份目录
+_backup*/

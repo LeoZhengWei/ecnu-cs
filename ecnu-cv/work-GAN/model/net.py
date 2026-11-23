@@ -142,6 +142,8 @@ def build_generator(name="context", base_unet=32, base_context=64):
     name = name.lower()
     if name in ("context", "contextencoder", "ce", "gan"):
         return ContextEncoder(3, 3, base=base_context)
+    if name in ("unet", "resunet"):
+        return UNet(3, 3, base=base_unet)
     raise ValueError(name)
 
 

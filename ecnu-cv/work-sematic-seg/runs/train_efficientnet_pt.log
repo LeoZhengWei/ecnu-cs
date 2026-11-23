@@ -1,0 +1,219 @@
+args=Namespace(batch_size=8, epochs=40, lr=0.0003, weight_decay=0.0001, model='efficientnet_pt', base_channels=64, img_height=240, img_width=320, num_workers=4, seed=42, data_root='data/camvid', save_dir='runs', num_classes=11, ignore_index=255)
+split train/val/test = 510/90/101  size=240x320
+model=efficientnet_pt params=5655495
+Using cuda:0: NVIDIA GeForce RTX 5090
+epoch 0 step 0 train_loss 2.4865
+epoch 0 step 20 train_loss 1.4003
+epoch 0 step 40 train_loss 1.1441
+epoch 0 step 60 train_loss 1.0603
+epoch 0, train_loss: 1.4309 time 21.1s val_loss 1.0405 val_mIoU 0.3947 val_PA 0.7062  *best
+epoch 1 step 0 train_loss 1.1441
+epoch 1 step 20 train_loss 0.9443
+epoch 1 step 40 train_loss 0.9113
+epoch 1 step 60 train_loss 0.8771
+epoch 1, train_loss: 0.9251 time 2.3s val_loss 0.8405 val_mIoU 0.4735 val_PA 0.7960  *best
+epoch 2 step 0 train_loss 0.8175
+epoch 2 step 20 train_loss 0.7412
+epoch 2 step 40 train_loss 0.7509
+epoch 2 step 60 train_loss 0.7215
+epoch 2, train_loss: 0.7401 time 2.3s val_loss 0.6741 val_mIoU 0.5074 val_PA 0.8309  *best
+epoch 3 step 0 train_loss 0.6918
+epoch 3 step 20 train_loss 0.5910
+epoch 3 step 40 train_loss 0.5987
+epoch 3 step 60 train_loss 0.5235
+epoch 3, train_loss: 0.6301 time 2.3s val_loss 0.6030 val_mIoU 0.5199 val_PA 0.8368  *best
+epoch 4 step 0 train_loss 0.4688
+epoch 4 step 20 train_loss 0.5439
+epoch 4 step 40 train_loss 0.4930
+epoch 4 step 60 train_loss 0.4717
+epoch 4, train_loss: 0.5563 time 2.4s val_loss 0.5757 val_mIoU 0.5296 val_PA 0.8412  *best
+epoch 5 step 0 train_loss 0.5114
+epoch 5 step 20 train_loss 0.4662
+epoch 5 step 40 train_loss 0.5345
+epoch 5 step 60 train_loss 0.5709
+epoch 5, train_loss: 0.5039 time 2.3s val_loss 0.5258 val_mIoU 0.5604 val_PA 0.8569  *best
+epoch 6 step 0 train_loss 0.4665
+epoch 6 step 20 train_loss 0.4019
+epoch 6 step 40 train_loss 0.4150
+epoch 6 step 60 train_loss 0.4125
+epoch 6, train_loss: 0.4553 time 2.4s val_loss 0.5208 val_mIoU 0.5773 val_PA 0.8756  *best
+epoch 7 step 0 train_loss 0.4404
+epoch 7 step 20 train_loss 0.4208
+epoch 7 step 40 train_loss 0.4941
+epoch 7 step 60 train_loss 0.4838
+epoch 7, train_loss: 0.4240 time 2.3s val_loss 0.4896 val_mIoU 0.5569 val_PA 0.8485
+epoch 8 step 0 train_loss 0.3894
+epoch 8 step 20 train_loss 0.3973
+epoch 8 step 40 train_loss 0.3965
+epoch 8 step 60 train_loss 0.3347
+epoch 8, train_loss: 0.3909 time 2.4s val_loss 0.4883 val_mIoU 0.5758 val_PA 0.8684
+epoch 9 step 0 train_loss 0.4705
+epoch 9 step 20 train_loss 0.3612
+epoch 9 step 40 train_loss 0.3637
+epoch 9 step 60 train_loss 0.3824
+epoch 9, train_loss: 0.3733 time 2.3s val_loss 0.4457 val_mIoU 0.5988 val_PA 0.8793  *best
+epoch 10 step 0 train_loss 0.3591
+epoch 10 step 20 train_loss 0.3442
+epoch 10 step 40 train_loss 0.4215
+epoch 10 step 60 train_loss 0.3123
+epoch 10, train_loss: 0.3531 time 2.3s val_loss 0.4450 val_mIoU 0.5864 val_PA 0.8686
+epoch 11 step 0 train_loss 0.3628
+epoch 11 step 20 train_loss 0.3690
+epoch 11 step 40 train_loss 0.3757
+epoch 11 step 60 train_loss 0.3679
+epoch 11, train_loss: 0.3417 time 2.3s val_loss 0.4847 val_mIoU 0.6062 val_PA 0.8847  *best
+epoch 12 step 0 train_loss 0.2423
+epoch 12 step 20 train_loss 0.3686
+epoch 12 step 40 train_loss 0.3158
+epoch 12 step 60 train_loss 0.2941
+epoch 12, train_loss: 0.3267 time 2.4s val_loss 0.4443 val_mIoU 0.6038 val_PA 0.8815
+epoch 13 step 0 train_loss 0.2741
+epoch 13 step 20 train_loss 0.2805
+epoch 13 step 40 train_loss 0.2718
+epoch 13 step 60 train_loss 0.2888
+epoch 13, train_loss: 0.3108 time 2.3s val_loss 0.4113 val_mIoU 0.6012 val_PA 0.8785
+epoch 14 step 0 train_loss 0.3216
+epoch 14 step 20 train_loss 0.2724
+epoch 14 step 40 train_loss 0.3296
+epoch 14 step 60 train_loss 0.2679
+epoch 14, train_loss: 0.3016 time 2.4s val_loss 0.3853 val_mIoU 0.6192 val_PA 0.8915  *best
+epoch 15 step 0 train_loss 0.2993
+epoch 15 step 20 train_loss 0.2975
+epoch 15 step 40 train_loss 0.2720
+epoch 15 step 60 train_loss 0.2985
+epoch 15, train_loss: 0.2941 time 2.3s val_loss 0.3885 val_mIoU 0.6139 val_PA 0.8824
+epoch 16 step 0 train_loss 0.3170
+epoch 16 step 20 train_loss 0.2580
+epoch 16 step 40 train_loss 0.2606
+epoch 16 step 60 train_loss 0.2996
+epoch 16, train_loss: 0.2834 time 2.4s val_loss 0.3954 val_mIoU 0.6152 val_PA 0.8808
+epoch 17 step 0 train_loss 0.2697
+epoch 17 step 20 train_loss 0.2867
+epoch 17 step 40 train_loss 0.2160
+epoch 17 step 60 train_loss 0.2548
+epoch 17, train_loss: 0.2740 time 2.3s val_loss 0.3906 val_mIoU 0.6175 val_PA 0.8876
+epoch 18 step 0 train_loss 0.3080
+epoch 18 step 20 train_loss 0.2432
+epoch 18 step 40 train_loss 0.2760
+epoch 18 step 60 train_loss 0.2590
+epoch 18, train_loss: 0.2676 time 2.3s val_loss 0.3901 val_mIoU 0.6215 val_PA 0.8936  *best
+epoch 19 step 0 train_loss 0.2760
+epoch 19 step 20 train_loss 0.2784
+epoch 19 step 40 train_loss 0.3390
+epoch 19 step 60 train_loss 0.2637
+epoch 19, train_loss: 0.2585 time 2.3s val_loss 0.3707 val_mIoU 0.6243 val_PA 0.8853  *best
+epoch 20 step 0 train_loss 0.2869
+epoch 20 step 20 train_loss 0.3143
+epoch 20 step 40 train_loss 0.2175
+epoch 20 step 60 train_loss 0.2183
+epoch 20, train_loss: 0.2539 time 2.4s val_loss 0.3815 val_mIoU 0.6411 val_PA 0.8983  *best
+epoch 21 step 0 train_loss 0.2827
+epoch 21 step 20 train_loss 0.2830
+epoch 21 step 40 train_loss 0.2384
+epoch 21 step 60 train_loss 0.2433
+epoch 21, train_loss: 0.2498 time 2.3s val_loss 0.3774 val_mIoU 0.6490 val_PA 0.9032  *best
+epoch 22 step 0 train_loss 0.2694
+epoch 22 step 20 train_loss 0.1900
+epoch 22 step 40 train_loss 0.2506
+epoch 22 step 60 train_loss 0.2070
+epoch 22, train_loss: 0.2434 time 2.3s val_loss 0.3782 val_mIoU 0.6430 val_PA 0.9001
+epoch 23 step 0 train_loss 0.2500
+epoch 23 step 20 train_loss 0.2547
+epoch 23 step 40 train_loss 0.2636
+epoch 23 step 60 train_loss 0.2589
+epoch 23, train_loss: 0.2377 time 2.4s val_loss 0.3800 val_mIoU 0.6405 val_PA 0.9004
+epoch 24 step 0 train_loss 0.2517
+epoch 24 step 20 train_loss 0.2948
+epoch 24 step 40 train_loss 0.1921
+epoch 24 step 60 train_loss 0.2136
+epoch 24, train_loss: 0.2353 time 2.3s val_loss 0.3665 val_mIoU 0.6362 val_PA 0.8962
+epoch 25 step 0 train_loss 0.2103
+epoch 25 step 20 train_loss 0.1944
+epoch 25 step 40 train_loss 0.2502
+epoch 25 step 60 train_loss 0.2483
+epoch 25, train_loss: 0.2311 time 2.4s val_loss 0.3715 val_mIoU 0.6438 val_PA 0.9004
+epoch 26 step 0 train_loss 0.2422
+epoch 26 step 20 train_loss 0.2296
+epoch 26 step 40 train_loss 0.2111
+epoch 26 step 60 train_loss 0.2589
+epoch 26, train_loss: 0.2287 time 2.3s val_loss 0.3645 val_mIoU 0.6440 val_PA 0.8979
+epoch 27 step 0 train_loss 0.2063
+epoch 27 step 20 train_loss 0.2451
+epoch 27 step 40 train_loss 0.2203
+epoch 27 step 60 train_loss 0.1971
+epoch 27, train_loss: 0.2247 time 2.4s val_loss 0.3735 val_mIoU 0.6433 val_PA 0.9021
+epoch 28 step 0 train_loss 0.2297
+epoch 28 step 20 train_loss 0.1931
+epoch 28 step 40 train_loss 0.2076
+epoch 28 step 60 train_loss 0.2077
+epoch 28, train_loss: 0.2211 time 2.4s val_loss 0.3697 val_mIoU 0.6474 val_PA 0.9023
+epoch 29 step 0 train_loss 0.1944
+epoch 29 step 20 train_loss 0.2266
+epoch 29 step 40 train_loss 0.2334
+epoch 29 step 60 train_loss 0.1865
+epoch 29, train_loss: 0.2205 time 2.4s val_loss 0.3679 val_mIoU 0.6441 val_PA 0.9000
+epoch 30 step 0 train_loss 0.2181
+epoch 30 step 20 train_loss 0.2111
+epoch 30 step 40 train_loss 0.2026
+epoch 30 step 60 train_loss 0.2254
+epoch 30, train_loss: 0.2178 time 2.3s val_loss 0.3701 val_mIoU 0.6464 val_PA 0.9019
+epoch 31 step 0 train_loss 0.2238
+epoch 31 step 20 train_loss 0.1732
+epoch 31 step 40 train_loss 0.2519
+epoch 31 step 60 train_loss 0.1900
+epoch 31, train_loss: 0.2157 time 2.3s val_loss 0.3757 val_mIoU 0.6489 val_PA 0.9053
+epoch 32 step 0 train_loss 0.2333
+epoch 32 step 20 train_loss 0.2313
+epoch 32 step 40 train_loss 0.1938
+epoch 32 step 60 train_loss 0.2424
+epoch 32, train_loss: 0.2123 time 2.4s val_loss 0.3745 val_mIoU 0.6468 val_PA 0.9040
+epoch 33 step 0 train_loss 0.2420
+epoch 33 step 20 train_loss 0.2141
+epoch 33 step 40 train_loss 0.2060
+epoch 33 step 60 train_loss 0.1996
+epoch 33, train_loss: 0.2145 time 2.3s val_loss 0.3653 val_mIoU 0.6485 val_PA 0.9034
+epoch 34 step 0 train_loss 0.1625
+epoch 34 step 20 train_loss 0.2165
+epoch 34 step 40 train_loss 0.2287
+epoch 34 step 60 train_loss 0.2405
+epoch 34, train_loss: 0.2113 time 2.4s val_loss 0.3762 val_mIoU 0.6514 val_PA 0.9050  *best
+epoch 35 step 0 train_loss 0.2229
+epoch 35 step 20 train_loss 0.2118
+epoch 35 step 40 train_loss 0.1866
+epoch 35 step 60 train_loss 0.1903
+epoch 35, train_loss: 0.2100 time 2.3s val_loss 0.3672 val_mIoU 0.6530 val_PA 0.9043  *best
+epoch 36 step 0 train_loss 0.2159
+epoch 36 step 20 train_loss 0.1945
+epoch 36 step 40 train_loss 0.2171
+epoch 36 step 60 train_loss 0.2329
+epoch 36, train_loss: 0.2098 time 2.3s val_loss 0.3607 val_mIoU 0.6534 val_PA 0.9055  *best
+epoch 37 step 0 train_loss 0.2591
+epoch 37 step 20 train_loss 0.1847
+epoch 37 step 40 train_loss 0.2496
+epoch 37 step 60 train_loss 0.1848
+epoch 37, train_loss: 0.2121 time 2.4s val_loss 0.3702 val_mIoU 0.6526 val_PA 0.9055
+epoch 38 step 0 train_loss 0.1770
+epoch 38 step 20 train_loss 0.1739
+epoch 38 step 40 train_loss 0.2011
+epoch 38 step 60 train_loss 0.1873
+epoch 38, train_loss: 0.2102 time 2.4s val_loss 0.3654 val_mIoU 0.6520 val_PA 0.9047
+epoch 39 step 0 train_loss 0.2403
+epoch 39 step 20 train_loss 0.2083
+epoch 39 step 40 train_loss 0.2449
+epoch 39 step 60 train_loss 0.2121
+epoch 39, train_loss: 0.2102 time 2.4s val_loss 0.3681 val_mIoU 0.6504 val_PA 0.9043
+best val mIoU 0.6534 -> runs/efficientnet_pt/best.pth
+===== test =====
+class                IoU    Prec  Recall      pixles
+Sky               0.9323  0.9760  0.9542  0.9650      713769
+Building          0.8215  0.9818  0.8342  0.9020     2016584
+Pole              0.1332  0.2039  0.2776  0.2351       43488
+Road              0.9468  0.9976  0.9489  0.9726     2240508
+Pavement          0.8536  0.8796  0.9665  0.9210      676050
+Tree              0.9019  0.9345  0.9627  0.9484     1270342
+SignSymbol        0.3149  0.3569  0.7280  0.4790       68967
+Fence             0.5931  0.6158  0.9413  0.7446      239349
+Car               0.6503  0.8494  0.7351  0.7881      191250
+Pedestrian        0.4281  0.4639  0.8470  0.5995       58360
+Bicyclist         0.6017  0.6251  0.9414  0.7513      171802
+PA=0.9109 mPA=0.8306 mIoU=0.6525 FWIoU=0.8567 mDice=0.7551

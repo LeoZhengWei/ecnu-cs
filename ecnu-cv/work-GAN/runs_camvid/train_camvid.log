@@ -1,0 +1,14 @@
+TRAIN_START Mon Nov 23 11:05:07 AM CST 2026
+=== training unet l2 ===
+===== test =====
+MAE=0.1041 MSE=0.02267 PSNR=16.45dB SSIM=0.9161 fullPSNR=24.97dB n=101
+=== training unet joint ===
+===== test =====
+MAE=0.1149 MSE=0.02951 PSNR=15.30dB SSIM=0.9031 fullPSNR=23.82dB n=101
+=== training context l2 ===
+===== test =====
+MAE=0.0996 MSE=0.02202 PSNR=16.57dB SSIM=0.9163 fullPSNR=25.09dB n=101
+=== training context joint ===
+===== test =====
+MAE=0.1127 MSE=0.02958 PSNR=15.29dB SSIM=0.9054 fullPSNR=23.81dB n=101
+=== summary / figures ===

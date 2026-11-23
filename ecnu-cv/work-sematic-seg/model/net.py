@@ -282,6 +282,67 @@ class AttentionUNet(nn.Module):
         return self.out_conv(dec1)
 
 
+class EfficientNetSeg(nn.Module):
+    """把 EfficientNet-B0 的分类骨干改成逐像素分类器。
+
+    去掉原来的全局平均池化和 1000 类分类头，保留卷积特征；再取 1/4、1/16
+    两处浅层特征接回解码器，帮上采样找回物体边界。参数量只有残差 U-Net 的
+    五分之一左右，适合拿来比较「复合缩放 + 深度可分离卷积」在这门课规模的数据上
+    能走到哪一步。pretrained=True 时加载 ImageNet 权重并按 ImageNet 的均值方差归一化。
+    """
+
+    def __init__(self, in_channels=3, out_channels=11, base=64, pretrained=False):
+        super(EfficientNetSeg, self).__init__()
+        if in_channels != 3:
+            raise ValueError("EfficientNet 骨干固定接收 3 通道输入")
+        from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
+
+        weights = EfficientNet_B0_Weights.IMAGENET1K_V1 if pretrained else None
+        backbone = efficientnet_b0(weights=weights)
+        stages = list(backbone.features)
+        self.stem = nn.Sequential(*stages[:3])    # 24 通道, 1/4
+        self.low = nn.Sequential(*stages[3:5])    # 80 通道, 1/16
+        self.high = nn.Sequential(*stages[5:])    # 1280 通道, 1/32
+        self.pretrained = bool(pretrained)
+        self.register_buffer("mean", torch.tensor([0.485, 0.456, 0.406]).view(1, 3, 1, 1))
+        self.register_buffer("std", torch.tensor([0.229, 0.224, 0.225]).view(1, 3, 1, 1))
+
+        self.reduce = nn.Sequential(
+            nn.Conv2d(1280, 256, kernel_size=1, bias=False),
+            nn.BatchNorm2d(256),
+            nn.ReLU(inplace=True),
+        )
+        self.dec_low = nn.Sequential(
+            nn.Conv2d(256 + 80, 256, kernel_size=3, padding=1, bias=False),
+            nn.BatchNorm2d(256),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(256, 128, kernel_size=3, padding=1, bias=False),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True),
+        )
+        self.dec_high = nn.Sequential(
+            nn.Conv2d(128 + 24, 128, kernel_size=3, padding=1, bias=False),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(128, 64, kernel_size=3, padding=1, bias=False),
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True),
+        )
+        self.out_conv = nn.Conv2d(64, out_channels, kernel_size=1)
+
+    def forward(self, x):
+        inp = (x - self.mean) / self.std if self.pretrained else x
+        s1 = self.stem(inp)
+        s2 = self.low(s1)
+        h = self.reduce(self.high(s2))
+        h = F.interpolate(h, size=s2.shape[-2:], mode="bilinear", align_corners=False)
+        h = self.dec_low(torch.cat((h, s2), dim=1))
+        h = F.interpolate(h, size=s1.shape[-2:], mode="bilinear", align_corners=False)
+        h = self.dec_high(torch.cat((h, s1), dim=1))
+        h = F.interpolate(h, size=x.shape[-2:], mode="bilinear", align_corners=False)
+        return self.out_conv(h)
+
+
 def build_model(name, in_channels, out_channels, base=64):
     name = name.lower()
     if name in ("unet", "resunet"):
@@ -294,11 +355,15 @@ def build_model(name, in_channels, out_channels, base=64):
         return DeepLabV3Plus(in_channels, out_channels, base=base)
     if name in ("attunet", "attention", "attentionunet"):
         return AttentionUNet(in_channels, out_channels, base=base)
+    if name in ("efficientnet", "efficientnet_b0", "effnet"):
+        return EfficientNetSeg(in_channels, out_channels, base=base, pretrained=False)
+    if name in ("efficientnet_pt", "efficientnet_pretrained", "effnet_pt"):
+        return EfficientNetSeg(in_channels, out_channels, base=base, pretrained=True)
     raise ValueError(name)
 
 if __name__ == "__main__":
     x = torch.randn((2, 3, 240, 320))
-    for name in ("unet", "fcn", "segnet", "deeplab", "attunet"):
+    for name in ("unet", "fcn", "segnet", "deeplab", "attunet", "efficientnet"):
         model = build_model(name, 3, 11)
         y = model(x)
         print(name, count_parameters(model), tuple(y.shape))

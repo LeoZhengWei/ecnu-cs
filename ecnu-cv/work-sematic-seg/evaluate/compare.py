@@ -32,6 +32,7 @@ MODELS = [
     ("segnet", "SegNet"),
     ("deeplab", "DeepLabV3+"),
     ("attunet", "Attention U-Net"),
+    ("efficientnet", "EfficientNet-B0"),
 ]
 
 
@@ -142,11 +143,11 @@ def draw_metrics(summary, out_path):
     pa = [item["pixel_acc"] for item in summary]
     x = np.arange(len(names))
     width = 0.36
-    fig, ax = plt.subplots(figsize=(8.2, 4.2))
+    fig, ax = plt.subplots(figsize=(9.8, 4.4))
     bars_m = ax.bar(x - width / 2, miou, width, label="mIoU", color="#3d5a80")
     bars_p = ax.bar(x + width / 2, pa, width, label="像素准确率", color="#98c1d9")
     ax.set_xticks(x)
-    ax.set_xticklabels(names, fontsize=10)
+    ax.set_xticklabels(names, fontsize=9)
     ax.set_ylim(0, 1.0)
     ax.set_ylabel("分数")
     ax.legend(frameon=False)
