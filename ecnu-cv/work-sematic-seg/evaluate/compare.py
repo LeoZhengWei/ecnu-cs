@@ -27,8 +27,6 @@ plt.rcParams["font.family"] = "Noto Sans CJK SC"
 plt.rcParams["axes.unicode_minus"] = False
 
 MODELS = [
-    ("unet", "残差 U-Net"),
-    ("fcn", "无跳跃连接"),
     ("segnet", "SegNet"),
     ("deeplab", "DeepLabV3+"),
     ("attunet", "Attention U-Net"),

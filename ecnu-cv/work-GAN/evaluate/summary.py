@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""在 CamVid 测试集上汇总四种网络与两个基线的复原结果，重算指标与对比图。"""
+"""在 CamVid 测试集上汇总上下文编码器与两个基线的复原结果，重算指标与对比图。"""
 import json
 import os
 import sys
@@ -60,10 +60,8 @@ def main():
 
     setups = [
         ("均值填充", None, None, 0),
-        ("U-Net L2", "unet", "l2", args.base_unet),
         ("Context L2", "context", "l2", args.base_context),
         ("Context 联合", "context", "joint", args.base_context),
-        ("U-Net 联合", "unet", "joint", args.base_unet),
         ("近邻粘贴", "nearest", None, 0),
     ]
 
@@ -77,7 +75,7 @@ def main():
             cache.append((image.cpu(), masked.cpu(), mask.cpu(), name))
 
     models = []
-    for display, kind, loss, base in setups:
+    for display, kind, loss in setups:
         if kind in (None, "nearest"):
             generator = None
             params = 0
@@ -85,8 +83,7 @@ def main():
         else:
             ckpt_path = os.path.join(args.save_dir, f"{kind}_{loss}", "best.pth")
             ckpt = torch_load(ckpt_path, device)
-            generator = build_generator(kind, base_unet=args.base_unet,
-                                        base_context=args.base_context).to(device)
+            generator = build_generator(kind, base_context=args.base_context).to(device)
             generator.load_state_dict(ckpt["generator"])
             generator.eval()
             params = count_parameters(generator)
@@ -120,10 +117,6 @@ def main():
                "count": stats["count"]}
         models.append(rec)
         print(format_metrics(stats), display)
-        if display == "U-Net L2":
-            first_panels = panels
-        if display == "近邻粘贴":
-            last_panels = panels
 
     # 汇总写盘
     summary = {"dataset": "CamVid", "hole": args.hole, "count": len(cache),
@@ -137,12 +130,12 @@ def main():
     ssim = [m["ssim"] for m in models]
     x = np.arange(len(names))
     fig, axes = plt.subplots(1, 2, figsize=(12, 4.6))
-    bars0 = axes[0].bar(x, psnr, color=["#9aa0a6", "#4c8bf5", "#5fa8d3", "#7b68ee", "#ef8a62", "#f2c14e"])
+    bars0 = axes[0].bar(x, psnr, color=["#9aa0a6", "#5fa8d3", "#7b68ee", "#f2c14e"])
     axes[0].set_ylabel("洞内 PSNR (dB)")
     axes[0].set_title("遮挡区域峰值信噪比")
     for b, v in zip(bars0, psnr):
         axes[0].text(b.get_x() + b.get_width() / 2, v + 0.25, f"{v:.2f}", ha="center", fontsize=9)
-    bars1 = axes[1].bar(x, ssim, color=["#9aa0a6", "#4c8bf5", "#5fa8d3", "#7b68ee", "#ef8a62", "#f2c14e"])
+    bars1 = axes[1].bar(x, ssim, color=["#9aa0a6", "#5fa8d3", "#7b68ee", "#f2c14e"])
     axes[1].set_ylabel("整图 SSIM")
     axes[1].set_title("贴回原图后的结构相似度")
     axes[1].set_ylim(min(ssim) - 0.02, max(ssim) + 0.02)
@@ -156,19 +149,19 @@ def main():
     fig.savefig(os.path.join(out_dir, "metrics_bar.png"), dpi=150)
     plt.close(fig)
 
-    # 定性对比：原图 / 遮挡 / 四种网络 / 近邻粘贴
-    cols = ["原图", "遮挡输入", "U-Net L2", "Context L2", "Context 联合", "U-Net 联合", "近邻粘贴"]
-    # 重新跑四个生成器，取前 4 张补丁
+    # 定性对比：原图 / 遮挡 / 原始网络两种损失 / 近邻粘贴
+    cols = ["原图", "遮挡输入", "Context L2", "Context 联合", "近邻粘贴"]
+    # 重新跑两个生成器，取前 4 张补丁
     gens = {}
-    for kind, loss in [("unet", "l2"), ("context", "l2"), ("context", "joint"), ("unet", "joint")]:
+    for kind, loss in [("context", "l2"), ("context", "joint")]:
         ckpt = torch_load(os.path.join(args.save_dir, f"{kind}_{loss}", "best.pth"), device)
-        g = build_generator(kind, base_unet=args.base_unet, base_context=args.base_context).to(device)
+        g = build_generator(kind, base_context=args.base_context).to(device)
         g.load_state_dict(ckpt["generator"])
         g.eval()
         gens[(kind, loss)] = g
-    order = [("orig", None), ("mask", None), ("unet", "l2"), ("context", "l2"),
-             ("context", "joint"), ("unet", "joint"), ("nearest", None)]
-    fig, axes = plt.subplots(4, 7, figsize=(15, 8))
+    order = [("orig", None), ("mask", None), ("context", "l2"),
+             ("context", "joint"), ("nearest", None)]
+    fig, axes = plt.subplots(4, 5, figsize=(11, 8))
     with torch.no_grad():
         for r in range(4):
             image, masked, mask, _name = cache[r]
@@ -180,11 +173,10 @@ def main():
                 "mask": to_hwc(ms[0].cpu().numpy()),
                 "nearest": to_hwc(composite(im, nearest_paste(im, mk), mk)[0].cpu().numpy()),
             }
-            for (kind, loss), g in gens.items():
+            for key, g in gens.items():
                 done = composite(im, g(ms), mk)
-                patches[kind] = to_hwc(done[0].cpu().numpy())
-            for c, (kind, loss) in enumerate(order):
-                key = "orig" if kind == "orig" else ("mask" if kind == "mask" else ("nearest" if kind == "nearest" else kind))
+                patches[key] = to_hwc(done[0].cpu().numpy())
+            for c, key in enumerate(order):
                 ax = axes[r, c]
                 ax.imshow(patches[key])
                 ax.set_xticks([])

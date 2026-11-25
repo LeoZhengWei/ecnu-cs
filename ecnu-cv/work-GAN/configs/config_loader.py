@@ -15,7 +15,6 @@ def config_parser():
     parser.add_argument("--hole", type=int, default=128)
     parser.add_argument("--overlap", type=int, default=7)
     parser.add_argument("--jitter", type=int, default=16)
-    parser.add_argument("--base_unet", type=int, default=32)
     parser.add_argument("--base_context", type=int, default=64)
     parser.add_argument("--num_workers", type=int, default=2)
     parser.add_argument("--seed", type=int, default=42)

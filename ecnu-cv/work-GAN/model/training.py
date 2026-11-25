@@ -81,7 +81,7 @@ class Trainer(object):
             device_name = self.device.type
         print(f"Using {self.device}: {device_name}")
 
-        self.generator = build_generator(args.model, args.base_unet, args.base_context).to(self.device)
+        self.generator = build_generator(args.model, base_context=args.base_context).to(self.device)
         self.use_adv = args.loss in ("joint", "adv")
         self.use_rec = args.loss in ("joint", "l2")
         self.warmup_epochs = int(getattr(args, "warmup_epochs", 0))
@@ -222,7 +222,6 @@ class Trainer(object):
             "loss": self.args.loss,
             "img_size": self.args.img_size,
             "hole": self.args.hole,
-            "base_unet": self.args.base_unet,
             "base_context": self.args.base_context,
         }, path)
 

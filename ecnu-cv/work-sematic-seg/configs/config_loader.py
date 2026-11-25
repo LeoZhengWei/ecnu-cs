@@ -7,7 +7,7 @@ def config_parser():
     parser.add_argument("--epochs", type=int, default=40)
     parser.add_argument("--lr", type=float, default=3e-4)
     parser.add_argument("--weight_decay", type=float, default=1e-4)
-    parser.add_argument("--model", type=str, default="unet")
+    parser.add_argument("--model", type=str, default="segnet")
     parser.add_argument("--base_channels", type=int, default=64)
     parser.add_argument("--img_height", type=int, default=240)
     parser.add_argument("--img_width", type=int, default=320)
